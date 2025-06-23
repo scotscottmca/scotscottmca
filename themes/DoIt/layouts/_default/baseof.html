@@ -7,6 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
+    <meta name="jam:team" content="f46db378-285f-41b0-aac9-9d756eb36621" />
     <title>
         {{- block "title" . }}{{ .Site.Title }}{{ end -}}
     </title>
@@ -16,6 +17,10 @@
     {{- partial "head/seo.html" . -}}
 
     <script src="//instant.page/5.1.1" defer type="module" integrity="sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq"></script>
+    <script type="module" src="https://js.jam.dev/capture.js"></script>
+    <meta name="jam:team" content="f46db378-285f-41b0-aac9-9d756eb36621" />
+    <script type="module" src="https://js.jam.dev/recorder.js"></script>
+    <script type="module" src="https://js.jam.dev/recorder.js"></script>
 </head>
 
 <body header-desktop="{{ .Site.Params.header.desktopMode }}" header-mobile="{{ .Site.Params.header.mobileMode }}">
