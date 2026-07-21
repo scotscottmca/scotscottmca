@@ -26,7 +26,7 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft)).so
         projects.length === 0 ? (
           <p style="color:var(--text-muted);margin-top:2rem">Nothing here yet — check back soon.</p>
         ) : (
-          <ul class="post-list" style="margin-top:1.5rem">
+          <ul class="project-grid">
             {projects.map((project) => (
               <ProjectCard project={project} />
             ))}

@@ -6,24 +6,13 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, status, tags } = project.data;
+const { title, summary, status } = project.data;
 ---
 
-<li class="post-card project-card">
-  <div class="project-head">
-    <h3><a href={`/projects/${project.id}/`}>{title}</a></h3>
+<li>
+  <a class="project-square" href={`/projects/${project.id}/`}>
     <span class={`status status-${status}`}>{status}</span>
-  </div>
-  <p class="project-summary">{summary}</p>
-  {
-    tags.length > 0 && (
-      <ul class="tags">
-        {tags.slice(0, 4).map((t) => (
-          <li>
-            <span class="tag">{t}</span>
-          </li>
-        ))}
-      </ul>
-    )
-  }
+    <h3>{title}</h3>
+    <p class="project-square-summary">{summary}</p>
+  </a>
 </li>
