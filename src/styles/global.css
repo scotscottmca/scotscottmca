@@ -351,6 +351,68 @@ a.tag:hover {
 .prose h3 {
   margin-top: 1.8rem;
 }
+
+/* ---- Heading permalink anchors ---- */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  position: relative;
+  scroll-margin-top: 80px;
+}
+.heading-anchor {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.heading-anchor:hover {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+.prose :is(h1, h2, h3, h4, h5, h6):hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+.heading-anchor-icon {
+  display: inline-flex;
+}
+@media (hover: none) {
+  /* Always show on touch devices where hover isn't available */
+  .heading-anchor {
+    opacity: 0.6;
+  }
+}
+
+/* ---- Copied toast ---- */
+.copy-toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(1rem);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+  z-index: 100;
+}
+.copy-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .prose p img {
   display: block;
   margin: 1rem auto;

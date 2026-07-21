@@ -84,5 +84,31 @@ const ga = SITE.googleAnalyticsId;
   </head>
   <body>
     <slot />
+    <div class="copy-toast" id="copy-toast" role="status" aria-live="polite">Link copied</div>
+    <script is:inline>
+      (function () {
+        var toast = document.getElementById('copy-toast');
+        var timer;
+        function showToast() {
+          if (!toast) return;
+          toast.classList.add('show');
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            toast.classList.remove('show');
+          }, 1600);
+        }
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest && e.target.closest('a.heading-anchor');
+          if (!a) return;
+          var hash = a.getAttribute('href') || '';
+          var url = location.origin + location.pathname + hash;
+          // Let the browser update the address bar hash as normal, and also
+          // copy the full absolute link to the clipboard for easy sharing.
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(showToast).catch(function () {});
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
