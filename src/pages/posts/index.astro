@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+---
+
+<BaseLayout title="Posts" description="All posts on ScotScottMcA.">
+  <Header />
+  <main>
+    <div class="container">
+      <h1 class="gradient-text" style="letter-spacing:-0.03em">All posts</h1>
+      <p style="color:var(--text-muted)">{posts.length} posts</p>
+      <ul class="post-list" style="margin-top:1.5rem">
+        {posts.map((post) => <PostCard post={post} />)}
+      </ul>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,34 @@
+---
+// Three-way theme switcher: light / dark / mono. Persists to localStorage.
+---
+
+<div class="theme-switch" role="group" aria-label="Theme">
+  <button type="button" data-theme-value="light" title="Light" aria-label="Light theme">☀️</button>
+  <button type="button" data-theme-value="dark" title="Dark" aria-label="Dark theme">🌙</button>
+  <button type="button" data-theme-value="mono" title="Monochrome" aria-label="Monochrome theme">◐</button>
+</div>
+
+<script is:inline>
+  (function () {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var buttons = document.querySelectorAll('.theme-switch button');
+
+    function sync(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.themeValue === theme));
+      });
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () {
+        sync(b.dataset.themeValue);
+      });
+    });
+
+    sync(current);
+  })();
+</script>

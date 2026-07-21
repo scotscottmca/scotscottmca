@@ -1,0 +1,88 @@
+---
+import { SITE } from '../config';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  article?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image = '/images/banner.webp',
+  article = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+const canonical = new URL(Astro.url.pathname, SITE.url).toString();
+const ogImage = new URL(image, SITE.url).toString();
+const ga = SITE.googleAnalyticsId;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={SITE.keywords.join(', ')} />
+    <meta name="author" content={SITE.author} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Apply persisted theme before paint (no flash) -->
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t !== 'light' && t !== 'dark' && t !== 'mono') t = 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Google Analytics (retained from previous site) -->
+    {
+      ga && (
+        <>
+          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} />
+          <script is:inline define:vars={{ ga }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', ga);
+          </script>
+        </>
+      )
+    }
+
+    <link rel="stylesheet" href="/styles/global.css" />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

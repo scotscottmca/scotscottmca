@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, summary, url, linkLabel, status, tags } = project.data;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={title} description={summary} article={true}>
+  <Header />
+  <main>
+    <div class="container">
+      <article>
+        <header class="article-header">
+          <p style="margin:0"><a href="/projects">← All projects</a></p>
+          <h1>{title}</h1>
+          <div class="post-meta">
+            <span class={`status status-${status}`}>{status}</span>
+          </div>
+          {
+            tags.length > 0 && (
+              <ul class="tags" style="margin-top:0.75rem">
+                {tags.map((t) => (
+                  <li>
+                    <span class="tag">{t}</span>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </header>
+        <div class="prose">
+          <Content />
+        </div>
+        <p style="margin-top:2rem">
+          <a class="project-link" href={url} target="_blank" rel="noopener noreferrer">
+            {linkLabel} →
+          </a>
+        </p>
+      </article>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

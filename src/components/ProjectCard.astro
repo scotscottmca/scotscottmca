@@ -1,0 +1,29 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, summary, status, tags } = project.data;
+---
+
+<li class="post-card project-card">
+  <div class="project-head">
+    <h3><a href={`/projects/${project.id}/`}>{title}</a></h3>
+    <span class={`status status-${status}`}>{status}</span>
+  </div>
+  <p class="project-summary">{summary}</p>
+  {
+    tags.length > 0 && (
+      <ul class="tags">
+        {tags.slice(0, 4).map((t) => (
+          <li>
+            <span class="tag">{t}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</li>
