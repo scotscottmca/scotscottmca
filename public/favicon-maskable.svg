@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="ScotScottMcA">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#a371f7"/>
-      <stop offset="1" stop-color="#58a6ff"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" fill="#0d1117"/>
-  <g fill="none" stroke="url(#g)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="128,176 208,256 128,336"/>
-    <line x1="256" y1="336" x2="384" y2="336"/>
-  </g>
+  <rect width="512" height="512" fill="#000000"/>
+  <polyline points="128,176 208,256 128,336" fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="248" y="314" width="136" height="44" rx="22" fill="#ffffff"/>
 </svg>
