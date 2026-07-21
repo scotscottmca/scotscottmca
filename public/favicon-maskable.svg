@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="ScotScottMcA">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a371f7"/>
+      <stop offset="1" stop-color="#58a6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#0d1117"/>
+  <g fill="none" stroke="url(#g)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="150,168 246,264 150,360"/>
+    <line x1="278" y1="360" x2="392" y2="360"/>
+  </g>
+</svg>
