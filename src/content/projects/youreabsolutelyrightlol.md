@@ -1,8 +1,8 @@
 ---
 title: Clud Code
 summary: A parody CLI coding assistant that agrees with everything you say - fake tool calls, thinking mode, and a Cosmos DB hive mind, all on a single Azure Static Web App.
-url: https://github.com/scotscottmca/youreabsolutelyrightlol
-linkLabel: View on GitHub
+url: https://youreabsolutelyright.lol
+linkLabel: Visit
 date: 2026-07-08
 status: active
 featured: true

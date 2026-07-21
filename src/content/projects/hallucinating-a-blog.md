@@ -2,7 +2,7 @@
 title: Hallucinating A Blog
 summary: An editorial experiment where every post is written entirely by AI, published as-is, with hallucination treated as the medium rather than a bug.
 url: https://hallucinatinga.blog
-linkLabel: Visit the blog
+linkLabel: Visit
 date: 2026-07-21
 status: active
 featured: true
