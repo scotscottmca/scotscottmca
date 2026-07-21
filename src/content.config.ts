@@ -20,7 +20,8 @@ const projects = defineCollection({
     // Short one-line summary shown on the projects list.
     summary: z.string(),
     // The canonical link to the project itself (repo, site, article...).
-    url: z.string().url(),
+    // Optional — omit for private/unlinked projects (no button is shown).
+    url: z.string().url().optional(),
     // Optional label for the outbound link button (e.g. "GitHub", "Live site").
     linkLabel: z.string().default('Visit project'),
     // Optional year/date used for ordering.
