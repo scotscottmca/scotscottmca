@@ -23,7 +23,15 @@ PowerShell.
 - **Code highlighting:** Shiki dual theme (`github-light` / `github-dark`),
   switched via CSS on `data-theme`.
 - **Analytics:** Google Analytics `G-2DLW833T23` (in `src/config.ts`, injected
-  by `src/layouts/BaseLayout.astro`).
+  by `src/layouts/BaseLayout.astro`) using **Google Consent Mode v2** — analytics
+  storage is denied until the visitor opts in via the cookie banner.
+- **Cookie consent:** [vanilla-cookieconsent](https://github.com/orestbida/cookieconsent)
+  in `src/components/CookieConsent.astro`. Accepting the "analytics" category
+  flips GA consent to granted. Re-open via the footer "Cookie preferences" link
+  (`data-cc="show-preferencesModal"`). Follows the theme via the `cc--darkmode`
+  class toggled alongside `data-theme`.
+- **Heading permalinks:** `rehype-autolink-headings` (after `rehypeHeadingIds`)
+  adds a hover chain icon to content headings; clicking copies the section link.
 - **Extras:** RSS (`src/pages/rss.xml.js`) and sitemap (`@astrojs/sitemap`).
 
 ## Theming

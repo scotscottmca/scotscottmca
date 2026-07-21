@@ -1,6 +1,7 @@
 ---
 import { SITE } from '../config';
 import '../styles/global.css';
+import CookieConsent from '../components/CookieConsent.astro';
 
 interface Props {
   title?: string;
@@ -58,20 +59,32 @@ const ga = SITE.googleAnalyticsId;
           var t = localStorage.getItem('theme');
           if (t !== 'light' && t !== 'dark' && t !== 'mono') t = 'dark';
           document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.classList.toggle('cc--darkmode', t !== 'light');
         } catch (e) {}
       })();
     </script>
 
-    <!-- Google Analytics (retained from previous site) -->
+    <!-- Google Analytics with Consent Mode v2 (denied until the user opts in) -->
     {
       ga && (
         <>
-          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} />
-          <script is:inline define:vars={{ ga }}>
+          <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
               dataLayer.push(arguments);
             }
+            // Deny by default; vanilla-cookieconsent flips this to 'granted'
+            // only if the visitor accepts the analytics category.
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'denied',
+              wait_for_update: 500,
+            });
+          </script>
+          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} />
+          <script is:inline define:vars={{ ga }}>
             gtag('js', new Date());
             gtag('config', ga);
           </script>
@@ -110,5 +123,6 @@ const ga = SITE.googleAnalyticsId;
         });
       })();
     </script>
+    <CookieConsent />
   </body>
 </html>

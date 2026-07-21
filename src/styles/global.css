@@ -535,6 +535,15 @@ html[data-theme='mono'] .astro-code span {
 .site-footer a:hover {
   color: var(--accent-2);
 }
+.link-button {
+  all: unset;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.link-button:hover {
+  color: var(--accent-2);
+  text-decoration: underline;
+}
 
 @media (max-width: 600px) {
   body {

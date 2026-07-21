@@ -15,6 +15,7 @@
 
     function sync(theme) {
       document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.classList.toggle('cc--darkmode', theme !== 'light');
       try {
         localStorage.setItem('theme', theme);
       } catch (e) {}
