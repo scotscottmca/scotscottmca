@@ -588,7 +588,7 @@ html[data-theme='mono'] .astro-code span {
   max-width: 640px;
   height: auto;
   display: block;
-  margin: 1.25rem 0;
+  margin: 1.25rem auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
