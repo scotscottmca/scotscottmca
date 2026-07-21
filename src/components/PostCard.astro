@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, tagSlug } from '../utils';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, date, tags } = post.data;
+---
+
+<li class="post-card">
+  <h3><a href={`/posts/${post.id}/`}>{title}</a></h3>
+  <div class="post-meta">
+    <time datetime={date.toISOString()}>{formatDate(date)}</time>
+    {
+      tags.length > 0 && (
+        <ul class="tags">
+          {tags.slice(0, 4).map((t) => (
+            <li>
+              <a class="tag" href={`/tags/${tagSlug(t)}/`}>
+                {t}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</li>

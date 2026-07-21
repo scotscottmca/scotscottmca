@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { tagSlug } from '../../utils';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) {
+    counts.set(tag, (counts.get(tag) || 0) + 1);
+  }
+}
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout title="Tags" description="Browse posts by tag.">
+  <Header />
+  <main>
+    <div class="container">
+      <h1 class="gradient-text" style="letter-spacing:-0.03em">Tags</h1>
+      <ul class="tags" style="margin-top:1.5rem;gap:0.6rem">
+        {
+          tags.map(([tag, count]) => (
+            <li>
+              <a class="tag" href={`/tags/${tagSlug(tag)}/`} style="font-size:0.9rem;padding:0.3rem 0.7rem">
+                {tag} <span style="color:var(--text-muted)">({count})</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

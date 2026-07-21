@@ -1,0 +1,14 @@
+---
+import { SITE, NAV } from '../config';
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/">{SITE.title}</a>
+    <nav class="nav" aria-label="Primary">
+      {NAV.map((item) => <a href={item.href}>{item.label}</a>)}
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>

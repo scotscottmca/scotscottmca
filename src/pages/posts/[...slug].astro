@@ -1,0 +1,73 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { formatDate, readingTime, tagSlug } from '../../utils';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, date, lastModified, author, tags } = post.data;
+const { Content } = await render(post);
+const mins = readingTime(post.body);
+
+const description = (post.body || '')
+  .replace(/[#>*`_\-!\[\]()]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, 160);
+---
+
+<BaseLayout title={title} description={description} article={true}>
+  <Header />
+  <main>
+    <div class="container">
+      <article>
+        <header class="article-header">
+          <h1>{title}</h1>
+          <div class="post-meta">
+            <span>{author}</span>
+            <time datetime={date.toISOString()}>{formatDate(date)}</time>
+            <span>{mins} min read</span>
+            {
+              lastModified && lastModified.getTime() !== date.getTime() && (
+                <span>Updated {formatDate(lastModified)}</span>
+              )
+            }
+          </div>
+          {
+            tags.length > 0 && (
+              <ul class="tags" style="margin-top:0.75rem">
+                {tags.map((t) => (
+                  <li>
+                    <a class="tag" href={`/tags/${tagSlug(t)}/`}>
+                      {t}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </header>
+        <div class="prose">
+          <Content />
+        </div>
+      </article>
+      <hr />
+      <p><a href="/posts">← All posts</a></p>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

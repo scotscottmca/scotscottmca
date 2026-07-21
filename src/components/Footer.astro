@@ -1,0 +1,16 @@
+---
+import { SITE } from '../config';
+const year = new Date().getFullYear();
+const range = year > SITE.since ? `${SITE.since}–${year}` : `${SITE.since}`;
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <p>
+      © {range} {SITE.author} ·
+      <a href={SITE.license.url} target="_blank" rel="license noopener noreferrer">
+        {SITE.license.label}
+      </a>
+    </p>
+  </div>
+</footer>
