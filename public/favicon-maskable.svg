@@ -7,7 +7,7 @@
   </defs>
   <rect width="512" height="512" fill="#0d1117"/>
   <g fill="none" stroke="url(#g)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="150,168 246,264 150,360"/>
-    <line x1="278" y1="360" x2="392" y2="360"/>
+    <polyline points="128,176 208,256 128,336"/>
+    <line x1="256" y1="336" x2="384" y2="336"/>
   </g>
 </svg>
