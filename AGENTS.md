@@ -44,10 +44,11 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 |------|---------|
 | `src/config.ts` | Site metadata: title, description, socials, GA id, license. |
 | `src/content/posts/` | Blog posts (Markdown). |
+| `src/content/projects/` | Projects (Markdown): each has a write-up + outbound link. |
 | `src/content.config.ts` | Content collection schema/loader. |
 | `src/layouts/BaseLayout.astro` | HTML shell: head, meta/OG, GA, theme init. |
 | `src/components/` | Header, Footer, ThemeToggle, SocialLinks, PostCard. |
-| `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `tags/`, `404`, `rss.xml`. |
+| `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `projects/`, `projects/[...slug]`, `tags/`, `404`, `rss.xml`. |
 | `src/styles/global.css` | All styling + the three theme palettes. |
 | `public/` | Static assets served at site root (`images/`, favicons, `CNAME`, `staticwebapp.config.json`). |
 | `assets/` | Retained only for files linked by external GitHub raw URLs (`files/DummyApps.json`, `ErrorCodes/`). Not part of the build. |
@@ -79,6 +80,31 @@ draft: false
 - Use standard Markdown fenced code blocks and blockquotes (the old Hugo
   `{{< highlight >}}`, `{{< image >}}` and `{{< admonition >}}` shortcodes were
   converted away — do not reintroduce them).
+
+### Projects
+
+Projects live in `src/content/projects/*.md`. Each is a short "about" write-up
+that links out to the project itself. Front matter (schema in
+`src/content.config.ts`):
+
+```yaml
+---
+title: My Project
+summary: One-line description shown on the projects list.
+url: https://github.com/user/repo      # the canonical project link
+linkLabel: View on GitHub               # optional button label
+date: 2023-01-05                        # optional, used for ordering
+status: active                          # active | maintained | archived | complete
+featured: false                         # optional, sorts to the top
+tags: [PowerShell, Intune]
+draft: false
+---
+
+Markdown body = the project's about page.
+```
+
+- Project URL = `/projects/<filename-without-extension>/`.
+- The outbound link button uses `url` + `linkLabel`.
 
 ## Local development
 

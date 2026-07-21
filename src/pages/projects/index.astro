@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+function rank(p: { data: { featured: boolean; date?: Date } }) {
+  return (p.data.featured ? 1e13 : 0) + (p.data.date ? p.data.date.getTime() : 0);
+}
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => rank(b) - rank(a)
+);
+---
+
+<BaseLayout title="Projects" description="Projects I'm working on or have worked on.">
+  <Header />
+  <main>
+    <div class="container">
+      <h1 class="gradient-text" style="letter-spacing:-0.03em">Projects</h1>
+      <p style="color:var(--text-muted)">
+        Things I'm building or have built. Each has a short write-up and a link to the project itself.
+      </p>
+      {
+        projects.length === 0 ? (
+          <p style="color:var(--text-muted);margin-top:2rem">Nothing here yet — check back soon.</p>
+        ) : (
+          <ul class="post-list" style="margin-top:1.5rem">
+            {projects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

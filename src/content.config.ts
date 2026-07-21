@@ -13,4 +13,25 @@ const posts = defineCollection({
   }),
 });
 
-export const collections = { posts };
+const projects = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string(),
+    // Short one-line summary shown on the projects list.
+    summary: z.string(),
+    // The canonical link to the project itself (repo, site, article...).
+    url: z.string().url(),
+    // Optional label for the outbound link button (e.g. "GitHub", "Live site").
+    linkLabel: z.string().default('Visit project'),
+    // Optional year/date used for ordering.
+    date: z.coerce.date().optional(),
+    // Current state of the project.
+    status: z.enum(['active', 'maintained', 'archived', 'complete']).default('active'),
+    tags: z.array(z.string()).default([]),
+    // Show near the top / on the home page.
+    featured: z.boolean().default(false),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { posts, projects };
