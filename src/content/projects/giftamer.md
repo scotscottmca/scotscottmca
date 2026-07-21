@@ -1,8 +1,6 @@
 ---
 title: GifTamer
 summary: A Microsoft Edge extension that overlays video-style controls on any animated GIF - play/pause, scrub frame-by-frame, and change speed.
-url: https://github.com/scotscottmca/giftamer
-linkLabel: View on GitHub
 date: 2026-07-20
 status: active
 featured: true
@@ -128,5 +126,4 @@ new "Last updated" date.
 
 ### Contact
 
-Questions about privacy or the extension can be raised via the project's GitHub
-repository, linked below.
+Questions about privacy or the extension can be directed to the developer.

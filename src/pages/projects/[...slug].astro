@@ -48,11 +48,15 @@ const { Content } = await render(project);
         <div class="prose">
           <Content />
         </div>
-        <p style="margin-top:2rem">
-          <a class="project-link" href={url} target="_blank" rel="noopener noreferrer">
-            {linkLabel} →
-          </a>
-        </p>
+        {
+          url && (
+            <p style="margin-top:2rem">
+              <a class="project-link" href={url} target="_blank" rel="noopener noreferrer">
+                {linkLabel} →
+              </a>
+            </p>
+          )
+        }
       </article>
     </div>
   </main>
