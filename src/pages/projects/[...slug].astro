@@ -4,7 +4,6 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import { tagSlug } from '../../utils';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects', ({ data }) => !data.draft);
@@ -39,9 +38,7 @@ const { Content } = await render(project);
               <ul class="tags" style="margin-top:0.75rem">
                 {tags.map((t) => (
                   <li>
-                    <a class="tag" href={`/tags/${tagSlug(t)}/`}>
-                      {t}
-                    </a>
+                    <span class="tag">{t}</span>
                   </li>
                 ))}
               </ul>

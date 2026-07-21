@@ -48,7 +48,7 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 | `src/content.config.ts` | Content collection schema/loader. |
 | `src/layouts/BaseLayout.astro` | HTML shell: head, meta/OG, GA, theme init. |
 | `src/components/` | Header, Footer, ThemeToggle, SocialLinks, PostCard. |
-| `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `projects/`, `projects/[...slug]`, `tags/`, `404`, `rss.xml`. |
+| `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `projects/`, `projects/[...slug]`, `404`, `rss.xml`. |
 | `src/styles/global.css` | All styling + the three theme palettes. |
 | `public/` | Static assets served at site root (`images/`, favicons, `CNAME`, `staticwebapp.config.json`). |
 | `assets/` | Retained only for files linked by external GitHub raw URLs (`files/DummyApps.json`, `ErrorCodes/`). Not part of the build. |
@@ -57,6 +57,9 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 | `.github/workflows/azure-static-web-apps.yml` | CI/CD to Azure SWA. |
 
 ## Content conventions
+
+See **`docs/authoring-guide.md`** for a full, example-driven guide to writing
+posts and projects (front matter, images, headings, code, callouts, tables).
 
 Posts are Markdown with this front matter (validated by the collection schema):
 

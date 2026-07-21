@@ -4,7 +4,7 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import { formatDate, readingTime, tagSlug } from '../../utils';
+import { formatDate, readingTime } from '../../utils';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -52,9 +52,7 @@ const description = (post.body || '')
               <ul class="tags" style="margin-top:0.75rem">
                 {tags.map((t) => (
                   <li>
-                    <a class="tag" href={`/tags/${tagSlug(t)}/`}>
-                      {t}
-                    </a>
+                    <span class="tag">{t}</span>
                   </li>
                 ))}
               </ul>

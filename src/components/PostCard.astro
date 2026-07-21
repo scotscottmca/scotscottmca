@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { formatDate, tagSlug } from '../utils';
+import { formatDate } from '../utils';
 
 interface Props {
   post: CollectionEntry<'posts'>;
@@ -19,9 +19,7 @@ const { title, date, tags } = post.data;
         <ul class="tags">
           {tags.slice(0, 4).map((t) => (
             <li>
-              <a class="tag" href={`/tags/${tagSlug(t)}/`}>
-                {t}
-              </a>
+              <span class="tag">{t}</span>
             </li>
           ))}
         </ul>

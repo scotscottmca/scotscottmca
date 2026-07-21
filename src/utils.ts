@@ -11,11 +11,3 @@ export function readingTime(body: string | undefined): number {
   const words = body.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 200));
 }
-
-export function tagSlug(tag: string): string {
-  return tag
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
