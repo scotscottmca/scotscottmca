@@ -43,6 +43,11 @@ own CORS scope.
 | Background worker | Fetches cross-origin GIF bytes outside the page's CORS scope |
 | Popup | Toolbar button: "scrub all GIFs on this page" |
 
+<video class="project-video" controls preload="metadata" poster="/videos/giftamer/demo-poster.jpg">
+  <source src="/videos/giftamer/demo.mp4" type="video/mp4" />
+  Your browser doesn't support embedded video. <a href="/videos/giftamer/demo.mp4">Download the demo</a>.
+</video>
+
 ## Security
 
 GifTamer parses untrusted binary (GIFs) and can fetch remote bytes, so it takes
