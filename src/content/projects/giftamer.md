@@ -1,6 +1,6 @@
 ---
 title: GifTamer
-summary: A Microsoft Edge extension that overlays video-style controls on any animated GIF — play/pause, scrub frame-by-frame, and change speed.
+summary: A Microsoft Edge extension that overlays video-style controls on any animated GIF - play/pause, scrub frame-by-frame, and change speed.
 url: https://github.com/scotscottmca/giftamer
 linkLabel: View on GitHub
 date: 2026-07-20
@@ -16,19 +16,19 @@ tags:
 ![GifTamer](/images/giftamer/promo.png)
 
 GifTamer is a Microsoft Edge (Chromium) extension that overlays **video-style
-controls on any animated GIF** — so you can play/pause, scrub frame-by-frame,
+controls on any animated GIF** - so you can play/pause, scrub frame-by-frame,
 and change playback speed, things browsers don't let you do with GIFs natively.
 
 ## What it does
 
 - ▶ / ❚❚ play and pause any GIF on the page
-- Frame scrub slider — drag to any frame
+- Frame scrub slider - drag to any frame
 - Speed control from 0.25× up to 4×
 - Mouse-wheel over a GIF to step frames one at a time
 - Works on inline GIFs and directly-opened GIF URLs
 - Reads authed same-origin GIFs (e.g. Azure DevOps attachments) straight from
   the browser cache, avoiding CORS and sign-in redirects
-- Zero dependencies — ships a self-contained GIF89a decoder
+- Zero dependencies - ships a self-contained GIF89a decoder
 
 ## How it works
 
@@ -55,7 +55,7 @@ several deliberate precautions:
   without credentials, so a hostile page cannot use GifTamer as a confused deputy
   to read another site's authenticated content.
 - **SSRF protection.** The worker refuses non-`http(s)` schemes and blocks
-  private, loopback, and link-local hosts — including the `169.254.169.254`
+  private, loopback, and link-local hosts - including the `169.254.169.254`
   cloud metadata endpoint.
 - **Content-type gate.** A response is only accepted if it begins with a real
   GIF signature (`GIF87a` / `GIF89a`).
