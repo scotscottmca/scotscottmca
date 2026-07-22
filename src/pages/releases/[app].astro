@@ -1,0 +1,68 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { formatDate } from '../../utils';
+
+export async function getStaticPaths() {
+  const releases = await getCollection('releases', ({ data }) => !data.draft);
+
+  // One page per app slug (first path segment of the entry id).
+  const bySlug = new Map<string, CollectionEntry<'releases'>[]>();
+  for (const r of releases) {
+    const slug = r.id.split('/')[0];
+    const list = bySlug.get(slug);
+    if (list) list.push(r);
+    else bySlug.set(slug, [r]);
+  }
+
+  return [...bySlug.entries()].map(([slug, entries]) => ({
+    params: { app: slug },
+    props: {
+      product: entries[0].data.product,
+      entries: entries.sort((a, b) => b.data.date.getTime() - a.data.date.getTime()),
+    },
+  }));
+}
+
+interface Props {
+  product: string;
+  entries: CollectionEntry<'releases'>[];
+}
+
+const { product, entries } = Astro.props;
+const rendered = await Promise.all(
+  entries.map(async (r) => ({ r, Content: (await render(r)).Content }))
+);
+---
+
+<BaseLayout title={`${product} releases`} description={`Release notes for ${product}.`}>
+  <Header />
+  <main>
+    <div class="container">
+      <h1 class="gradient-text" style="letter-spacing:-0.03em">{product} releases</h1>
+      <p style="color:var(--text-muted)">
+        {entries.length} release{entries.length === 1 ? '' : 's'}
+      </p>
+      {
+        rendered.map(({ r, Content }) => (
+          <section style="margin-top:2.5rem">
+            <h2 style="margin-bottom:0.25rem">{r.data.version}</h2>
+            <div class="post-meta">
+              <time datetime={r.data.date.toISOString()}>{formatDate(r.data.date)}</time>
+              {r.data.storeUrl && <a href={r.data.storeUrl}>View in store</a>}
+            </div>
+            <div class="prose" style="margin-top:0.75rem">
+              <Content />
+            </div>
+          </section>
+        ))
+      }
+      <hr />
+      <p><a href="/releases">← All releases</a></p>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
