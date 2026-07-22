@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { formatDate } from '../../utils';
+
+const releases = (await getCollection('releases', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+const rendered = await Promise.all(
+  releases.map(async (r) => ({ r, Content: (await render(r)).Content }))
+);
+---
+
+<BaseLayout title="Releases" description="Release notes for ScotScottMcA projects.">
+  <Header />
+  <main>
+    <div class="container">
+      <h1 class="gradient-text" style="letter-spacing:-0.03em">Releases</h1>
+      <p style="color:var(--text-muted)">{releases.length} releases</p>
+      {
+        rendered.map(({ r, Content }) => (
+          <section style="margin-top:2.5rem">
+            <h2 style="margin-bottom:0.25rem">
+              {r.data.product} {r.data.version}
+            </h2>
+            <div class="post-meta">
+              <time datetime={r.data.date.toISOString()}>{formatDate(r.data.date)}</time>
+              {r.data.storeUrl && <a href={r.data.storeUrl}>View in store</a>}
+            </div>
+            <div class="prose" style="margin-top:0.75rem">
+              <Content />
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,61 @@
+name: Release notes
+
+# Receives a repository_dispatch from a project repo (e.g. giftamer) after it
+# ships a release, writes the notes into the releases content collection, and
+# commits. The push uses a PAT so the Azure Static Web Apps deploy workflow
+# (which triggers on push to main) actually runs — a push made with the default
+# GITHUB_TOKEN would not trigger it.
+
+on:
+  repository_dispatch:
+    types: [giftamer-release]
+
+permissions:
+  contents: write
+
+jobs:
+  add-release-note:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_NOTES_PAT }}
+
+      - name: Write release note
+        env:
+          PRODUCT: ${{ github.event.client_payload.product }}
+          VERSION: ${{ github.event.client_payload.version }}
+          DATE: ${{ github.event.client_payload.date }}
+          NOTES: ${{ github.event.client_payload.notes }}
+          STORE_URL: ${{ github.event.client_payload.store_url }}
+        run: |
+          set -euo pipefail
+          : "${PRODUCT:?missing product}" "${VERSION:?missing version}"
+          SLUG=$(printf '%s' "$PRODUCT" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//; s/-$//')
+          DIR="src/content/releases/${SLUG}"
+          mkdir -p "$DIR"
+          FILE="$DIR/${SLUG}-${VERSION}.md"
+          {
+            echo "---"
+            echo "product: \"$PRODUCT\""
+            echo "version: \"$VERSION\""
+            echo "date: \"${DATE:-$(date -u +%Y-%m-%d)}\""
+            if [ -n "${STORE_URL:-}" ]; then echo "storeUrl: \"$STORE_URL\""; fi
+            echo "---"
+            echo ""
+            if [ -n "${NOTES:-}" ]; then printf '%s\n' "$NOTES"; else echo "_No notes provided._"; fi
+          } > "$FILE"
+          echo "Wrote $FILE"
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/releases
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Add ${{ github.event.client_payload.product }} ${{ github.event.client_payload.version }} release notes"
+          git push

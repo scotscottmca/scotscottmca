@@ -35,4 +35,17 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { posts, projects };
+const releases = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/releases' }),
+  schema: z.object({
+    // Product the release belongs to, e.g. "GifTamer".
+    product: z.string(),
+    version: z.string(),
+    date: z.coerce.date(),
+    // Optional link to the store listing.
+    storeUrl: z.string().url().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { posts, projects, releases };
