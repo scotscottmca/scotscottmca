@@ -1,16 +1,30 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { formatDate } from '../../utils';
 
-const releases = (await getCollection('releases', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime()
-);
+const releases = await getCollection('releases', ({ data }) => !data.draft);
 
-const rendered = await Promise.all(
-  releases.map(async (r) => ({ r, Content: (await render(r)).Content }))
+// Group releases by app slug (the first path segment of the entry id, e.g.
+// "giftamer" for src/content/releases/giftamer/giftamer-1.0.1.md).
+const apps = new Map<
+  string,
+  { slug: string; product: string; count: number; latest: Date }
+>();
+for (const r of releases) {
+  const slug = r.id.split('/')[0];
+  const existing = apps.get(slug);
+  if (existing) {
+    existing.count += 1;
+    if (r.data.date > existing.latest) existing.latest = r.data.date;
+  } else {
+    apps.set(slug, { slug, product: r.data.product, count: 1, latest: r.data.date });
+  }
+}
+const appList = [...apps.values()].sort(
+  (a, b) => b.latest.getTime() - a.latest.getTime()
 );
 ---
 
@@ -19,23 +33,22 @@ const rendered = await Promise.all(
   <main>
     <div class="container">
       <h1 class="gradient-text" style="letter-spacing:-0.03em">Releases</h1>
-      <p style="color:var(--text-muted)">{releases.length} releases</p>
-      {
-        rendered.map(({ r, Content }) => (
-          <section style="margin-top:2.5rem">
-            <h2 style="margin-bottom:0.25rem">
-              {r.data.product} {r.data.version}
-            </h2>
-            <div class="post-meta">
-              <time datetime={r.data.date.toISOString()}>{formatDate(r.data.date)}</time>
-              {r.data.storeUrl && <a href={r.data.storeUrl}>View in store</a>}
-            </div>
-            <div class="prose" style="margin-top:0.75rem">
-              <Content />
-            </div>
-          </section>
-        ))
-      }
+      <p style="color:var(--text-muted)">{appList.length} apps</p>
+      <ul class="post-list" style="margin-top:1.5rem">
+        {
+          appList.map((a) => (
+            <li>
+              <a href={`/releases/${a.slug}`}>
+                <strong>{a.product}</strong>
+              </a>
+              <span style="color:var(--text-muted)">
+                {' '}- {a.count} release{a.count === 1 ? '' : 's'}, latest{' '}
+                {formatDate(a.latest)}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </main>
   <Footer />
