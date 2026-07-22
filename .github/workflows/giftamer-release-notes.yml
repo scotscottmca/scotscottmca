@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           : "${PRODUCT:?missing product}" "${VERSION:?missing version}"
           SLUG=$(printf '%s' "$PRODUCT" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//; s/-$//')
-          DIR="src/content/releases"
+          DIR="src/content/releases/${SLUG}"
           mkdir -p "$DIR"
           FILE="$DIR/${SLUG}-${VERSION}.md"
           {
