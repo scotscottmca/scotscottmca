@@ -1,0 +1,371 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config';
+---
+
+<BaseLayout
+  title="Is Scott awake?"
+  description={`The live awake/asleep status of ${SITE.author}, powered by the Google Health API.`}
+>
+  <Header />
+  <main>
+    <section class="sky status-loading" data-status-root data-status-card aria-live="polite">
+      <div class="stars" aria-hidden="true">
+        <span style="top:12%;left:8%"></span>
+        <span style="top:22%;left:26%"></span>
+        <span style="top:16%;left:52%"></span>
+        <span style="top:9%;left:73%"></span>
+        <span style="top:28%;left:88%"></span>
+        <span style="top:40%;left:14%"></span>
+        <span style="top:52%;left:33%"></span>
+        <span style="top:46%;left:64%"></span>
+        <span style="top:60%;left:82%"></span>
+        <span style="top:70%;left:20%"></span>
+        <span style="top:76%;left:48%"></span>
+        <span style="top:66%;left:70%"></span>
+        <span style="top:84%;left:90%"></span>
+        <span style="top:34%;left:44%"></span>
+      </div>
+      <div class="orb" data-orb aria-hidden="true"></div>
+
+      <img class="me me-awake" src="/images/status/scott-awake.svg" alt="Pixel-art Scott, awake" width="220" height="227" />
+      <img class="me me-asleep" src="/images/status/scott-asleep.svg" alt="Pixel-art Scott, asleep" width="220" height="227" />
+
+      <div class="status-panel">
+        <p class="status-eyebrow">Right now, Scott is</p>
+        <h1 class="status-headline" data-headline>Checking…</h1>
+        <p class="status-tagline" data-tagline>Asking my watch nicely.</p>
+
+        <dl class="status-facts" data-facts hidden></dl>
+
+        <p class="status-source" data-source></p>
+
+        <p class="status-fineprint">
+          From my Fitbit sleep data via the
+          <a href="https://developers.google.com/health/">Google Health API</a>.
+          Syncs when my watch does, so I might be a few minutes behind.
+        </p>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  const card = document.querySelector('[data-status-card]');
+  const headline = document.querySelector('[data-headline]');
+  const tagline = document.querySelector('[data-tagline]');
+  const facts = document.querySelector('[data-facts]');
+  const source = document.querySelector('[data-source]');
+
+  const AWAKE = {
+    headlines: [
+      'Awake',
+      'Up and about',
+      'Very much awake',
+      'Online & Operational',
+      'Compiled & Running',
+      'Up & Paws-itively Awake',
+      'Currently In Production',
+    ],
+    taglines: [
+      'Probably fuelled by coffee.',
+      'Doing something with endpoints, no doubt.',
+      'Eyes open, PowerShell ready.',
+      'Fueled by dark roast and dachshund tail wags.',
+      'Stepping around sausage dogs, writing C#, avoiding meetings.',
+      'Out walking the dachshunds before the stand-up.',
+      'Converting hop-infused water into functional code.',
+      'Staring at a single missing semicolon since 7:00 AM.',
+    ],
+  };
+  const ASLEEP = {
+    headlines: [
+      'Asleep',
+      'Fast asleep',
+      'Off the clock',
+      'Offline & Re-indexing',
+      'Thread-Locked',
+      'Out for the Count',
+      'Resting the Low-Riders',
+    ],
+    taglines: [
+      'Do not deploy on a Friday. Or now.',
+      'Dreaming of 100% patch compliance.',
+      'Back soon. Probably.',
+      'In a deep sleep, supervised by two curled-up sausages.',
+      'Currently tucked in under a heap of dachshunds.',
+      'Dreaming of zero-day vulnerabilities and cold IPA on draft.',
+      'System rebooting. Please try again after the first cup of coffee.',
+      'Powered down for the night. Do not touch the production database.',
+      "Resting up for tomorrow's code review (and dog walk).",
+    ],
+  };
+  const UNKNOWN = {
+    headlines: ['A mystery'],
+    taglines: ["My watch isn't telling. Try again shortly."],
+  };
+
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function humanize(mins) {
+    if (mins == null || mins < 1) return 'just now';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h === 0) return `${m} min`;
+    if (m === 0) return `${h} hr`;
+    return `${h} hr ${m} min`;
+  }
+
+  function setFacts(entries) {
+    facts.innerHTML = '';
+    if (!entries.length) {
+      facts.hidden = true;
+      return;
+    }
+    for (const [label, value] of entries) {
+      const wrap = document.createElement('div');
+      const dt = document.createElement('dt');
+      dt.textContent = label;
+      const dd = document.createElement('dd');
+      dd.textContent = value;
+      wrap.append(dt, dd);
+      facts.append(wrap);
+    }
+    facts.hidden = false;
+  }
+
+  function render(data) {
+    const status = data.status || 'unknown';
+    const copy = status === 'awake' ? AWAKE : status === 'asleep' ? ASLEEP : UNKNOWN;
+
+    card.classList.remove('status-loading', 'is-awake', 'is-asleep', 'is-unknown');
+    card.classList.add(
+      status === 'awake' ? 'is-awake' : status === 'asleep' ? 'is-asleep' : 'is-unknown'
+    );
+
+    headline.textContent = pick(copy.headlines);
+    tagline.textContent = pick(copy.taglines);
+
+    const entries = [];
+    if (status === 'asleep' && data.asleepForMin != null) {
+      entries.push(['Asleep for', humanize(data.asleepForMin)]);
+    }
+    if (status === 'awake' && data.awakeForMin != null) {
+      entries.push(['Awake for', humanize(data.awakeForMin)]);
+    }
+    if (data.lastSleep && data.lastSleep.durationMin != null) {
+      entries.push(['Last sleep', humanize(data.lastSleep.durationMin)]);
+    }
+    setFacts(entries);
+
+    if (data.source === 'mock' || data.source === 'fallback') {
+      source.textContent = data.note || 'Showing a demo status.';
+    } else {
+      const when = data.updated ? new Date(data.updated) : new Date();
+      source.textContent = `Updated ${when.toLocaleTimeString()}`;
+    }
+  }
+
+  async function refresh() {
+    try {
+      const resp = await fetch('/api/status', { headers: { Accept: 'application/json' } });
+      if (!resp.ok) throw new Error(String(resp.status));
+      render(await resp.json());
+    } catch {
+      render({ status: 'unknown', source: 'fallback', note: 'Could not reach my status service.' });
+    }
+  }
+
+  refresh();
+  setInterval(refresh, 60000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refresh();
+  });
+</script>
+
+<style>
+  /* Full-bleed sky: breaks out of the page container to fill the viewport width. */
+  .sky {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: linear-gradient(180deg, #d0d3da, #b9bcc6);
+    transition: background 0.8s ease;
+  }
+  .sky.is-awake {
+    background: linear-gradient(180deg, #3f97ec 0%, #7ec8ff 38%, #cfefff 100%);
+  }
+  .sky.is-asleep {
+    background: linear-gradient(180deg, #070b22 0%, #141c44 55%, #26305e 100%);
+  }
+
+  /* Stars: only visible at night. */
+  .stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+  }
+  .is-asleep .stars {
+    opacity: 1;
+  }
+  .stars span {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.8);
+    animation: twinkle 2.6s ease-in-out infinite;
+  }
+  .stars span:nth-child(odd) { animation-delay: 0.8s; }
+  .stars span:nth-child(3n) { animation-delay: 1.4s; width: 2px; height: 2px; }
+  .stars span:nth-child(4n) { animation-delay: 0.4s; }
+
+  /* Sun / moon, upper-right of the sky. */
+  .orb {
+    position: absolute;
+    top: 14%;
+    right: 12%;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: all 0.8s ease;
+  }
+  .is-awake .orb {
+    background: radial-gradient(circle at 35% 35%, #fff0b8, #ffb454 72%);
+    box-shadow: 0 0 60px 12px rgba(255, 190, 90, 0.55);
+    animation: bob 5s ease-in-out infinite;
+  }
+  .is-asleep .orb {
+    background: radial-gradient(circle at 36% 34%, #ffffff, #c3cbe8 72%);
+    box-shadow: inset -16px -6px 0 -2px rgba(30, 38, 76, 0.65),
+      0 0 34px 6px rgba(190, 200, 235, 0.4);
+    animation: bob 6s ease-in-out infinite;
+  }
+  .status-loading .orb,
+  .is-unknown .orb {
+    background: radial-gradient(circle at 35% 35%, #d8d8d8, #9a9a9a 72%);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  /* Character sprite, standing to the right of the card. */
+  .me {
+    position: absolute;
+    z-index: 2;
+    right: clamp(1rem, 8vw, 7rem);
+    bottom: clamp(1.5rem, 6vh, 4rem);
+    width: clamp(140px, 20vw, 240px);
+    height: auto;
+    border: none;
+    border-radius: 0;
+    display: none;
+  }
+  .is-awake .me-awake { display: block; }
+  .is-asleep .me-asleep { display: block; }
+
+  /* Off-centre glass status card. */
+  .status-panel {
+    position: relative;
+    z-index: 2;
+    margin: 2.5rem 0 2.5rem clamp(1.25rem, 7vw, 7rem);
+    width: min(440px, calc(100% - 2.5rem));
+    padding: 2rem 1.75rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(12, 16, 32, 0.55);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+    color: #f3f5fb;
+    text-align: left;
+  }
+
+  .status-eyebrow {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    color: rgba(243, 245, 251, 0.7);
+  }
+  .status-headline {
+    margin: 0.35rem 0 0.4rem;
+    font-size: clamp(2.6rem, 7vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, #a5b4ff, #7c8dff 45%, #c6b3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .is-awake .status-headline {
+    background: linear-gradient(120deg, #ffd27a, #ff9d54 55%, #ffc27a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .status-tagline {
+    margin: 0 0 1.5rem;
+    color: rgba(243, 245, 251, 0.82);
+  }
+
+  .status-facts {
+    display: flex;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+    margin: 0 0 1.25rem;
+  }
+  .status-facts dt {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(243, 245, 251, 0.6);
+  }
+  .status-facts dd {
+    margin: 0.15rem 0 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .status-source {
+    margin: 0;
+    font-size: 0.8rem;
+    color: rgba(243, 245, 251, 0.6);
+  }
+  .status-fineprint {
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(243, 245, 251, 0.62);
+  }
+  .status-fineprint a {
+    color: #b9c4ff;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(0.96); }
+    50% { opacity: 1; transform: scale(1.02); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orb, .stars span { animation: none !important; }
+  }
+</style>
