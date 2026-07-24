@@ -1,0 +1,9 @@
+{
+  "name": "scotscottmca-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Static Web Apps managed functions for ScotScottMcA (personal status).",
+  "engines": {
+    "node": ">=18"
+  }
+}
