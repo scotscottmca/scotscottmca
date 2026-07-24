@@ -187,15 +187,18 @@ import { SITE } from '../config';
 </script>
 
 <style>
-  /* Full-bleed sky: breaks out of the page container to fill the viewport width. */
+  /* Framed sky: floats in the middle of the page with a black border. */
   .sky {
     position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    min-height: calc(100vh - 140px);
+    width: auto;
+    min-height: calc(100vh - 200px);
+    margin: 1.5rem 100px 2rem;
     display: flex;
     align-items: center;
     overflow: hidden;
+    border: 2px solid #000;
+    border-radius: 22px;
+    box-shadow: 0 24px 70px -28px rgba(0, 0, 0, 0.7);
     background: linear-gradient(180deg, #d0d3da, #b9bcc6);
     transition: background 0.8s ease;
   }
@@ -262,7 +265,7 @@ import { SITE } from '../config';
   .me {
     position: absolute;
     z-index: 2;
-    right: clamp(1rem, 8vw, 7rem);
+    right: clamp(0.5rem, 3vw, 2.5rem);
     bottom: clamp(1.5rem, 6vh, 4rem);
     width: clamp(140px, 20vw, 240px);
     height: auto;
@@ -277,7 +280,7 @@ import { SITE } from '../config';
   .status-panel {
     position: relative;
     z-index: 2;
-    margin: 2.5rem 0 2.5rem clamp(1.25rem, 7vw, 7rem);
+    margin: 2.5rem 0 2.5rem clamp(1rem, 3vw, 2.5rem);
     width: min(440px, calc(100% - 2.5rem));
     padding: 2rem 1.75rem;
     border-radius: 20px;
@@ -299,8 +302,9 @@ import { SITE } from '../config';
   }
   .status-headline {
     margin: 0.35rem 0 0.4rem;
+    padding: 0.08em 0.04em 0.14em;
     font-size: clamp(2.6rem, 7vw, 3.6rem);
-    line-height: 1;
+    line-height: 1.08;
     letter-spacing: -0.03em;
     background: linear-gradient(120deg, #a5b4ff, #7c8dff 45%, #c6b3ff);
     -webkit-background-clip: text;
