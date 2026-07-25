@@ -42,8 +42,8 @@
     .dog { animation: trot 2.4s ease-in-out infinite; transform-origin: 188px 216px; }
     @keyframes trot { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     @media (prefers-reduced-motion: reduce) {
-      .sprite, .bar, .drop, .dog, .ring, .ecg, .wh { animation: none !important; }
-      .drop, .wh, .ring { opacity: 0 !important; }
+      .sprite, .bar, .drop, .dog, .ring, .ecg, .hearts g { animation: none !important; }
+      .drop, .ring, .hearts g { opacity: 0 !important; }
       .ecg { stroke-dashoffset: 0 !important; }
     }
   </style>
@@ -92,10 +92,11 @@
       <circle cx="142.5" cy="97.5" r="1.4" fill="#fff"/>
     </g>
     
-    <path d="M66 66 C74 44 166 44 174 66 Z" fill="#2f8f5b"/>
-    <rect x="66" y="62" width="108" height="7" rx="2" fill="#245f3d"/>
-    <path d="M52 70 C74 60 108 60 122 66 C104 74 72 78 52 70 Z" fill="#245f3d"/>
-    <circle cx="120" cy="44" r="4" fill="#245f3d"/>
+    
+    <path d="M60 74 C60 42 86 29 120 29 C154 29 180 42 180 74 C150 64 90 64 60 74 Z" fill="#2f8f5b"/>
+    <rect x="60" y="69" width="120" height="8" rx="3" fill="#245f3d"/>
+    <path d="M48 74 C74 63 108 63 124 70 C104 80 70 82 48 74 Z" fill="#245f3d"/>
+    <circle cx="120" cy="31" r="4.5" fill="#245f3d"/>
     
     <g stroke="#15161b" stroke-width="3" fill="none" stroke-linecap="round">
       <rect x="82" y="86" width="30" height="24" rx="9" fill="url(#lens)"/>

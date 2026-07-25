@@ -46,8 +46,8 @@
     @keyframes sweat { 0%,60% { opacity: 0; transform: translateY(0); }
                        70% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
     @media (prefers-reduced-motion: reduce) {
-      .sprite, .bar, .drop, .dog, .ring, .ecg, .wh { animation: none !important; }
-      .drop, .wh, .ring { opacity: 0 !important; }
+      .sprite, .bar, .drop, .dog, .ring, .ecg, .hearts g { animation: none !important; }
+      .drop, .ring, .hearts g { opacity: 0 !important; }
       .ecg { stroke-dashoffset: 0 !important; }
     }
   </style>
@@ -93,6 +93,7 @@
       <circle cx="142.5" cy="97.5" r="1.4" fill="#fff"/>
     </g>
     
+    
     <path d="M70 74 C90 65 150 65 170 74 L170 88 C150 80 90 80 70 88 Z" fill="#e5484d"/>
     <path d="M70 81 L59 76 L57 88 L70 90 Z" fill="#b52f3c"/>
     
@@ -113,13 +114,13 @@
   <!-- kettlebell on the floor -->
   <path d="M34 214 a12 12 0 0 1 24 0 Z" fill="none" stroke="#7c869c" stroke-width="4"/>
   <circle cx="46" cy="222" r="14" fill="#3b4256"/>
-  <!-- dumbbell held across the chest -->
+  <!-- dumbbell held across the chest, clear of the face -->
   <g class="bar">
-    <rect x="66" y="150" width="108" height="9" rx="4" fill="#565f73"/>
-    <rect x="54" y="140" width="15" height="28" rx="4" fill="#2b3242"/>
-    <rect x="171" y="140" width="15" height="28" rx="4" fill="#2b3242"/>
-    <rect x="44" y="145" width="10" height="18" rx="3" fill="#3b4356"/>
-    <rect x="186" y="145" width="10" height="18" rx="3" fill="#3b4356"/>
+    <rect x="66" y="184" width="108" height="9" rx="4" fill="#565f73"/>
+    <rect x="54" y="174" width="15" height="28" rx="4" fill="#2b3242"/>
+    <rect x="171" y="174" width="15" height="28" rx="4" fill="#2b3242"/>
+    <rect x="44" y="179" width="10" height="18" rx="3" fill="#3b4356"/>
+    <rect x="186" y="179" width="10" height="18" rx="3" fill="#3b4356"/>
   </g>
   <!-- sweat drop -->
   <path class="drop" d="M182 96 C182 104 176 106 176 100 C176 96 182 90 182 96 Z" fill="#8fd0ff"/>
