@@ -192,7 +192,7 @@ import { SITE } from '../config';
     position: relative;
     width: auto;
     min-height: calc(100vh - 200px);
-    margin: 1.5rem 100px 2rem;
+    margin: 1.5rem clamp(1rem, 8vw, 100px) 2rem;
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -371,5 +371,41 @@ import { SITE } from '../config';
   }
   @media (prefers-reduced-motion: reduce) {
     .orb, .stars span { animation: none !important; }
+  }
+
+  /* Mobile: stack the card above the sprite and give the frame room. */
+  @media (max-width: 640px) {
+    .sky {
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      min-height: 0;
+      margin: 1rem clamp(0.75rem, 4vw, 1.5rem) 1.5rem;
+      padding-bottom: clamp(150px, 44vw, 240px);
+    }
+    .status-panel {
+      position: relative;
+      z-index: 2;
+      width: auto;
+      margin: 1.5rem clamp(0.9rem, 4vw, 1.5rem) 0;
+      padding: 1.5rem 1.35rem;
+    }
+    .status-headline {
+      font-size: clamp(2.1rem, 11vw, 2.9rem);
+      overflow-wrap: break-word;
+    }
+    .orb {
+      width: 64px;
+      height: 64px;
+      top: 5%;
+      right: 8%;
+    }
+    /* Sprite sits at the bottom of the frame, clear of the card. */
+    .me {
+      right: 50%;
+      transform: translateX(50%);
+      bottom: clamp(0.75rem, 4vw, 1.5rem);
+      width: clamp(120px, 38vw, 200px);
+    }
   }
 </style>
