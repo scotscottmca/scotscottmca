@@ -1,0 +1,29 @@
+name: Keep status API warm
+
+# Pings the status endpoint on a schedule so the Azure SWA managed function
+# stays warm and avoids cold-start delays on the /status page.
+on:
+  schedule:
+    - cron: '*/5 * * * *' # every 5 minutes (GitHub may delay under load)
+  workflow_dispatch: {}
+
+concurrency:
+  group: keep-warm
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warm /api/status
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
+            https://scotscottmca.com/api/status)
+          echo "status endpoint returned HTTP $code"
+          # A cold start can still time out the first ping; do not fail the run.
+          if [ "$code" != "200" ]; then
+            echo "::warning::Non-200 from status endpoint ($code)"
+          fi
