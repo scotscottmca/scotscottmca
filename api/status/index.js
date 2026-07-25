@@ -173,19 +173,6 @@ function pickInterval(o) {
   return { start: s, end: e };
 }
 
-function timeOf(o) {
-  if (!o || typeof o !== 'object') return null;
-  const iv = o.interval || o.timeInterval || o.sessionTimeInterval;
-  const t =
-    (iv && (iv.endTime || iv.startTime)) ||
-    o.endTime ||
-    o.startTime ||
-    o.time ||
-    o.effectiveTime;
-  const p = Date.parse(t);
-  return Number.isNaN(p) ? null : p;
-}
-
 function sleepIntervals(points) {
   return points
     .map((p) => pickInterval(p.sleep || p))
@@ -200,55 +187,54 @@ function exerciseSessions(points) {
       const iv = pickInterval(inner);
       if (!iv) return null;
       const name =
+        inner.displayName ||
         inner.activityName ||
-        inner.name ||
         inner.exerciseType ||
+        inner.name ||
         inner.activityType ||
         inner.type ||
         null;
-      return { ...iv, name: typeof name === 'string' ? name : null };
+      const ms = inner.metricsSummary || {};
+      const steps = ms.steps != null ? Number(ms.steps) : null;
+      return {
+        ...iv,
+        name: typeof name === 'string' ? name : null,
+        steps: Number.isFinite(steps) ? steps : null,
+      };
     })
     .filter(Boolean)
     .sort((a, b) => b.end - a.end);
 }
 
-function stepsOf(o) {
-  const inner = o.steps || o;
-  const c =
-    (inner && (inner.count != null ? inner.count : inner.value)) != null
-      ? inner.count != null
-        ? inner.count
-        : inner.value
-      : o.count != null
-      ? o.count
-      : o.value;
-  const n = Number(c);
-  return Number.isFinite(n) ? n : 0;
-}
-
+// A Fitbit steps data point: { steps: { interval: { endTime }, count: "N" } }
 function stepsSince(points, sinceMs) {
   let total = 0;
   for (const p of points) {
-    const t = timeOf(p);
-    if (t != null && t >= sinceMs) total += stepsOf(p);
+    const s = p.steps || p;
+    const iv = s.interval || {};
+    const t = Date.parse(iv.endTime || iv.startTime || s.time || '');
+    if (Number.isNaN(t) || t < sinceMs) continue;
+    const n = Number(s.count != null ? s.count : s.value);
+    if (Number.isFinite(n)) total += n;
   }
   return total;
 }
 
-function bpmOf(o) {
-  const hr = o.heartRate || o.heartrate || o;
-  const c =
-    hr && (hr.bpm != null ? hr.bpm : hr.beatsPerMinute != null ? hr.beatsPerMinute : hr.value);
-  const n = Number(c != null ? c : o.bpm != null ? o.bpm : o.value);
-  return Number.isFinite(n) ? n : null;
-}
-
+// A Fitbit heart-rate data point:
+//   { heartRate: { sampleTime: { physicalTime }, beatsPerMinute: "N" } }
 function latestHeartRate(points) {
   let best = null;
   for (const p of points) {
-    const t = timeOf(p);
-    const bpm = bpmOf(p);
-    if (t == null || bpm == null) continue;
+    const h = p.heartRate || p.heartrate || p;
+    const st = h.sampleTime || {};
+    const iv = h.interval || {};
+    const t = Date.parse(
+      st.physicalTime || st.time || h.time || iv.endTime || iv.startTime || ''
+    );
+    const bpm = Number(
+      h.beatsPerMinute != null ? h.beatsPerMinute : h.bpm != null ? h.bpm : h.value
+    );
+    if (Number.isNaN(t) || !Number.isFinite(bpm)) continue;
     if (!best || t > best.at) best = { at: t, bpm };
   }
   return best;
@@ -287,20 +273,36 @@ function computeStatus(data, tz, cfg) {
   }
 
   if (cfg.activity) {
-    // 2) Working out: an exercise session ongoing or finished within the grace window.
+    // 2) Exercise: a session ongoing or finished within the grace window.
+    //    A walk/hike routes to the "walking" status; anything else is a workout.
     const sessions = exerciseSessions(data.exercise || []);
     const workout = sessions[0];
     if (workout) {
       const endedMinAgo = Math.round((now - workout.end) / 60000);
       const ongoing = now >= workout.start && now <= workout.end;
       if (ongoing || (endedMinAgo >= 0 && endedMinAgo <= cfg.workoutGraceMin)) {
+        const durationMin = Math.round((workout.end - workout.start) / 60000);
+        const isWalk = workout.name && /walk|hik|stroll|ramble/i.test(workout.name);
+        if (isWalk) {
+          return {
+            ...base,
+            status: 'walking',
+            confidence: ongoing ? 'high' : 'medium',
+            walk: {
+              name: workout.name,
+              durationMin,
+              endedMinAgo: ongoing ? 0 : endedMinAgo,
+              steps: workout.steps,
+            },
+          };
+        }
         return {
           ...base,
           status: 'working-out',
           confidence: ongoing ? 'high' : 'medium',
           workout: {
             name: workout.name,
-            durationMin: Math.round((workout.end - workout.start) / 60000),
+            durationMin,
             endedMinAgo: ongoing ? 0 : endedMinAgo,
           },
         };

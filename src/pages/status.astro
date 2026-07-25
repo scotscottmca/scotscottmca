@@ -245,7 +245,11 @@ import { SITE } from '../config';
         entries.push(['Duration', humanize(data.workout.durationMin)]);
       }
     }
-    if (status === 'walking' && data.steps && data.steps.recent != null) {
+    if (status === 'walking' && data.walk) {
+      if (data.walk.name) entries.push(['Activity', data.walk.name]);
+      if (data.walk.durationMin != null) entries.push(['Duration', humanize(data.walk.durationMin)]);
+      if (data.walk.steps != null) entries.push(['Steps', String(data.walk.steps)]);
+    } else if (status === 'walking' && data.steps && data.steps.recent != null) {
       entries.push([`Steps (last ${data.steps.windowMin} min)`, String(data.steps.recent)]);
     }
     if (status === 'active' && data.heartRate && data.heartRate.bpm != null) {
