@@ -3,33 +3,55 @@
 /**
  * GET /api/status
  *
- * Returns Scott's awake/asleep status derived from the Google Health API
- * (the new Fitbit Web API). Requires these app settings on Azure SWA:
+ * Returns Scott's current status derived from the Google Health API (the new
+ * Fitbit Web API). Tiered, first match wins:
+ *   asleep -> working-out -> walking -> active -> awake
+ *
+ * Requires these app settings on Azure SWA:
  *   GH_CLIENT_ID, GH_CLIENT_SECRET, GH_REFRESH_TOKEN
  *
- * Optional overrides:
- *   GH_SCOPE        (default: https://www.googleapis.com/auth/googlehealth.sleep.readonly)
- *   GH_DATA_TYPE    (default: sleep)
- *   STATUS_TZ       IANA time zone for the "local hour" fun facts (default: Europe/London)
- *   STATUS_MOCK     set to "1" to force the hour-based mock (also used automatically
- *                   when credentials are missing, e.g. local dev)
+ * Scopes needed on the refresh token:
+ *   googlehealth.sleep.readonly                     (asleep)
+ *   googlehealth.activity_and_fitness.readonly      (working-out, walking)
+ *   googlehealth.health_metrics_and_measurements.readonly  (active / heart rate)
+ * Missing scopes degrade gracefully: that tier is just skipped.
+ *
+ * Optional overrides (all have sensible defaults):
+ *   STATUS_TZ                  IANA tz for local-hour flavour (default Europe/London)
+ *   STATUS_MOCK=1              force the hour-based demo (also used with no creds)
+ *   STATUS_ACTIVITY=0          disable the activity tiers (sleep/awake only)
+ *   STATUS_WORKOUT_GRACE_MIN   count a just-finished workout as "working out" (default 30)
+ *   STATUS_STEPS_WINDOW_MIN    look-back window for a step burst (default 20)
+ *   STATUS_STEPS_MIN           steps in that window to count as "walking" (default 250)
+ *   STATUS_HR_WINDOW_MIN       freshness window for a heart-rate sample (default 10)
+ *   STATUS_HR_MIN              bpm at/above which counts as "active" (default 100)
  */
 
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const API_BASE = 'https://health.googleapis.com/v4/users/me/dataTypes';
-const DEFAULT_SCOPE =
-  'https://www.googleapis.com/auth/googlehealth.sleep.readonly';
 
-// Timeouts so a slow upstream fails fast instead of hanging the page.
 const TOKEN_TIMEOUT_MS = 4000;
 const FETCH_TIMEOUT_MS = 6000;
-// Short server-side cache so repeat views are instant and we don't hammer
-// the upstream. Lives in module scope, so it persists across warm invocations.
 const STATUS_TTL_MS = 30000;
 
 // Module-scope caches (survive warm invocations on the same instance).
 let tokenCache = null; // { token, expiresAt }
 let statusCache = null; // { payload, at }
+
+function config(env) {
+  const num = (v, d) => {
+    const x = Number(v);
+    return Number.isFinite(x) ? x : d;
+  };
+  return {
+    activity: env.STATUS_ACTIVITY !== '0',
+    workoutGraceMin: num(env.STATUS_WORKOUT_GRACE_MIN, 30),
+    stepsWindowMin: num(env.STATUS_STEPS_WINDOW_MIN, 20),
+    stepsMin: num(env.STATUS_STEPS_MIN, 250),
+    hrWindowMin: num(env.STATUS_HR_WINDOW_MIN, 10),
+    hrMin: num(env.STATUS_HR_MIN, 100),
+  };
+}
 
 async function fetchWithTimeout(url, options, ms) {
   const controller = new AbortController();
@@ -46,14 +68,12 @@ function json(context, status, body) {
     status,
     headers: {
       'Content-Type': 'application/json',
-      // Never cache a live status.
       'Cache-Control': 'no-store, max-age=0',
     },
     body: JSON.stringify(body),
   };
 }
 
-// Local hour in the configured time zone (used for mock + "night owl" flavour).
 function localHour(tz) {
   try {
     const h = new Intl.DateTimeFormat('en-GB', {
@@ -80,7 +100,6 @@ function mockPayload(tz) {
 }
 
 async function getAccessToken(env) {
-  // Reuse a cached token until it is close to expiry.
   if (tokenCache && tokenCache.expiresAt - 60000 > Date.now()) {
     return tokenCache.token;
   }
@@ -109,105 +128,251 @@ async function getAccessToken(env) {
   return data.access_token;
 }
 
-async function fetchSleepPoints(accessToken, dataType) {
-  const url = `${API_BASE}/${encodeURIComponent(dataType)}/dataPoints?pageSize=25`;
+async function fetchDataPoints(token, type, pageSize) {
+  const url = `${API_BASE}/${encodeURIComponent(type)}/dataPoints?pageSize=${pageSize}`;
   const resp = await fetchWithTimeout(
     url,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/json',
-      },
-    },
+    { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } },
     FETCH_TIMEOUT_MS
   );
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Sleep fetch failed (${resp.status}): ${text}`);
+    const err = new Error(`${type} fetch failed (${resp.status}): ${text}`);
+    err.status = resp.status;
+    throw err;
   }
   const data = await resp.json();
   return Array.isArray(data.dataPoints) ? data.dataPoints : [];
 }
 
-// Pull { start, end } from a sleep data point, tolerating field shape drift.
-function intervalOf(point) {
-  const sleep = point.sleep || point;
-  const interval =
-    sleep.interval || sleep.sessionTimeInterval || sleep.timeInterval;
-  if (!interval) return null;
-  const start = Date.parse(interval.startTime);
-  const end = Date.parse(interval.endTime);
-  if (Number.isNaN(start) || Number.isNaN(end)) return null;
-  return { start, end };
+// Never throw: a missing scope (401/403) just yields an empty, flagged result.
+async function tryFetch(token, type, pageSize) {
+  try {
+    return { type, ok: true, points: await fetchDataPoints(token, type, pageSize) };
+  } catch (err) {
+    return { type, ok: false, points: [], error: err.message, status: err.status };
+  }
 }
 
-function computeStatus(points, tz) {
-  const now = Date.now();
-  const sessions = points
-    .map(intervalOf)
+// ---- Tolerant parsers (shapes confirmed/tuned via ?debug=1 raw dump) ----
+
+function pickInterval(o) {
+  if (!o || typeof o !== 'object') return null;
+  const iv = o.interval || o.sessionTimeInterval || o.timeInterval;
+  let s;
+  let e;
+  if (iv && iv.startTime) {
+    s = Date.parse(iv.startTime);
+    e = Date.parse(iv.endTime);
+  } else if (o.startTime) {
+    s = Date.parse(o.startTime);
+    e = Date.parse(o.endTime);
+  }
+  if (s == null || Number.isNaN(s)) return null;
+  if (e == null || Number.isNaN(e)) e = s;
+  return { start: s, end: e };
+}
+
+function timeOf(o) {
+  if (!o || typeof o !== 'object') return null;
+  const iv = o.interval || o.timeInterval || o.sessionTimeInterval;
+  const t =
+    (iv && (iv.endTime || iv.startTime)) ||
+    o.endTime ||
+    o.startTime ||
+    o.time ||
+    o.effectiveTime;
+  const p = Date.parse(t);
+  return Number.isNaN(p) ? null : p;
+}
+
+function sleepIntervals(points) {
+  return points
+    .map((p) => pickInterval(p.sleep || p))
     .filter(Boolean)
     .sort((a, b) => b.end - a.end);
+}
 
-  if (sessions.length === 0) {
-    return {
-      status: 'unknown',
-      source: 'google-health',
-      confidence: 'low',
-      updated: new Date().toISOString(),
-      note: 'No recent sleep sessions returned.',
-    };
+function exerciseSessions(points) {
+  return points
+    .map((p) => {
+      const inner = p.exercise || p;
+      const iv = pickInterval(inner);
+      if (!iv) return null;
+      const name =
+        inner.activityName ||
+        inner.name ||
+        inner.exerciseType ||
+        inner.activityType ||
+        inner.type ||
+        null;
+      return { ...iv, name: typeof name === 'string' ? name : null };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.end - a.end);
+}
+
+function stepsOf(o) {
+  const inner = o.steps || o;
+  const c =
+    (inner && (inner.count != null ? inner.count : inner.value)) != null
+      ? inner.count != null
+        ? inner.count
+        : inner.value
+      : o.count != null
+      ? o.count
+      : o.value;
+  const n = Number(c);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function stepsSince(points, sinceMs) {
+  let total = 0;
+  for (const p of points) {
+    const t = timeOf(p);
+    if (t != null && t >= sinceMs) total += stepsOf(p);
   }
+  return total;
+}
 
-  // Asleep if now falls inside a session, or the latest session hasn't ended yet.
-  const ongoing = sessions.find((s) => now >= s.start && now <= s.end);
-  const latest = sessions[0];
-  const asleep = Boolean(ongoing) || now < latest.end;
-  const active = ongoing || latest;
+function bpmOf(o) {
+  const hr = o.heartRate || o.heartrate || o;
+  const c =
+    hr && (hr.bpm != null ? hr.bpm : hr.beatsPerMinute != null ? hr.beatsPerMinute : hr.value);
+  const n = Number(c != null ? c : o.bpm != null ? o.bpm : o.value);
+  return Number.isFinite(n) ? n : null;
+}
 
-  const durationMin = Math.round((active.end - active.start) / 60000);
+function latestHeartRate(points) {
+  let best = null;
+  for (const p of points) {
+    const t = timeOf(p);
+    const bpm = bpmOf(p);
+    if (t == null || bpm == null) continue;
+    if (!best || t > best.at) best = { at: t, bpm };
+  }
+  return best;
+}
+
+// ---- Status computation ----
+
+function computeStatus(data, tz, cfg) {
+  const now = Date.now();
+  const sleep = sleepIntervals(data.sleep || []);
   const base = {
     source: 'google-health',
     updated: new Date().toISOString(),
     localHour: localHour(tz),
-    lastSleep: {
-      start: new Date(active.start).toISOString(),
-      end: new Date(active.end).toISOString(),
-      durationMin,
-    },
   };
 
-  if (asleep) {
+  const latestSleep = sleep[0];
+  if (latestSleep) {
+    base.lastSleep = {
+      start: new Date(latestSleep.start).toISOString(),
+      end: new Date(latestSleep.end).toISOString(),
+      durationMin: Math.round((latestSleep.end - latestSleep.start) / 60000),
+    };
+  }
+
+  // 1) Asleep: now inside a session, or the latest session has not ended yet.
+  const ongoingSleep = sleep.find((s) => now >= s.start && now <= s.end);
+  if (ongoingSleep || (latestSleep && now < latestSleep.end)) {
+    const active = ongoingSleep || latestSleep;
     return {
       ...base,
       status: 'asleep',
-      confidence: ongoing ? 'high' : 'medium',
+      confidence: ongoingSleep ? 'high' : 'medium',
       asleepForMin: Math.max(0, Math.round((now - active.start) / 60000)),
     };
   }
+
+  if (cfg.activity) {
+    // 2) Working out: an exercise session ongoing or finished within the grace window.
+    const sessions = exerciseSessions(data.exercise || []);
+    const workout = sessions[0];
+    if (workout) {
+      const endedMinAgo = Math.round((now - workout.end) / 60000);
+      const ongoing = now >= workout.start && now <= workout.end;
+      if (ongoing || (endedMinAgo >= 0 && endedMinAgo <= cfg.workoutGraceMin)) {
+        return {
+          ...base,
+          status: 'working-out',
+          confidence: ongoing ? 'high' : 'medium',
+          workout: {
+            name: workout.name,
+            durationMin: Math.round((workout.end - workout.start) / 60000),
+            endedMinAgo: ongoing ? 0 : endedMinAgo,
+          },
+        };
+      }
+    }
+
+    // 3) Walking: a step burst in the recent window.
+    const since = now - cfg.stepsWindowMin * 60000;
+    const recentSteps = stepsSince(data.steps || [], since);
+    if (recentSteps >= cfg.stepsMin) {
+      return {
+        ...base,
+        status: 'walking',
+        confidence: 'medium',
+        steps: { recent: recentSteps, windowMin: cfg.stepsWindowMin },
+      };
+    }
+
+    // 4) Active: a fresh, elevated heart-rate sample.
+    const hr = latestHeartRate(data.heartRate || []);
+    if (hr) {
+      const ageMin = Math.round((now - hr.at) / 60000);
+      if (ageMin >= 0 && ageMin <= cfg.hrWindowMin && hr.bpm >= cfg.hrMin) {
+        return {
+          ...base,
+          status: 'active',
+          confidence: 'medium',
+          heartRate: { bpm: hr.bpm, atMinAgo: ageMin },
+        };
+      }
+    }
+  }
+
+  // 5) Awake (default). Report how long since the last sleep ended, if known.
   return {
     ...base,
     status: 'awake',
-    confidence: 'medium',
-    awakeForMin: Math.max(0, Math.round((now - latest.end) / 60000)),
+    confidence: latestSleep ? 'medium' : 'low',
+    ...(latestSleep
+      ? { awakeForMin: Math.max(0, Math.round((now - latestSleep.end) / 60000)) }
+      : {}),
   };
+}
+
+function debugSamples(results) {
+  const out = {};
+  for (const r of results) {
+    out[r.type] = {
+      ok: r.ok,
+      count: r.points.length,
+      ...(r.error ? { error: r.error } : {}),
+      sample: r.points[0] || null,
+    };
+  }
+  return out;
 }
 
 module.exports = async function (context, req) {
   const env = process.env;
   const tz = env.STATUS_TZ || 'Europe/London';
-  const debug = req && req.query && (req.query.debug === '1' || req.query.debug === 'true');
+  const cfg = config(env);
+  const q = (req && req.query) || {};
+  const debug = q.debug === '1' || q.debug === 'true';
   const started = Date.now();
 
-  const hasCreds =
-    env.GH_CLIENT_ID && env.GH_CLIENT_SECRET && env.GH_REFRESH_TOKEN;
-
+  const hasCreds = env.GH_CLIENT_ID && env.GH_CLIENT_SECRET && env.GH_REFRESH_TOKEN;
   if (env.STATUS_MOCK === '1' || !hasCreds) {
     json(context, 200, mockPayload(tz));
     return;
   }
 
-  // Serve a recent cached status instantly (unless bypassed with ?fresh=1).
-  const bypass = req && req.query && (req.query.fresh === '1');
+  const bypass = q.fresh === '1';
   if (!bypass && statusCache && Date.now() - statusCache.at < STATUS_TTL_MS) {
     const ageSec = Math.round((Date.now() - statusCache.at) / 1000);
     json(context, 200, { ...statusCache.payload, cached: true, ageSec });
@@ -215,27 +380,54 @@ module.exports = async function (context, req) {
   }
 
   try {
-    const dataType = env.GH_DATA_TYPE || 'sleep';
     const tokenStart = Date.now();
     const token = await getAccessToken(env);
     const tokenMs = Date.now() - tokenStart;
 
     const fetchStart = Date.now();
-    const points = await fetchSleepPoints(token, dataType);
+    const jobs = [tryFetch(token, 'sleep', 25)];
+    if (cfg.activity) {
+      jobs.push(
+        tryFetch(token, 'exercise', 25),
+        tryFetch(token, 'steps', 200),
+        tryFetch(token, 'heart-rate', 200)
+      );
+    }
+    const results = await Promise.all(jobs);
     const fetchMs = Date.now() - fetchStart;
 
-    const payload = computeStatus(points, tz);
-    payload.diag = { tokenMs, fetchMs, totalMs: Date.now() - started, points: points.length };
+    const byType = {};
+    for (const r of results) byType[r.type] = r.points;
+    const data = {
+      sleep: byType.sleep,
+      exercise: byType.exercise,
+      steps: byType.steps,
+      heartRate: byType['heart-rate'],
+    };
+
+    const payload = computeStatus(data, tz, cfg);
+    payload.diag = {
+      tokenMs,
+      fetchMs,
+      totalMs: Date.now() - started,
+      types: results.map((r) => ({
+        type: r.type,
+        ok: r.ok,
+        count: r.points.length,
+        ...(r.status ? { httpStatus: r.status } : {}),
+      })),
+    };
+    if (debug) payload.debug = debugSamples(results);
     statusCache = { payload, at: Date.now() };
 
     context.log(
-      `status ok: ${payload.status} tokenMs=${tokenMs} fetchMs=${fetchMs} points=${points.length}`
+      `status ok: ${payload.status} tokenMs=${tokenMs} fetchMs=${fetchMs} ` +
+        results.map((r) => `${r.type}=${r.ok ? r.points.length : 'x'}`).join(' ')
     );
     json(context, 200, payload);
   } catch (err) {
     const msg = (err && err.message) || 'unknown error';
     context.log.error(`status function error after ${Date.now() - started}ms: ${msg}`);
-    // If we have a recent-ish cached status, prefer it over a mock.
     if (statusCache) {
       const ageSec = Math.round((Date.now() - statusCache.at) / 1000);
       json(context, 200, {
@@ -248,7 +440,6 @@ module.exports = async function (context, req) {
       });
       return;
     }
-    // Degrade gracefully so the page still renders something fun.
     json(context, 200, {
       ...mockPayload(tz),
       source: 'fallback',

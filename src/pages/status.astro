@@ -30,8 +30,11 @@ import { SITE } from '../config';
       </div>
       <div class="orb" data-orb aria-hidden="true"></div>
 
-      <img class="me me-awake" src="/images/status/scott-awake.svg" alt="Pixel-art Scott, awake" width="220" height="227" />
-      <img class="me me-asleep" src="/images/status/scott-asleep.svg" alt="Pixel-art Scott, asleep" width="220" height="227" />
+      <img class="me me-awake" src="/images/status/scott-awake.svg" alt="Vector Scott, awake at his desk" width="220" height="227" />
+      <img class="me me-asleep" src="/images/status/scott-asleep.svg" alt="Vector Scott, asleep in bed" width="220" height="227" />
+      <img class="me me-working-out" src="/images/status/scott-working-out.svg" alt="Vector Scott, working out" width="220" height="227" />
+      <img class="me me-walking" src="/images/status/scott-walking.svg" alt="Vector Scott, out walking the dachshunds" width="220" height="227" />
+      <img class="me me-active" src="/images/status/scott-active.svg" alt="Vector Scott, up and active" width="220" height="227" />
 
       <div class="status-panel">
         <p class="status-eyebrow">Right now, Scott is</p>
@@ -43,7 +46,7 @@ import { SITE } from '../config';
         <p class="status-source" data-source></p>
 
         <p class="status-fineprint">
-          From my Fitbit sleep data via the
+          From my Fitbit sleep and activity data via the
           <a href="https://developers.google.com/health/">Google Health API</a>.
           Syncs when my watch does, so I might be a few minutes behind.
         </p>
@@ -107,6 +110,66 @@ import { SITE } from '../config';
     headlines: ['A mystery'],
     taglines: ["My watch isn't telling. Try again shortly."],
   };
+  const WORKOUT = {
+    headlines: [
+      'Working out',
+      'Mid-Workout',
+      'Getting the Reps In',
+      'Load-Testing the Muscles',
+      'Running a Cardio Job',
+      'Lifting Something Heavier Than a Laptop',
+      'Deploying Sweat',
+    ],
+    taglines: [
+      'Heart rate up, excuses down.',
+      'Compiling gains, one rep at a time.',
+      'The only meeting right now is me vs the dumbbells.',
+      'Zone 2 cardio, zero Slack notifications.',
+      'Burning calories like unoptimised loops.',
+      'Training so the dachshunds have to keep up.',
+      'Sweating now so the deploy goes smoothly later.',
+    ],
+  };
+  const WALKING = {
+    headlines: [
+      'Out walking',
+      'On the Move',
+      'Walking the Low-Riders',
+      'Clocking Up Steps',
+      'Taking the Sausages Out',
+      'Stretching the Legs',
+      'On a Hot Girl Walk',
+    ],
+    taglines: [
+      'Two dachshunds, one very slow pace.',
+      'Fresh air, podcast on, phone in pocket.',
+      'Solving architecture problems one lap of the block at a time.',
+      'The dogs set the route, I just follow.',
+      'Steps go up, stress goes down.',
+      'Rubber-ducking a bug to the dachshunds.',
+      'Away from the keyboard, closer to the coffee shop.',
+    ],
+  };
+  const ACTIVE = {
+    headlines: [
+      'Up and active',
+      'On the Go',
+      'Heart Rate Climbing',
+      'Doing Something Energetic',
+      'Warmed Up & Running',
+      'Extra-Curricular Activities',
+      'Not Sitting Still',
+    ],
+    taglines: [
+      'Moving about - the watch noticed.',
+      'Pulse says busy, calendar says who knows.',
+      'Off my chair and up to something.',
+      'Somewhere between the desk and the fridge, at speed.',
+      'Elevated heart rate, elevated mood.',
+      'Chasing a dachshund, probably.',
+      'Active now, back at the keyboard soon.',
+    ],
+  };
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -139,12 +202,32 @@ import { SITE } from '../config';
 
   function render(data) {
     const status = data.status || 'unknown';
-    const copy = status === 'awake' ? AWAKE : status === 'asleep' ? ASLEEP : UNKNOWN;
+    const COPY = {
+      awake: AWAKE,
+      asleep: ASLEEP,
+      'working-out': WORKOUT,
+      walking: WALKING,
+      active: ACTIVE,
+    };
+    const CLASS = {
+      awake: 'is-awake',
+      asleep: 'is-asleep',
+      'working-out': 'is-working-out',
+      walking: 'is-walking',
+      active: 'is-active',
+    };
+    const copy = COPY[status] || UNKNOWN;
 
-    card.classList.remove('status-loading', 'is-awake', 'is-asleep', 'is-unknown');
-    card.classList.add(
-      status === 'awake' ? 'is-awake' : status === 'asleep' ? 'is-asleep' : 'is-unknown'
+    card.classList.remove(
+      'status-loading',
+      'is-awake',
+      'is-asleep',
+      'is-working-out',
+      'is-walking',
+      'is-active',
+      'is-unknown'
     );
+    card.classList.add(CLASS[status] || 'is-unknown');
 
     headline.textContent = pick(copy.headlines);
     tagline.textContent = pick(copy.taglines);
@@ -156,12 +239,24 @@ import { SITE } from '../config';
     if (status === 'awake' && data.awakeForMin != null) {
       entries.push(['Awake for', humanize(data.awakeForMin)]);
     }
+    if (status === 'working-out' && data.workout) {
+      if (data.workout.name) entries.push(['Activity', data.workout.name]);
+      if (data.workout.durationMin != null) {
+        entries.push(['Duration', humanize(data.workout.durationMin)]);
+      }
+    }
+    if (status === 'walking' && data.steps && data.steps.recent != null) {
+      entries.push([`Steps (last ${data.steps.windowMin} min)`, String(data.steps.recent)]);
+    }
+    if (status === 'active' && data.heartRate && data.heartRate.bpm != null) {
+      entries.push(['Heart rate', `${data.heartRate.bpm} bpm`]);
+    }
     if (data.lastSleep && data.lastSleep.durationMin != null) {
       entries.push(['Last sleep', humanize(data.lastSleep.durationMin)]);
     }
     setFacts(entries);
 
-    if (data.source === 'mock' || data.source === 'fallback') {
+    if (data.source === 'mock' || data.source === 'fallback' || data.source === 'cache-stale') {
       source.textContent = data.note || 'Showing a demo status.';
     } else {
       const when = data.updated ? new Date(data.updated) : new Date();
@@ -220,6 +315,15 @@ import { SITE } from '../config';
   .sky.is-asleep {
     background: linear-gradient(180deg, #070b22 0%, #141c44 55%, #26305e 100%);
   }
+  .sky.is-working-out {
+    background: linear-gradient(180deg, #ff6a3d 0%, #ff9d54 45%, #ffd27a 100%);
+  }
+  .sky.is-walking {
+    background: linear-gradient(180deg, #3f97ec 0%, #8fd0ff 42%, #cdeaa8 100%);
+  }
+  .sky.is-active {
+    background: linear-gradient(180deg, #7b1fa2 0%, #c2185b 55%, #ff5470 100%);
+  }
 
   /* Stars: only visible at night. */
   .stars {
@@ -261,6 +365,17 @@ import { SITE } from '../config';
     box-shadow: 0 0 60px 12px rgba(255, 190, 90, 0.55);
     animation: bob 5s ease-in-out infinite;
   }
+  .is-working-out .orb,
+  .is-walking .orb {
+    background: radial-gradient(circle at 35% 35%, #fff0b8, #ffb454 72%);
+    box-shadow: 0 0 60px 12px rgba(255, 190, 90, 0.5);
+    animation: bob 5s ease-in-out infinite;
+  }
+  .is-active .orb {
+    background: radial-gradient(circle at 38% 36%, #ffd1e0, #ff5470 72%);
+    box-shadow: 0 0 60px 14px rgba(255, 84, 112, 0.55);
+    animation: pulse 1.3s ease-in-out infinite;
+  }
   .is-asleep .orb {
     background: radial-gradient(circle at 36% 34%, #ffffff, #c3cbe8 72%);
     box-shadow: inset -16px -6px 0 -2px rgba(30, 38, 76, 0.65),
@@ -287,6 +402,9 @@ import { SITE } from '../config';
   }
   .is-awake .me-awake { display: block; }
   .is-asleep .me-asleep { display: block; }
+  .is-working-out .me-working-out { display: block; }
+  .is-walking .me-walking { display: block; }
+  .is-active .me-active { display: block; }
 
   /* Off-centre glass status card. */
   .status-panel {
@@ -325,6 +443,24 @@ import { SITE } from '../config';
   }
   .is-awake .status-headline {
     background: linear-gradient(120deg, #ffd27a, #ff9d54 55%, #ffc27a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .is-working-out .status-headline {
+    background: linear-gradient(120deg, #fff1c2, #ffd27a 55%, #ffe6a0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .is-walking .status-headline {
+    background: linear-gradient(120deg, #eaffd0, #b6f08a 55%, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .is-active .status-headline {
+    background: linear-gradient(120deg, #ffd1e0, #ff8fa3 55%, #ffe0c2);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
