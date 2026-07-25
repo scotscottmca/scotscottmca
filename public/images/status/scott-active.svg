@@ -46,20 +46,27 @@
     @keyframes ping { 0% { opacity: .7; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.2); } }
     .ecg { stroke-dasharray: 460; stroke-dashoffset: 460; animation: trace 2.2s linear infinite; }
     @keyframes trace { to { stroke-dashoffset: 0; } }
-    .wh { opacity: 0; }
-    .w1 { animation: whoosh 1s ease-out infinite; }
-    .w2 { animation: whoosh 1s ease-out infinite; animation-delay: .15s; }
-    .w3 { animation: whoosh 1s ease-out infinite; animation-delay: .3s; }
-    @keyframes whoosh { 0% { opacity: 0; transform: translateX(6px); } 40% { opacity: .8; } 100% { opacity: 0; transform: translateX(-8px); } }
+    .hearts g { opacity: 0; }
+    .hh1 { animation: floatUp 2.4s ease-in-out infinite; }
+    .hh2 { animation: floatUp 2.4s ease-in-out infinite; animation-delay: .8s; }
+    .hh3 { animation: floatUp 2.4s ease-in-out infinite; animation-delay: 1.6s; }
+    @keyframes floatUp { 0% { opacity: 0; transform: translateY(6px) scale(.7); }
+                         30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px) scale(1.1); } }
     @media (prefers-reduced-motion: reduce) {
-      .sprite, .bar, .drop, .dog, .ring, .ecg, .wh { animation: none !important; }
-      .drop, .wh, .ring { opacity: 0 !important; }
+      .sprite, .bar, .drop, .dog, .ring, .ecg, .hearts g { animation: none !important; }
+      .drop, .ring, .hearts g { opacity: 0 !important; }
       .ecg { stroke-dashoffset: 0 !important; }
     }
   </style>
   <g clip-path="url(#panel)">
     
   <rect x="0" y="0" width="240" height="240" fill="url(#wallActive)"/>
+  <g class="dnd">
+    <ellipse cx="47" cy="30" rx="7" ry="8" fill="none" stroke="#e5484d" stroke-width="3"/>
+    <rect x="28" y="34" width="38" height="30" rx="5" fill="#e5484d"/>
+    <text x="47" y="46" text-anchor="middle" font-family="'Segoe UI', system-ui, sans-serif" font-size="6.4" font-weight="700" fill="#fff">DO NOT</text>
+    <text x="47" y="56" text-anchor="middle" font-family="'Segoe UI', system-ui, sans-serif" font-size="6.4" font-weight="700" fill="#fff">DISTURB</text>
+  </g>
   <circle class="ring r1" cx="196" cy="56" r="12" fill="none" stroke="#ff5470" stroke-width="3" opacity="0.7"/>
   <circle class="ring r2" cx="196" cy="56" r="22" fill="none" stroke="#ff5470" stroke-width="3" opacity="0.4"/>
   <circle class="ring r3" cx="196" cy="56" r="32" fill="none" stroke="#ff5470" stroke-width="3" opacity="0.2"/>
@@ -83,23 +90,22 @@
     <path d="M120 54 C150 54 162 66 168 92 C166 70 156 60 138 56 C132 55 126 54 120 54 Z"
           fill="#a8641f" opacity="0.4"/>
     
-    <path d="M86 78 C92 75 104 75 110 78" stroke="url(#beard)" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M130 78 C136 75 148 75 154 78" stroke="url(#beard)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M86 80 C92 77 104 77 110 80" stroke="url(#beard)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M130 73 C136 69 148 69 154 73" stroke="url(#beard)" stroke-width="4" fill="none" stroke-linecap="round"/>
     
     <g class="eyes">
       <ellipse cx="97" cy="99" rx="7.5" ry="8.5" fill="#fff"/>
-      <ellipse cx="143" cy="99" rx="7.5" ry="8.5" fill="#fff"/>
       <circle cx="98.5" cy="100" r="4.2" fill="#3f6f9e"/>
-      <circle cx="144.5" cy="100" r="4.2" fill="#3f6f9e"/>
       <circle cx="98.5" cy="100" r="2" fill="#10233a"/>
-      <circle cx="144.5" cy="100" r="2" fill="#10233a"/>
       <circle cx="96.5" cy="97.5" r="1.4" fill="#fff"/>
-      <circle cx="142.5" cy="97.5" r="1.4" fill="#fff"/>
+      <path d="M134 101 C139 107 147 107 152 101" stroke="#3a2a1c" stroke-width="3.5" fill="none" stroke-linecap="round"/>
     </g>
     
-    <circle cx="72" cy="108" r="5.5" fill="#1c2029"/>
-    <circle cx="168" cy="108" r="5.5" fill="#1c2029"/>
-    <path d="M168 112 C179 124 177 146 167 158" stroke="#1c2029" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g fill="#ff6f91" opacity="0.5">
+      <ellipse cx="84" cy="116" rx="8.5" ry="4.6"/>
+      <ellipse cx="156" cy="116" rx="8.5" ry="4.6"/>
+    </g>
+    
     
     <g stroke="#15161b" stroke-width="3" fill="none" stroke-linecap="round">
       <rect x="82" y="86" width="30" height="24" rx="9" fill="url(#lens)"/>
@@ -108,8 +114,8 @@
       <path d="M82 96 L72 100"/><path d="M158 96 L168 100"/>
     </g>
     <path d="M118 108 C116 115 120 119 126 117" stroke="#d69f76" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M106 138 C114 150 126 150 134 138 C126 147 114 147 106 138 Z" fill="#6f2f28"/>
-    <path d="M110 139 C116 144 124 144 130 139 C124 143 116 143 110 139 Z" fill="#fff"/>
+    <path d="M106 137 C118 150 133 146 139 134 C131 145 116 146 106 137 Z" fill="#6f2f28"/>
+    <path d="M110 138 C118 143 129 142 134 136 C126 142 116 143 110 138 Z" fill="#fff"/>
   </g>
     </g>
     
@@ -117,11 +123,11 @@
   <!-- ECG pulse across the floor -->
   <path class="ecg" d="M8 214 L64 214 L76 194 L90 230 L104 214 L150 214 L162 200 L172 222 L182 214 L240 214"
         fill="none" stroke="#ff5470" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- motion swoosh lines beside Scott -->
-  <g stroke="#ff8fa3" stroke-width="4" stroke-linecap="round" opacity="0.8">
-    <path class="wh w1" d="M30 120 L54 120"/>
-    <path class="wh w2" d="M24 138 L52 138"/>
-    <path class="wh w3" d="M32 156 L56 156"/>
+  <!-- rising hearts -->
+  <g class="hearts" fill="#ff5470">
+    <g class="hh1"><path transform="translate(40 150) scale(1.5)" d="M0 -3 C-2 -7 -8 -6 -8 0 C-8 5 0 9 0 9 C0 9 8 5 8 0 C8 -6 2 -7 0 -3 Z"/></g>
+    <g class="hh2"><path transform="translate(26 132) scale(1.1)" d="M0 -3 C-2 -7 -8 -6 -8 0 C-8 5 0 9 0 9 C0 9 8 5 8 0 C8 -6 2 -7 0 -3 Z"/></g>
+    <g class="hh3"><path transform="translate(34 112) scale(1.3)" d="M0 -3 C-2 -7 -8 -6 -8 0 C-8 5 0 9 0 9 C0 9 8 5 8 0 C8 -6 2 -7 0 -3 Z"/></g>
   </g>
   </g>
   <rect x="1.5" y="1.5" width="237" height="237" rx="27" fill="none"
