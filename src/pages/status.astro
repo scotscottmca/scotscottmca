@@ -169,13 +169,25 @@ import { SITE } from '../config';
     }
   }
 
+  let retryTimer = null;
+
   async function refresh() {
+    if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
     try {
-      const resp = await fetch('/api/status', { headers: { Accept: 'application/json' } });
+      const resp = await fetch('/api/status', {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
       if (!resp.ok) throw new Error(String(resp.status));
       render(await resp.json());
     } catch {
-      render({ status: 'unknown', source: 'fallback', note: 'Could not reach my status service.' });
+      render({ status: 'unknown', source: 'fallback', note: 'Could not reach my status service. Retrying...' });
+      // Cold start or a slow upstream: try again soon rather than waiting a full minute.
+      retryTimer = setTimeout(refresh, 8000);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
