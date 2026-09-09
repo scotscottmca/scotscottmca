@@ -152,6 +152,13 @@ Notes:
 
 ## Agent guidance
 
+- **Start every new session with a fresh pull.** Run `git fetch && git pull --rebase`
+  on the target branch (or `main` if none is specified) before making any changes.
+  This repo gets worked on from multiple sessions/agents in parallel — starting
+  stale risks silently diverging from work already on the remote (as happened
+  once already: a redesign done against a local `main` that was 33 commits
+  behind ended up conflicting with an unrelated status-page feature that had
+  landed upstream in the meantime).
 - Most changes are content (`src/content/posts/`) or config (`src/config.ts`).
 - Keep front-matter fields matching the schema in `src/content.config.ts`.
 - Preserve the Google Analytics id and socials in `src/config.ts`.
