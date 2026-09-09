@@ -18,13 +18,14 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft)).so
   <Header />
   <main>
     <div class="container">
-      <h1 class="gradient-text" style="letter-spacing:-0.03em">Projects</h1>
-      <p style="color:var(--text-muted)">
-        Things I'm building or have built. Each has a short write-up and a link to the project itself.
-      </p>
+      <div class="statusstrip">
+        <span class="led"></span>
+        <span class="title">Payload manifest · Projects</span>
+        <span class="meta">{projects.length} deployed</span>
+      </div>
       {
         projects.length === 0 ? (
-          <p style="color:var(--text-muted);margin-top:2rem">Nothing here yet — check back soon.</p>
+          <p style="color:var(--dim);margin-top:1rem">Nothing here yet — check back soon.</p>
         ) : (
           <ul class="project-grid">
             {projects.map((project) => (

@@ -14,9 +14,12 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   <Header />
   <main>
     <div class="container">
-      <h1 class="gradient-text" style="letter-spacing:-0.03em">All posts</h1>
-      <p style="color:var(--text-muted)">{posts.length} posts</p>
-      <ul class="post-list" style="margin-top:1.5rem">
+      <div class="statusstrip">
+        <span class="led"></span>
+        <span class="title">Transmission log · Posts</span>
+        <span class="meta">{posts.length} posts archived</span>
+      </div>
+      <ul class="post-list">
         {posts.map((post) => <PostCard post={post} />)}
       </ul>
     </div>

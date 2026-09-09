@@ -16,7 +16,6 @@ export const SITE = {
   ],
   // Google Analytics measurement id (retained from the Hugo site)
   googleAnalyticsId: 'G-2DLW833T23',
-  avatar: '/images/avatar.png',
   license: {
     label: 'CC BY-NC 4.0',
     url: 'https://creativecommons.org/licenses/by-nc/4.0/',
@@ -35,4 +34,5 @@ export const NAV = [
   { label: 'Posts', href: '/posts' },
   { label: 'Projects', href: '/projects' },
   { label: 'Status', href: '/status' },
+  { label: 'CV', href: '/cv' },
 ];

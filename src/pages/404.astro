@@ -7,10 +7,23 @@ import Footer from '../components/Footer.astro';
 <BaseLayout title="Not found">
   <Header />
   <main>
-    <div class="container" style="text-align:center;padding:4rem 0">
-      <h1 class="gradient-text" style="font-size:4rem;margin:0">404</h1>
-      <p style="color:var(--text-muted)">That page wandered off.</p>
-      <p><a href="/">← Back home</a></p>
+    <div class="container" style="text-align:center;padding:3rem 0">
+      <p class="gradient-text" style="font-family:var(--font-display); font-weight:700; font-size:3.2rem; margin:0; letter-spacing:0.02em">
+        404
+      </p>
+      <p style="color:var(--dim)">Signal lost — that page doesn't respond.</p>
+
+      <div class="emote-panel" style="margin:1.5rem 0">
+        <img
+          src="/images/emotes/internet-explorer.png"
+          alt="Pixel-art illustration of Scott hoisting the Internet Explorer logo overhead next to a recycling bin"
+          width="72"
+          height="72"
+        />
+        <span class="emote-caption">Archiving: Internet Explorer.exe</span>
+      </div>
+
+      <p><a href="/">← Back to Mission Control</a></p>
     </div>
   </main>
   <Footer />

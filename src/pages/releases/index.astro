@@ -32,16 +32,19 @@ const appList = [...apps.values()].sort(
   <Header />
   <main>
     <div class="container">
-      <h1 class="gradient-text" style="letter-spacing:-0.03em">Releases</h1>
-      <p style="color:var(--text-muted)">{appList.length} apps</p>
-      <ul class="post-list" style="margin-top:1.5rem">
+      <div class="statusstrip">
+        <span class="led"></span>
+        <span class="title">Release log · Releases</span>
+        <span class="meta">{appList.length} apps</span>
+      </div>
+      <ul class="post-list">
         {
           appList.map((a) => (
             <li>
               <a href={`/releases/${a.slug}`}>
                 <strong>{a.product}</strong>
               </a>
-              <span style="color:var(--text-muted)">
+              <span style="color:var(--dim)">
                 {' '}- {a.count} release{a.count === 1 ? '' : 's'}, latest{' '}
                 {formatDate(a.latest)}
               </span>

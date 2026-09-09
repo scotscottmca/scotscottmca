@@ -42,10 +42,11 @@ const rendered = await Promise.all(
   <Header />
   <main>
     <div class="container">
-      <h1 class="gradient-text" style="letter-spacing:-0.03em">{product} releases</h1>
-      <p style="color:var(--text-muted)">
-        {entries.length} release{entries.length === 1 ? '' : 's'}
-      </p>
+      <div class="statusstrip">
+        <span class="led"></span>
+        <span class="title">Release log · {product}</span>
+        <span class="meta">{entries.length} release{entries.length === 1 ? '' : 's'}</span>
+      </div>
       {
         rendered.map(({ r, Content }) => (
           <section style="margin-top:2.5rem">
