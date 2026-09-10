@@ -12,25 +12,20 @@ import { SITE } from '../config';
   <Header />
   <main>
     <div class="container container-wide usage" data-usage data-tone="reading">
-      <section class="panel live">
-        <div class="tile-head">
+      <section class="figures">
+        <h2 class="ledger-heading figures-heading">
           <span class="led" data-led data-tone="down"></span>
-          <span class="tile-label">Live sessions</span>
+          Live · last <span data-window>7</span> days
           <span class="tile-meta" data-updated>Reading…</span>
-        </div>
-        <p class="live-state" data-live>—</p>
-        <p class="live-detail" data-live-detail>Asking the Mac.</p>
-      </section>
-
-      <section class="figures" data-figures hidden>
-        <h2 class="ledger-heading">Last <span data-window>7</span> days</h2>
+        </h2>
         <dl class="figure-grid">
-          <div class="figure"><dd class="figure-value" data-f="sessions">–</dd><dt class="figure-unit">Claude sessions</dt></div>
+          <div class="figure"><dd class="figure-value figure-live" data-f="live">–</dd><dt class="figure-unit">Live now</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="sessions">–</dd><dt class="figure-unit">Sessions</dt></div>
           <div class="figure"><dd class="figure-value" data-f="merged">–</dd><dt class="figure-unit">PRs merged</dt></div>
           <div class="figure"><dd class="figure-value" data-f="tokens">–</dd><dt class="figure-unit">Tokens</dt></div>
-          <div class="figure"><dd class="figure-value" data-f="spend">–</dd><dt class="figure-unit">Spend, list price</dt></div>
-          <div class="figure"><dd class="figure-value" data-f="messages">–</dd><dt class="figure-unit">Model turns</dt></div>
-          <div class="figure"><dd class="figure-value" data-f="hours">–</dd><dt class="figure-unit">Hours in session</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="spend">–</dd><dt class="figure-unit">Spend</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="messages">–</dd><dt class="figure-unit">Turns</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="hours">–</dd><dt class="figure-unit">Hours</dt></div>
           <div class="figure"><dd class="figure-value" data-f="commits">–</dd><dt class="figure-unit">Commits</dt></div>
           <div class="figure"><dd class="figure-value" data-f="open">–</dd><dt class="figure-unit">PRs open</dt></div>
         </dl>
@@ -86,14 +81,10 @@ import { SITE } from '../config';
     q('[data-updated]').textContent = `Updated ${ago(data.updated)}`;
     q('[data-window]').textContent = data.windowDays;
 
-    const led = q('[data-led]');
-    led.dataset.tone = c.live.length ? 'up' : 'idle';
-    q('[data-live]').textContent = String(c.live.length);
-    q('[data-live-detail]').textContent = c.live.length
-      ? `Working in ${[...new Set(c.live.map((s: any) => s.project))].join(', ')}.`
-      : 'Nothing running right now.';
+    q('[data-led]').dataset.tone = c.live.length ? 'up' : 'idle';
 
     const f: Record<string, string> = {
+      live: c.live.length,
       sessions: c.sessions,
       merged: g.mergedCount,
       tokens: compact(c.totals.input + c.totals.output + c.totals.cacheWrite + c.totals.cacheRead),
@@ -104,7 +95,6 @@ import { SITE } from '../config';
       open: g.openPrs,
     };
     for (const [k, v] of Object.entries(f)) q(`[data-f="${k}"]`).textContent = String(v);
-    q('[data-figures]').hidden = false;
 
     // One bar per day of the window, oldest first, empty days included.
     const days: string[] = [];
@@ -154,9 +144,7 @@ import { SITE } from '../config';
   function fail() {
     root.dataset.tone = 'down';
     q('[data-led]').dataset.tone = 'down';
-    q('[data-live]').textContent = 'No signal';
-    q('[data-live-detail]').textContent = 'The usage feed did not answer. It republishes every 15 minutes.';
-    q('[data-updated]').textContent = '';
+    q('[data-updated]').textContent = 'No signal from the usage feed';
   }
 
   async function refresh() {
@@ -190,17 +178,21 @@ import { SITE } from '../config';
     border-radius: var(--radius);
     padding: 1.25rem 1.35rem;
   }
-  .usage .live .live-state { color: var(--green); }
   .usage .led[data-tone='idle'] { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
-  .usage[data-tone='down'] .live-state { color: var(--text); font-size: clamp(1.6rem, 2.8vw, 2rem); }
+  .usage .figures-heading { display: flex; align-items: center; gap: 0.5rem; }
 
+  /* One row of nine on a desktop; three per row on a phone. */
   .usage .figure-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-    gap: 1.4rem 1.2rem;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 1.4rem 1rem;
     margin: 1.1rem 0 0;
   }
   .usage .figure dd { margin: 0; }
+  .usage .figure-live { color: var(--green); }
+  @media (max-width: 960px) {
+    .usage .figure-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 
   /* Seven thin amber bars on the panel; the day label sits under each. */
   .usage .bars {
