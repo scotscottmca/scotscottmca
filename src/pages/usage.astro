@@ -179,6 +179,8 @@ import { SITE } from '../config';
     padding: 1.25rem 1.35rem;
   }
   .usage .led[data-tone='idle'] { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  /* Unboxed, but inset to the panels' own content edge so the columns line up. */
+  .usage .figures { padding: 0 1.35rem; }
   .usage .figures-heading { display: flex; align-items: center; gap: 0.5rem; }
 
   /* One row of nine on a desktop; three per row on a phone. */
