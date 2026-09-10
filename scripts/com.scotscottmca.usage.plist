@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Publishes Claude + GitHub usage to the gist behind scotscottmca.com/usage
+  every 15 minutes. Install / reinstall:
+
+    cp scripts/com.scotscottmca.usage.plist ~/Library/LaunchAgents/
+    launchctl bootout gui/$(id -u)/com.scotscottmca.usage 2>/dev/null
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.scotscottmca.usage.plist
+
+  Logs: /tmp/scotscottmca-usage.log
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.scotscottmca.usage</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>/Users/scott/Dev/scotscottmca/scripts/usage-stats.mjs</string>
+    <string>--publish</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>USAGE_GIST_ID</key>
+    <string>5321ac84ddec1de6e66f6f49f0f5d57f</string>
+  </dict>
+  <key>StartInterval</key>
+  <integer>900</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/scotscottmca-usage.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/scotscottmca-usage.log</string>
+</dict>
+</plist>

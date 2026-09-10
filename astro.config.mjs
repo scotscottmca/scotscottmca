@@ -49,7 +49,8 @@ const linkIcon = {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://scotscottmca.com',
-  integrations: [sitemap()],
+  // /usage is unlisted: reachable by URL, kept out of the sitemap and robots.
+  integrations: [sitemap({ filter: (page) => !page.includes('/usage') })],
   markdown: {
     shikiConfig: {
       themes: {

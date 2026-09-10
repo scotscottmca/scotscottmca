@@ -1,0 +1,263 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config';
+
+// Unlisted: no nav link, noindex, out of the sitemap. Reads the JSON that
+// scripts/usage-stats.mjs publishes every 15 minutes.
+---
+
+<BaseLayout title="Usage" description="How much Claude and GitHub Scott has been using lately." noindex>
+  <Header />
+  <main>
+    <div class="container container-wide usage" data-usage data-tone="reading">
+      <section class="panel live">
+        <div class="tile-head">
+          <span class="led" data-led data-tone="down"></span>
+          <span class="tile-label">Live sessions</span>
+          <span class="tile-meta" data-updated>Reading…</span>
+        </div>
+        <p class="live-state" data-live>—</p>
+        <p class="live-detail" data-live-detail>Asking the Mac.</p>
+      </section>
+
+      <section class="figures" data-figures hidden>
+        <h2 class="ledger-heading">Last <span data-window>7</span> days</h2>
+        <dl class="figure-grid">
+          <div class="figure"><dd class="figure-value" data-f="sessions">–</dd><dt class="figure-unit">Claude sessions</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="merged">–</dd><dt class="figure-unit">PRs merged</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="tokens">–</dd><dt class="figure-unit">Tokens</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="spend">–</dd><dt class="figure-unit">Spend, list price</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="messages">–</dd><dt class="figure-unit">Model turns</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="hours">–</dd><dt class="figure-unit">Hours in session</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="commits">–</dd><dt class="figure-unit">Commits</dt></div>
+          <div class="figure"><dd class="figure-value" data-f="open">–</dd><dt class="figure-unit">PRs open</dt></div>
+        </dl>
+      </section>
+
+      <section class="panel" data-days hidden>
+        <h2 class="ledger-heading">Tokens per day</h2>
+        <ol class="bars" data-bars></ol>
+      </section>
+
+      <section class="panel" data-models hidden>
+        <h2 class="ledger-heading">By model</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Model</th><th>Turns</th><th>Output</th><th>Cache read</th><th>Cost</th></tr></thead>
+            <tbody data-model-rows></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-merged hidden>
+        <h2 class="ledger-heading">Merged</h2>
+        <ol class="merged" data-merged-rows></ol>
+      </section>
+
+      <p class="fineprint">
+        Claude figures come from the Claude Code transcripts on my Mac, so they cover only what ran there.
+        Spend is the API list price for those tokens; I'm on a subscription, so it's what it <em>would</em> cost.
+        GitHub figures are PRs and commits authored by me, across every repo. Republished every 15 minutes while the Mac is awake.
+      </p>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  import { SITE } from '../config';
+
+  const root = document.querySelector('[data-usage]') as HTMLElement;
+  const q = (sel: string) => root.querySelector(sel) as HTMLElement;
+
+  const compact = (n: number) => Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  const money = (n: number) => `$${n >= 100 ? Math.round(n) : n.toFixed(n >= 10 ? 0 : 2)}`;
+  const ago = (iso: string) => {
+    const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+    return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`;
+  };
+  const dayLabel = (d: string) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
+
+  function paint(data: any) {
+    const c = data.claude, g = data.github;
+    root.dataset.tone = 'up';
+    q('[data-updated]').textContent = `Updated ${ago(data.updated)}`;
+    q('[data-window]').textContent = data.windowDays;
+
+    const led = q('[data-led]');
+    led.dataset.tone = c.live.length ? 'up' : 'idle';
+    q('[data-live]').textContent = String(c.live.length);
+    q('[data-live-detail]').textContent = c.live.length
+      ? `Working in ${[...new Set(c.live.map((s: any) => s.project))].join(', ')}.`
+      : 'Nothing running right now.';
+
+    const f: Record<string, string> = {
+      sessions: c.sessions,
+      merged: g.mergedCount,
+      tokens: compact(c.totals.input + c.totals.output + c.totals.cacheWrite + c.totals.cacheRead),
+      spend: money(c.totals.cost),
+      messages: compact(c.totals.messages),
+      hours: Math.round(c.hoursActive),
+      commits: g.commits,
+      open: g.openPrs,
+    };
+    for (const [k, v] of Object.entries(f)) q(`[data-f="${k}"]`).textContent = String(v);
+    q('[data-figures]').hidden = false;
+
+    // One bar per day of the window, oldest first, empty days included.
+    const days: string[] = [];
+    for (let i = data.windowDays - 1; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+    const max = Math.max(1, ...days.map((d) => c.days[d]?.tokens ?? 0));
+    q('[data-bars]').replaceChildren(
+      ...days.map((d) => {
+        const v = c.days[d];
+        const li = document.createElement('li');
+        li.title = v ? `${d}: ${compact(v.tokens)} tokens, ${money(v.cost)}, ${v.sessions} session${v.sessions === 1 ? '' : 's'}` : `${d}: nothing`;
+        li.innerHTML = `<span class="bar" style="--h:${v ? Math.max(2, (100 * v.tokens) / max) : 0}%"></span><span class="bar-value">${v ? compact(v.tokens) : ''}</span><span class="bar-label">${dayLabel(d)}</span>`;
+        return li;
+      })
+    );
+    q('[data-days]').hidden = false;
+
+    const models = Object.entries(c.models).sort((a: any, b: any) => b[1].cost - a[1].cost);
+    q('[data-model-rows]').replaceChildren(
+      ...models.map(([name, m]: any) => {
+        const tr = document.createElement('tr');
+        for (const cell of [name, m.messages, compact(m.output), compact(m.cacheRead), money(m.cost)]) {
+          const td = document.createElement('td');
+          td.textContent = String(cell);
+          tr.append(td);
+        }
+        return tr;
+      })
+    );
+    q('[data-models]').hidden = models.length === 0;
+
+    q('[data-merged-rows]').replaceChildren(
+      ...g.merged.map((p: any) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = p.url; a.textContent = p.title; a.rel = 'noopener';
+        const meta = document.createElement('span');
+        meta.className = 'merged-meta';
+        meta.textContent = `${p.repo} #${p.number} · ${new Date(p.mergedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+        li.append(a, meta);
+        return li;
+      })
+    );
+    q('[data-merged]').hidden = g.merged.length === 0;
+  }
+
+  // Failure is a state: say the feed is down, never guess a number.
+  function fail() {
+    root.dataset.tone = 'down';
+    q('[data-led]').dataset.tone = 'down';
+    q('[data-live]').textContent = 'No signal';
+    q('[data-live-detail]').textContent = 'The usage feed did not answer. It republishes every 15 minutes.';
+    q('[data-updated]').textContent = '';
+  }
+
+  async function refresh() {
+    try {
+      const r = await fetch(SITE.usageDataUrl, { cache: 'no-cache' });
+      if (!r.ok) throw new Error(String(r.status));
+      paint(await r.json());
+    } catch {
+      fail();
+    }
+  }
+  refresh();
+  setInterval(refresh, 5 * 60000);
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && refresh());
+</script>
+
+<!-- Global, namespaced under .usage: the rows and bars are built at runtime and
+     would miss Astro's scoped-style attribute. -->
+<style is:global>
+  .usage {
+    display: grid;
+    gap: 1.6rem;
+    margin: 1rem auto 3rem;
+  }
+  /* Grid children otherwise keep their content's min width and push the
+     table past a phone's viewport. */
+  .usage > * { min-width: 0; }
+  .usage .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.35rem;
+  }
+  .usage .live .live-state { color: var(--green); }
+  .usage .led[data-tone='idle'] { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .usage[data-tone='down'] .live-state { color: var(--text); font-size: clamp(1.6rem, 2.8vw, 2rem); }
+
+  .usage .figure-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 1.4rem 1.2rem;
+    margin: 1.1rem 0 0;
+  }
+  .usage .figure dd { margin: 0; }
+
+  /* Seven thin amber bars on the panel; the day label sits under each. */
+  .usage .bars {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.6rem;
+    height: 11rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+  }
+  .usage .bars li {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--dim);
+  }
+  .usage .bar-value {
+    order: -1;
+    font-variant-numeric: tabular-nums;
+    align-self: end;
+    padding-bottom: 0.3rem;
+  }
+  .usage .bar {
+    display: block;
+    align-self: end;
+    height: var(--h);
+    width: min(100%, 2.4rem);
+    justify-self: center;
+    background: var(--amber);
+    border-radius: 4px 4px 0 0;
+  }
+  .usage .bar-label {
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .usage .table-wrap { overflow-x: auto; margin-top: 0.6rem; }
+  .usage table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .usage th, .usage td { text-align: right; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .usage th:first-child, .usage td:first-child { text-align: left; }
+  .usage th { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
+  .usage tr:last-child td { border-bottom: 0; }
+
+  .usage .merged { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+  .usage .merged li { display: grid; gap: 0.2rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); font-size: 0.88rem; }
+  .usage .merged li:last-child { border-bottom: 0; }
+  .usage .merged-meta { color: var(--dim); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+
+  .usage .fineprint { margin: 0; font-size: 0.78rem; line-height: 1.6; color: var(--dim); max-width: 70ch; }
+
+  @media (max-width: 640px) {
+    .usage .bars { gap: 0.35rem; height: 9rem; }
+    .usage .bar-value { font-size: 0.62rem; }
+  }
+</style>

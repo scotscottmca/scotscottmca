@@ -20,6 +20,11 @@ export const SITE = {
     label: 'CC BY-NC 4.0',
     url: 'https://creativecommons.org/licenses/by-nc/4.0/',
   },
+  // JSON behind the unlisted /usage page, written by scripts/usage-stats.mjs.
+  // Set PUBLIC_USAGE_DATA_URL (e.g. in .env) to point elsewhere locally.
+  usageDataUrl:
+    import.meta.env.PUBLIC_USAGE_DATA_URL ||
+    'https://gist.githubusercontent.com/scotscottmca/5321ac84ddec1de6e66f6f49f0f5d57f/raw/usage.json',
 };
 
 export const SOCIAL = [
