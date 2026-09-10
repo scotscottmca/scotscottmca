@@ -17,7 +17,7 @@ const latestRelease = [...releases].sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 )[0];
 
-const telemetry: { label: string; value: string; href?: string }[] = [
+const telemetry = [
   {
     label: 'Toolbox',
     value: 'C#/.NET, TypeScript/React, Azure & Terraform, PowerShell — plus a growing pile of AI/agent tooling',
@@ -25,14 +25,6 @@ const telemetry: { label: string; value: string; href?: string }[] = [
   { label: 'Fuel', value: 'Black coffee and weird beers' },
   { label: 'Off the clock', value: 'Dachshunds, video games, and doomscrolling AI slop' },
 ];
-
-if (latestRelease) {
-  telemetry.push({
-    label: 'Latest release',
-    value: `${latestRelease.data.product} ${latestRelease.data.version} · ${formatDate(latestRelease.data.date)}`,
-    href: `/releases/${latestRelease.id.split('/')[0]}`,
-  });
-}
 ---
 
 <BaseLayout>
@@ -86,7 +78,7 @@ if (latestRelease) {
                     <span class="dot" />
                     {t.label}
                   </dt>
-                  <dd>{t.href ? <a href={t.href}>{t.value}</a> : t.value}</dd>
+                  <dd>{t.value}</dd>
                 </div>
               ))
             }
@@ -94,7 +86,24 @@ if (latestRelease) {
         </section>
 
         <section class="work-panel">
-          <h2 class="ledger-heading">Personal projects</h2>
+          <div class="work-bar">
+            <h2 class="ledger-heading">Personal projects</h2>
+            {
+              latestRelease && (
+                <p class="work-latest">
+                  Latest release{' '}
+                  <a href={`/releases/${latestRelease.id.split('/')[0]}`}>
+                    {latestRelease.data.product} {latestRelease.data.version}
+                  </a>
+                  <span class="work-latest-date">
+                    <time datetime={latestRelease.data.date.toISOString()}>
+                      {formatDate(latestRelease.data.date)}
+                    </time>
+                  </span>
+                </p>
+              )
+            }
+          </div>
           <ol class="work">
             {
               projects.map((project) => (
