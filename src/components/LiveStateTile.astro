@@ -1,0 +1,164 @@
+---
+// The home page's dominant instrument: Scott's real, current state, read from
+// /api/status. Renders a deliberate "reading" placeholder, then swaps in live
+// data. Every failure mode resolves to an honest state — it never guesses.
+//
+// The LED pulse period encodes the state itself: slow when asleep, quick when
+// active. Motion carries data here rather than decorating.
+---
+
+<a class="tile-live" href="/status" data-live-tile>
+  <div class="tile-head">
+    <span class="led" data-live-led></span>
+    <span class="tile-label">Right now</span>
+    <span class="tile-meta" data-live-confidence></span>
+  </div>
+
+  <div class="live-body" aria-live="polite">
+    <p class="live-state" data-live-state>Reading…</p>
+    <p class="live-detail" data-live-detail>Asking the watch.</p>
+  </div>
+
+  {/* The sprite element is created only once a real reading arrives, so the
+      tile never ships a guessed state or an empty image. */}
+  <div class="live-sprite-slot" data-live-sprite-slot aria-hidden="true"></div>
+
+  <span class="tile-drill">Full status</span>
+</a>
+
+<script>
+  const tile = document.querySelector('[data-live-tile]');
+  if (tile) {
+    const stateEl = tile.querySelector('[data-live-state]');
+    const detailEl = tile.querySelector('[data-live-detail]');
+    const confidenceEl = tile.querySelector('[data-live-confidence]');
+    const spriteSlot = tile.querySelector('[data-live-sprite-slot]');
+    const ledEl = tile.querySelector('[data-live-led]');
+
+    // Word, sprite, accent and LED period per state. The period is the point:
+    // asleep breathes slowly, active runs quick.
+    const STATES = {
+      asleep: { word: 'Asleep', sprite: 'scott-asleep', tone: 'rest', period: '4.8s' },
+      awake: { word: 'Awake', sprite: 'scott-awake', tone: 'up', period: '2.4s' },
+      walking: { word: 'Out walking', sprite: 'scott-walking', tone: 'move', period: '1.4s' },
+      'working-out': { word: 'Working out', sprite: 'scott-working-out', tone: 'move', period: '0.9s' },
+      active: { word: 'Up and active', sprite: 'scott-active', tone: 'move', period: '1.6s' },
+    };
+
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+    function duration(totalMinutes) {
+      const mins = Math.max(0, Math.round(totalMinutes));
+      const hours = Math.floor(mins / 60);
+      const rest = mins % 60;
+      if (hours && rest) return `${hours}h ${rest}m`;
+      if (hours) return `${hours}h`;
+      return `${rest}m`;
+    }
+
+    // Turns the payload into one honest sentence of supporting detail.
+    function describe(data) {
+      if (data.status === 'asleep' && typeof data.asleepForMin === 'number') {
+        return `Asleep for ${duration(data.asleepForMin)}.`;
+      }
+      if (data.status === 'awake' && typeof data.awakeForMin === 'number') {
+        return `Up for ${duration(data.awakeForMin)}.`;
+      }
+      if (data.status === 'working-out' && data.workout) {
+        const { name, durationMin, endedMinAgo } = data.workout;
+        const label = name || 'Workout';
+        return endedMinAgo
+          ? `${label}, ${duration(durationMin)}, finished ${duration(endedMinAgo)} ago.`
+          : `${label}, ${duration(durationMin)} in.`;
+      }
+      if (data.status === 'walking' && data.walk) {
+        const { durationMin, steps, endedMinAgo } = data.walk;
+        const stepPart = steps ? `, ${steps.toLocaleString()} steps` : '';
+        return endedMinAgo
+          ? `Walk of ${duration(durationMin)}${stepPart}, finished ${duration(endedMinAgo)} ago.`
+          : `Walking ${duration(durationMin)}${stepPart}.`;
+      }
+      if (data.status === 'walking' && data.steps) {
+        return `${data.steps.recent.toLocaleString()} steps in the last ${plural(data.steps.windowMin, 'minute')}.`;
+      }
+      if (data.status === 'active' && data.heartRate) {
+        return `${data.heartRate.bpm} bpm, ${duration(data.heartRate.atMinAgo)} ago.`;
+      }
+      return 'Synced from my watch.';
+    }
+
+    function paint(data) {
+      const state = STATES[data.status];
+      if (!state) return fail('Unrecognised state');
+
+      tile.dataset.state = data.status;
+      tile.dataset.tone = state.tone;
+      stateEl.textContent = state.word;
+      detailEl.textContent = describe(data);
+      let sprite = spriteSlot.firstElementChild;
+      if (!sprite) {
+        sprite = document.createElement('img');
+        sprite.className = 'live-sprite';
+        sprite.width = 220;
+        sprite.height = 227;
+        sprite.alt = '';
+        spriteSlot.appendChild(sprite);
+      }
+      sprite.src = `/images/status/${state.sprite}.svg`;
+      ledEl.style.setProperty('--led-period', state.period);
+      confidenceEl.textContent = data.confidence ? `${data.confidence} confidence` : '';
+      announce(true);
+    }
+
+    // An honest failure: says the pipeline is down, not that Scott is unknown.
+    function fail(reason) {
+      tile.dataset.state = 'unknown';
+      tile.dataset.tone = 'down';
+      stateEl.textContent = 'No signal';
+      detailEl.textContent = `${reason}. The watch syncs on its own schedule.`;
+      confidenceEl.textContent = '';
+      spriteSlot.replaceChildren();
+      announce(false);
+    }
+
+    // The header lamp cannot sit green while this gauge is dark, so it reports
+    // whatever this reading found.
+    function announce(ok) {
+      const fleetLed = document.querySelector('[data-fleet-led]');
+      if (fleetLed) fleetLed.dataset.tone = ok ? 'ok' : 'down';
+    }
+
+    async function read() {
+      // Dev-only: preview a populated state without the Azure Function running.
+      // Vite strips this branch from production builds.
+      if (import.meta.env.DEV) {
+        const forced = new URLSearchParams(location.search).get('state');
+        if (forced && STATES[forced]) {
+          const samples = {
+            asleep: { asleepForMin: 372 },
+            awake: { awakeForMin: 194 },
+            walking: { walk: { name: 'Walk', durationMin: 38, endedMinAgo: 0, steps: 3412 } },
+            'working-out': { workout: { name: 'Weights', durationMin: 47, endedMinAgo: 0 } },
+            active: { heartRate: { bpm: 104, atMinAgo: 3 } },
+          };
+          paint({ status: forced, confidence: 'high', ...samples[forced] });
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/status', { headers: { accept: 'application/json' } });
+        if (!res.ok) return fail(`Status service returned ${res.status}`);
+        paint(await res.json());
+      } catch {
+        fail('Could not reach the status service');
+      }
+    }
+
+    read();
+    // Re-read on return to the tab rather than polling a sleeping page.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') read();
+    });
+  }
+</script>

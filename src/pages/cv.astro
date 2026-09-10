@@ -1,174 +1,136 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE } from '../config';
+import { ROLE, PROJECTS, SKILLS, CONTACT } from '../data/cv';
+import { ICON_PATHS } from '../data/icons';
 
-// Consolidated from a year of commit/PR history across four projects.
-// TODO(content): confirm start date at Patch My PC and swap the contact email.
-const role = {
-  org: 'Patch My PC',
-  title: 'Software Developer',
-  period: 'TBC — start date · Present',
-};
+// This page drops the voice the rest of the site carries: it is read by people
+// assessing, and it should cost them as little time as possible.
 
-const projects = [
-  {
-    name: 'Customer Portal & Customer API',
-    meta: 'License Management · Mar–Sep 2026 · ~104 commits',
-    summary:
-      'Led UI modernization and the catalog approval pipeline for the customer-facing ' +
-      'License Management portal, plus matching work in the backing API.',
-    bullets: [
-      'Built catalog approval workflows: RBAC, audit logging, live progress, per-file retry/revert, conflict handling.',
-      'Added Cloud Catalog support — Azure Blob-backed upload/download/approval, hash verification, live logs, local Azurite dev.',
-      'Shipped preview channels, automated publishing, and direct-to-production approval pipelines.',
-      'Extended the Customer API (C#/.NET) with transactional approval + undo, authenticated blob downloads, feature flags, and managed-identity auth.',
-    ],
-    tags: ['PHP', 'C#/.NET', 'JavaScript', 'MySQL', 'Docker', 'Azure Pipelines', 'PowerShell', 'Azure Blob Storage', 'OAuth'],
-  },
-  {
-    name: 'Cliffs Notes',
-    meta: 'AI release-notes generator · 79 commits',
-    summary:
-      'Built an Azure Functions service that auto-consolidates release notes from DevOps ' +
-      'work items using GPT-5.x reasoning models.',
-    bullets: [
-      'Per-audience filtering and formatting (end-user, technical, internal) with Teams channel posting.',
-      'Cut generation time from 30-minute timeouts to a reliable 4–5 minutes; eliminated 2,900+ redundant API calls.',
-      'Tag-authoritative categorization with content-based inference for edge cases.',
-      'Shipped with a 59/59 passing test suite and full backward compatibility.',
-    ],
-    tags: ['Node.js', 'Azure Functions', 'Azure DevOps SDK', 'OpenAI GPT-5.x', 'Teams Adaptive Cards'],
-  },
-  {
-    name: 'Arthur v2',
-    meta: 'AI log analysis & diagnostics platform (Internal ToolKit) · 1,096+ commits',
-    summary:
-      'Core contributor across infra, backend, frontend, and docs for an AI-powered ' +
-      'log-analysis and diagnostics platform.',
-    bullets: [
-      'Built blue/green release control for zero-downtime deploys, with promotion/retirement workflows and ARM identity handling.',
-      'Added live admin-console data and Foundry Skills / per-session MCP server integration for agent tooling.',
-      'Built typed evidence tools, citation verification, answer streaming, and PromptShield screening for large bundles.',
-      'Optimized log parsing and zip/gzip extraction for large diagnostic bundles.',
-    ],
-    tags: ['C#/.NET', 'TypeScript', 'React', 'Terraform', 'Azure', 'DuckDB', 'Parquet', 'Docker', 'Nginx', 'xUnit', 'Vitest', 'Playwright'],
-  },
-  {
-    name: 'Publisher — Remote UI',
-    meta: 'Flagship, multi-release · 512 PRs authored (484 merged)',
-    summary:
-      'Flagship multi-release initiative moving the Settings UI to run remotely against ' +
-      'the service over a new Config API.',
-    bullets: [
-      'Multi-session support: locking, read-only vs. read/write promotion, session roster, disconnect picker, status pills.',
-      'Redesigned ConfigApi around an RBAC role model with hardened HTTP status handling and Swagger docs.',
-      'Streamed content operations over the wire — staged content, scripts, Collect Logs — and de-elevated the Settings UI (asInvoker) with UI-only/service-only install modes.',
-      'Migrated the codebase from packages.config to PackageReference + Central Package Management; added ARM64 support.',
-    ],
-    tags: ['C#', 'WPF/XAML (MVVM)', 'VB.NET', 'PowerShell', 'MS Graph', 'WSUS SDK', 'Polly', 'LiteDB', 'Azure DevOps (YAML)'],
-  },
-];
+// Counts come from the collections, so they cannot go stale on the next post.
+// Spelled out, because this page reads as prose rather than as instrumentation.
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+  'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const spell = (n: number) => WORDS[n] ?? String(n);
 
-const skills = [
-  { group: 'Languages', items: ['C#', 'VB.NET', 'TypeScript / JavaScript', 'PowerShell', 'PHP', 'SQL'] },
-  { group: 'Frontend', items: ['React', 'WPF/XAML (MVVM)', 'HTML/CSS', 'Teams Adaptive Cards'] },
-  { group: 'Cloud & infra', items: ['Azure (Functions, Pipelines, Blob Storage, Managed Identity)', 'Terraform', 'Docker', 'Nginx'] },
-  { group: 'Data', items: ['MySQL', 'DuckDB', 'Parquet', 'LiteDB'] },
-  { group: 'AI & agents', items: ['OpenAI GPT-5.x', 'Model Context Protocol (MCP)', 'Agent orchestration', 'Evidence / citation tooling'] },
-  { group: 'Testing & tooling', items: ['xUnit', 'Vitest', 'Playwright', 'Polly', 'MS Graph SDK', 'WSUS SDK'] },
-];
+const postCount = spell((await getCollection('posts', ({ data }) => !data.draft)).length);
+const projectCount = spell((await getCollection('projects', ({ data }) => !data.draft)).length);
 ---
 
-<BaseLayout title="CV" description={`Digital CV for ${SITE.author}.`}>
+<BaseLayout title="CV" description={`Curriculum vitae for ${SITE.author}, ${ROLE.title} at ${ROLE.org}.`}>
   <Header />
   <main>
     <div class="container">
-      <div class="statusstrip">
-        <span class="led"></span>
-        <span class="title">Personnel file · CV</span>
-        <span class="meta">Clearance: Public</span>
-      </div>
-
-      <div class="badge" style="flex:1 1 100%; margin-bottom:1.6rem;">
-        <div class="badge-row"><span class="led" style="animation:none"></span> Status: Online</div>
-        <p class="badge-name">{SITE.author}</p>
-        <p class="badge-role">Software Developer — full-stack, cloud & AI tooling</p>
-        <div class="badge-tags">
-          <span><b>Base</b> — Larkhall, Scotland</span>
-          <span>
-            <b>Contact</b> — <a href="mailto:you@example.com">you@example.com</a> (TBC)
-            <img
-              class="site-mascot"
-              src="/images/emotes/email.png"
-              alt="Illustration of Scott holding an email envelope overhead"
-              width="26"
-              height="26"
-              style="margin-left:0.3rem"
-            />
-          </span>
-        </div>
-      </div>
-
-      <div class="emote-panel" style="margin-bottom:1.6rem">
-        <img
-          src="/images/emotes/pdf.png"
-          alt="Illustration of Scott holding an Adobe PDF icon overhead"
-          width="60"
-          height="60"
-        />
-        <span class="emote-caption">PDF export: TBC — this page doesn't have one yet</span>
-      </div>
-
-      <div class="section-heading">Mission log <span class="rule"></span></div>
-      <p style="color:var(--dim); font-size:0.85rem; margin:-0.4rem 0 1rem;">
-        {role.title} · {role.org} · {role.period}
-      </p>
-      <div class="timeline">
-        {projects.map((p) => (
-          <div class="log">
-            <p class="eyebrow">{p.name}</p>
-            <p class="period" style="margin:-0.3rem 0 0.6rem">{p.meta}</p>
-            <p>{p.summary}</p>
-            <ul>
-              {p.bullets.map((b) => <li>{b}</li>)}
-            </ul>
-            <ul class="tags">
-              {p.tags.map((t) => (
-                <li><span class="tag">{t}</span></li>
-              ))}
-            </ul>
+      <article class="cv">
+        <header class="cv-head">
+          <div class="cv-head-main">
+            <h1>{SITE.author}</h1>
+            <p class="cv-role">{ROLE.title}, {ROLE.org}</p>
+            <p class="cv-place">{ROLE.location}</p>
           </div>
-        ))}
-      </div>
+          <button type="button" class="cv-print" data-print>Print / save as PDF</button>
+        </header>
 
-      <div class="section-heading">Systems &amp; tooling <span class="rule"></span></div>
-      <div class="feed">
-        {skills.map((s) => (
-          <div class="feed-row">
-            <span class="dot"></span>
-            <span class="feed-label">{s.group}</span>
-            <span class="feed-value">
-              <ul class="tags">
-                {s.items.map((item) => (
-                  <li><span class="tag">{item}</span></li>
-                ))}
-              </ul>
-            </span>
+        <section class="cv-section" aria-labelledby="cv-experience">
+          <h2 id="cv-experience">Experience</h2>
+
+          <div class="cv-role-head">
+            <h3>{ROLE.title}</h3>
+            <p class="cv-org">{ROLE.org}</p>
+            <p class="cv-dates">{ROLE.start} — Present</p>
           </div>
-        ))}
-      </div>
 
-      <div class="section-heading">Certifications &amp; education <span class="rule"></span></div>
-      <div class="feed">
-        <div class="feed-row">
-          <span class="dot pending"></span>
-          <span class="feed-label">Record</span>
-          <span class="feed-value">TBC — nothing logged yet</span>
-        </div>
-      </div>
+          <p class="cv-role-note">Selected work, {ROLE.listed}.</p>
+
+          <ol class="cv-projects">
+            {
+              PROJECTS.map((project) => (
+                <li class="cv-project">
+                  <div class="cv-project-head">
+                    <h4>{project.name}</h4>
+                    <p class="cv-project-context">
+                      {project.context}
+                      {project.period && <span> · {project.period}</span>}
+                    </p>
+                  </div>
+                  <p class="cv-project-summary">{project.summary}</p>
+                  <ul class="cv-bullets">
+                    {project.bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                  <ul class="tags">
+                    {project.tags.map((tag) => (
+                      <li>
+                        <span class="tag">{tag}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section class="cv-section" aria-labelledby="cv-skills">
+          <h2 id="cv-skills">Skills</h2>
+          <dl class="cv-skills">
+            {
+              SKILLS.map((skill) => (
+                <div class="cv-skill-row">
+                  <dt>{skill.group}</dt>
+                  <dd>{skill.items.join(' · ')}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="cv-section" aria-labelledby="cv-writing">
+          <h2 id="cv-writing">Writing &amp; projects</h2>
+          <p>
+            {postCount.charAt(0).toUpperCase() + postCount.slice(1)} technical posts on WSUS, ConfigMgr, Intune, PowerShell and
+            the Microsoft Graph, and {projectCount} shipped projects including a
+            published Edge extension. <a href="/posts">Read the posts</a> or
+            <a href="/projects">browse the projects</a>.
+          </p>
+        </section>
+
+        <section class="cv-section cv-section-contact" aria-labelledby="cv-contact">
+          <h2 id="cv-contact">Contact</h2>
+          <p class="cv-availability">
+            Not currently looking for work. If you want to ask about something on
+            this page, LinkedIn is the surest way to reach me.
+          </p>
+          <ul class="cv-links">
+            <li>
+              <a href={CONTACT.linkedin} rel="me noopener noreferrer" target="_blank">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d={ICON_PATHS.linkedin} />
+                </svg>
+                LinkedIn
+              </a>
+            </li>
+            <li>
+              <a href={CONTACT.github} rel="me noopener noreferrer" target="_blank">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d={ICON_PATHS.github} />
+                </svg>
+                GitHub
+              </a>
+            </li>
+          </ul>
+        </section>
+      </article>
     </div>
   </main>
   <Footer />
 </BaseLayout>
+
+<script>
+  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+</script>

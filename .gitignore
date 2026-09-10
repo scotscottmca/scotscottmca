@@ -18,3 +18,9 @@ yarn-error.log*
 # editor
 .vscode/*
 !.vscode/extensions.json
+
+# impeccable tooling
+.claude/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/config.local.json

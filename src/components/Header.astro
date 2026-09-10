@@ -4,7 +4,7 @@ import { SITE, NAV } from '../config';
 
 <header class="site-header">
   <div class="container">
-    <a class="brand" href="/"><span class="led"></span> {SITE.title}</a>
+    <a class="brand" href="/"><span class="led" data-fleet-led data-tone="down"></span> {SITE.title}</a>
     <nav class="nav" aria-label="Primary">
       {NAV.map((item) => <a href={item.href}>{item.label}</a>)}
     </nav>

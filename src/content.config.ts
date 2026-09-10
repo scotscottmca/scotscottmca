@@ -31,6 +31,15 @@ const projects = defineCollection({
     tags: z.array(z.string()).default([]),
     // Show near the top / on the home page.
     featured: z.boolean().default(false),
+    // A silent screen recording of the project in use. When present, the home
+    // page can show the project working rather than describing it.
+    demo: z
+      .object({
+        video: z.string(),
+        poster: z.string(),
+        alt: z.string(),
+      })
+      .optional(),
     draft: z.boolean().default(false),
   }),
 });

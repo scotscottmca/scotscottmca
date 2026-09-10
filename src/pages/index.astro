@@ -1,92 +1,120 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SocialLinks from '../components/SocialLinks.astro';
+import LiveStateTile from '../components/LiveStateTile.astro';
 import { SITE } from '../config';
+import { HEADLINE_FIGURES, FIGURES_PERIOD, ROLE } from '../data/cv';
+import { formatDate } from '../utils';
 
-// Rough flavor-text uptime, computed at build time — not meant to be exact.
-const start = new Date(SITE.since, 0, 1);
-const diffDays = Math.floor((Date.now() - start.getTime()) / 86400000);
-const uptime = `${String(Math.floor(diffDays / 365)).padStart(2, '0')}Y ${diffDays % 365}D`;
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
+);
+const releases = await getCollection('releases', ({ data }) => !data.draft);
+const latestRelease = [...releases].sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+)[0];
 
-const telemetry = [
-  {
-    label: 'Currently',
-    value: 'Piping live from the Status page once it ships',
-    dot: 'live',
-    chip: 'LIVE',
-  },
+const telemetry: { label: string; value: string; href?: string }[] = [
   {
     label: 'Toolbox',
     value: 'C#/.NET, TypeScript/React, Azure & Terraform, PowerShell — plus a growing pile of AI/agent tooling',
-    dot: 'on',
-    icon: { src: '/images/emotes/clippy.png', alt: 'Illustration of Scott holding Clippy the Office assistant overhead' },
   },
-  {
-    label: 'Fuel',
-    value: 'Black coffee and weird beers',
-    dot: 'on',
-  },
-  {
-    label: 'Off the clock',
-    value: 'Dachshunds, video games, and doomscrolling AI slop',
-    dot: 'on',
-  },
+  { label: 'Fuel', value: 'Black coffee and weird beers' },
+  { label: 'Off the clock', value: 'Dachshunds, video games, and doomscrolling AI slop' },
 ];
+
+if (latestRelease) {
+  telemetry.push({
+    label: 'Latest release',
+    value: `${latestRelease.data.product} ${latestRelease.data.version} · ${formatDate(latestRelease.data.date)}`,
+    href: `/releases/${latestRelease.id.split('/')[0]}`,
+  });
+}
 ---
 
 <BaseLayout>
   <Header />
   <main>
     <div class="container">
-      <div class="statusstrip">
-        <span class="led"></span>
-        <span class="title">Fleet status · {SITE.title}</span>
-        <span class="meta">Uptime {uptime} · All systems nominal</span>
-      </div>
+      <!-- Two columns, separated by space rather than by borders. -->
+      <div class="ledger">
+        <div class="ledger-left">
+          <LiveStateTile />
 
-      <div class="hero">
-        <div class="badge">
-          <div class="badge-row"><span class="led" style="animation:none"></span> Status: Online</div>
-          <p class="badge-name">{SITE.author}</p>
-          <p class="badge-role">Software Developer // AI Janitor</p>
-          <div class="badge-tags">
-            <span><b>Clearance</b> — Public</span>
-            <span><b>Base</b> — Larkhall, Scotland</span>
-          </div>
+          <section class="who">
+            <h1 class="who-name">{SITE.author}</h1>
+            <p class="who-role">Software Developer <span aria-hidden="true">//</span> AI Janitor</p>
+            <dl class="who-facts">
+              <div>
+                <dt>Base</dt>
+                <dd>{ROLE.location}</dd>
+              </div>
+              <div>
+                <dt>Post</dt>
+                <dd>{ROLE.org}</dd>
+              </div>
+            </dl>
+
+            <a class="who-figures" href="/cv">
+              <span class="figures-row">
+                {
+                  HEADLINE_FIGURES.map((figure) => (
+                    <span class="figure">
+                      <span class="figure-value">{figure.value}</span>
+                      <span class="figure-unit">{figure.unit}</span>
+                    </span>
+                  ))
+                }
+                <span class="tag figures-period">{FIGURES_PERIOD}</span>
+              </span>
+              <span class="who-figures-drill">Full CV</span>
+            </a>
+
+            <SocialLinks />
+          </section>
+
         </div>
-        <div class="log">
-          <p class="eyebrow">Log entry // {SITE.author}</p>
-          <p>
-            {/* TODO(content): 2-4 sentence intro — swap this placeholder for a short bio. */}
-            Hi, I'm Scott. This is placeholder intro copy — swap it for a short entry
-            covering who you are, what you work on day to day, and what readers can
-            expect to find on this console.
-          </p>
+
+        <div class="ledger-right">
+          <section class="work-panel">
+            <h2 class="ledger-heading">Personal projects</h2>
+            <ol class="work">
+              {
+                projects.map((project) => (
+                  <li>
+                    <a href={`/projects/${project.id}/`}>
+                      <span class="work-head">
+                        <span class="work-name">{project.data.title}</span>
+                        <span class={`status status-${project.data.status}`}>{project.data.status}</span>
+                      </span>
+                      <span class="work-summary">{project.data.summary}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ol>
+          </section>
+
         </div>
       </div>
 
-      <div style="margin:0.2rem 0 0.4rem">
-        <SocialLinks />
-      </div>
-
-      <div class="section-heading">Live telemetry <span class="rule"></span></div>
-      <div class="feed">
-        {telemetry.map((t) => (
-          <div class="feed-row">
-            <span class={`dot ${t.dot}`}></span>
-            <span class="feed-label">{t.label}</span>
-            <span class="feed-value">
-              {t.value}
-              {t.chip && <span class="chip">{t.chip}</span>}
-              {t.icon && (
-                <img class="site-mascot" src={t.icon.src} alt={t.icon.alt} width="24" height="24" style="margin-left:0.35rem" />
-              )}
-            </span>
-          </div>
-        ))}
-      </div>
+      <div class="section-heading">Telemetry <span class="rule"></span></div>
+      <section class="telemetry">
+        <dl>
+          {
+            telemetry.map((t) => (
+              <div class="telemetry-row">
+                <span class="dot" />
+                <dt>{t.label}</dt>
+                <dd>{t.href ? <a href={t.href}>{t.value}</a> : t.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
     </div>
   </main>
   <Footer />

@@ -18,7 +18,7 @@
   --line: #2c333d;
   --line-dashed: #2c333d;
   --text: #dfe6ee;
-  --dim: #7a838f;
+  --dim: #8b95a2;
   --amber: #ffb400;
   --green: #3ddc73;
   --red: #ff5c5c;
@@ -60,9 +60,12 @@ a:hover {
   text-decoration: underline;
 }
 
-img {
+img,
+video {
   max-width: 100%;
   height: auto;
+}
+img {
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
 }
@@ -90,21 +93,25 @@ main {
   color: var(--amber);
 }
 
-/* ---- LED / status primitives ---- */
+/* ---- LED / status primitives ----
+   The pulse period is a variable because on the live tile it carries data:
+   slow when Scott is asleep, quick when he is moving. Motion as a readout. */
 .led {
+  --led-period: 2s;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--green);
   box-shadow: 0 0 6px var(--green);
   flex-shrink: 0;
-  animation: ledpulse 2s steps(2) infinite;
+  animation: ledpulse var(--led-period) steps(2) infinite;
 }
 @keyframes ledpulse {
   50% { opacity: 0.25; }
 }
 @media (prefers-reduced-motion: reduce) {
   .led { animation: none; }
+  .project-square:hover { transform: none; }
 }
 
 .statusstrip {
@@ -125,6 +132,11 @@ main {
   font-size: 0.82rem;
   text-transform: uppercase;
 }
+.led[data-tone='down'] {
+  background: var(--dim);
+  box-shadow: none;
+  animation: none;
+}
 .statusstrip .meta {
   margin-left: auto;
   color: var(--dim);
@@ -144,7 +156,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 58px;
+  min-height: 58px;
   gap: 1rem;
   flex-wrap: wrap;
 }
@@ -188,8 +200,7 @@ main {
 }
 
 /* ---- Buttons ---- */
-.project-link,
-.project-link-ghost {
+.project-link {
   display: inline-block;
   font-family: var(--font-display);
   font-weight: 700;
@@ -201,26 +212,13 @@ main {
   background: var(--panel);
   border: 1px solid var(--amber);
   color: var(--amber);
+  transition: var(--transition);
 }
 .project-link:hover {
   background: var(--amber);
   color: #1a1200;
   text-decoration: none;
   filter: none;
-}
-.project-link-ghost {
-  border-color: var(--cyan);
-  color: var(--cyan);
-}
-.project-link-ghost:hover {
-  background: var(--cyan);
-  color: #00232a;
-  text-decoration: none;
-}
-.cta-row {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
 }
 
 /* ---- Social links ---- */
@@ -250,92 +248,6 @@ main {
   height: 17px;
 }
 
-/* ---- ID badge (home + CV) ---- */
-.hero {
-  display: flex;
-  gap: 1.1rem;
-  align-items: stretch;
-  margin-bottom: 1.6rem;
-  flex-wrap: wrap;
-}
-.badge {
-  flex: 0 0 250px;
-  min-width: 220px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--amber);
-  border-radius: 4px var(--radius) var(--radius) 4px;
-  padding: 1.1rem 1.25rem;
-}
-.badge-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-display);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  color: var(--green);
-  text-transform: uppercase;
-  margin-bottom: 0.9rem;
-}
-.badge-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.5rem;
-  line-height: 1.15;
-  margin: 0 0 0.3rem;
-}
-.badge-role {
-  font-size: 0.88rem;
-  color: var(--text);
-  opacity: 0.85;
-  margin: 0 0 0.9rem;
-}
-.badge-tags {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.badge-tags span {
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
-  color: var(--dim);
-}
-.badge-tags b {
-  color: var(--amber);
-  font-weight: 400;
-}
-
-.log {
-  flex: 1;
-  min-width: 260px;
-  background: var(--panel);
-  border: 1px dashed var(--line);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem;
-}
-.log .eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  color: var(--amber);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin: 0 0 0.5rem;
-}
-.log p {
-  margin: 0 0 0.6rem;
-  font-size: 0.92rem;
-  line-height: 1.7;
-}
-.log p:last-child {
-  margin-bottom: 0;
-}
-.log .period {
-  color: var(--dim);
-  font-size: 0.78rem;
-}
-
-/* ---- Telemetry feed (home tidbits + CV skills) ---- */
 .section-heading {
   display: flex;
   align-items: baseline;
@@ -345,90 +257,414 @@ main {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dim);
-  margin: 2.2rem 0 0.8rem;
-}
-.section-heading:first-child {
-  margin-top: 0;
+  margin: 0 0 0.8rem;
 }
 .section-heading .rule {
   flex: 1;
-  border-top: 1px dashed var(--line-dashed);
+  border-top: 1px dashed var(--line);
 }
 
-.feed {
+/* ---- The ledger ----
+   Two columns separated by space rather than by borders. Blocks are divided by
+   empty bands; only a block that genuinely needs naming carries a label. The
+   left column is allowed to end early and leave the page uneven. */
+.ledger {
+  display: grid;
+  grid-template-columns: 5fr 1fr 6fr;
+  align-items: start;
+  margin: 1rem 0 3rem;
+}
+.ledger-left {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+.ledger-right {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* Each block sits in its own panel again, with room left between them. */
+.tile-live,
+.who,
+.telemetry,
+.work-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
+  padding: 1.25rem 1.35rem;
 }
-.feed-row {
+
+/* Live state — the page's one loud element, unboxed. */
+/* Text and sprite are laid out as columns so the longest state word can never
+   run under the artwork. With no sprite the second column collapses to zero. */
+.tile-live {
   display: grid;
-  grid-template-columns: 22px 150px 1fr;
-  align-items: baseline;
-  gap: 0.7rem;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--line);
+  transition: border-color var(--transition);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'head'
+    'body'
+    'sprite'
+    'drill';
+  color: var(--text);
 }
-.feed-row:first-child {
-  border-top: none;
+a.tile-live:hover {
+  text-decoration: none;
+  border-color: var(--cyan);
 }
-.feed-row:hover {
-  background: var(--panel-2);
+.tile-head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
 }
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
+.tile-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.tile-meta {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--dim);
+}
+.live-body {
+  grid-area: body;
+}
+.live-state {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.5rem;
+  color: var(--green);
+  text-wrap: balance;
+}
+.live-detail {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+  max-width: 30ch;
+}
+.tile-drill {
+  grid-area: drill;
+  align-self: end;
+  justify-self: start;
+  margin-top: 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: color var(--transition);
+}
+a.tile-live:hover .tile-drill {
+  color: var(--cyan);
+}
+.live-sprite-slot {
+  grid-area: sprite;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-top: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  pointer-events: none;
+}
+/* No reading, no square — the block closes up rather than framing nothing. */
+.live-sprite-slot:empty {
+  display: none;
+}
+.live-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  border-radius: 0;
+  display: block;
+}
+/* Tones. The word carries the state; colour only agrees with it. */
+.tile-live[data-tone='rest'] .live-state { color: var(--cyan); }
+.tile-live[data-tone='rest'] .led { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.tile-live[data-tone='move'] .live-state { color: var(--amber); }
+.tile-live[data-tone='move'] .led { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.tile-live[data-tone='down'] .live-state {
+  color: var(--text);
+  font-size: clamp(1.6rem, 2.8vw, 2rem);
+}
+.tile-live[data-tone='down'] .led { background: var(--dim); box-shadow: none; animation: none; }
+
+/* Who — identity, unboxed. */
+.who-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.1;
+  margin: 0 0 0.3rem;
+  letter-spacing: -0.01em;
+}
+.who-role {
+  margin: 0 0 1.2rem;
+  font-size: 0.92rem;
+  color: var(--amber);
+  text-wrap: balance;
+}
+.who-facts {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1.6rem;
+}
+.who-facts div {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.who-facts dt {
+  min-width: 3.6rem;
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding-top: 0.12rem;
+}
+.who-facts dd {
+  margin: 0;
+}
+
+.who-figures {
+  display: block;
+  margin-bottom: 1.6rem;
+  color: var(--text);
+}
+.figures-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.4rem;
+}
+.figures-period {
   align-self: center;
 }
-.dot.live {
-  background: var(--cyan);
-  box-shadow: 0 0 6px var(--cyan);
-  animation: ledpulse 1.4s steps(2) infinite;
+.who-figures:hover {
+  text-decoration: none;
 }
-.dot.pending {
-  background: var(--dim);
+/* Value over unit keeps each figure narrow enough for the pair to sit side by
+   side in a five-column measure. */
+.figure {
+  display: grid;
+  gap: 0.1rem;
 }
-.feed-label {
+.figure-value {
   font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-weight: 700;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+.figure-unit {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dim);
 }
-.feed-value {
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-.chip {
-  display: inline-block;
-  margin-left: 0.5rem;
+.who-figures-drill {
+  display: block;
+  margin-top: 0.7rem;
   font-family: var(--font-display);
-  font-size: 0.6rem;
+  font-size: 0.74rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #00232a;
-  background: var(--cyan);
-  padding: 0.1rem 0.4rem;
-  border-radius: 999px;
-  vertical-align: 1px;
+  color: var(--dim);
+  transition: color var(--transition);
 }
+.who-figures:hover .who-figures-drill {
+  color: var(--cyan);
+}
+
+/* Telemetry — label/value lines with room to breathe. */
+.telemetry {
+  padding: 0;
+}
+.telemetry dl {
+  margin: 0;
+}
+/* The row's confirmed light, back where it was. */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  flex-shrink: 0;
+}
+/* Full width beneath both columns: light, label, value. */
+.telemetry-row {
+  display: grid;
+  grid-template-columns: 22px 150px 1fr;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.telemetry-row:first-child {
+  border-top: none;
+}
+/* The light sits on the first line with its label, not centred across a value
+   that happens to wrap. */
+.telemetry-row .dot {
+  align-self: start;
+  margin-top: 0.5rem;
+}
+.telemetry-row dt {
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.telemetry-row dd {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* Shipped work — one unboxed ledger, wide leading. */
+.ledger-heading {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 0.4rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+.work {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.work li + li {
+  border-top: 1px solid var(--line);
+}
+.work a {
+  display: block;
+  padding: 1.3rem 0;
+  color: var(--text);
+}
+.work a:hover {
+  text-decoration: none;
+}
+.work-head {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.work-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  transition: color var(--transition);
+}
+.work-head .status {
+  margin-left: 0.7rem;
+  vertical-align: 0.15em;
+}
+.work a:hover .work-name {
+  color: var(--cyan);
+}
+.work-summary {
+  display: block;
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--dim);
+  max-width: 46ch;
+}
+
 @media (max-width: 560px) {
-  .feed-row {
-    grid-template-columns: 16px 1fr;
-    grid-template-rows: auto auto;
+  .post-card-head {
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  .feed-label,
-  .feed-value {
+}
+
+@media (max-width: 640px) {
+  .telemetry-row {
+    grid-template-columns: 22px 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.3rem 0.7rem;
+  }
+  .telemetry-row dt,
+  .telemetry-row dd {
     grid-column: 2;
   }
-  .dot {
+  .telemetry-row .dot {
     grid-row: 1 / 3;
   }
 }
 
-/* ---- Post / project list ---- */
+@media (max-width: 900px) {
+  .ledger {
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+  }
+  .ledger-left,
+  .ledger-right {
+    grid-column: 1;
+  }
+}
+
+/* ---- Topic index (posts) ----
+   A frequency readout, not decoration: the count is what makes it worth
+   printing, so it is set as data. */
+.topic-index {
+  list-style: none;
+  margin: 0 0 1.2rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.topic-index li {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.topic-tag {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  padding: 0.2rem 0.55rem;
+}
+.topic-count {
+  font-size: 0.68rem;
+  color: var(--dim);
+  background: var(--panel-2);
+  border-left: 1px solid var(--line);
+  padding: 0.2rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Post list ----
+   Each post is its own bordered card; the date sits small to the right of the
+   title, and a graticule tick marks the row against the panel edge. */
 .post-list {
   list-style: none;
   padding: 0;
@@ -437,20 +673,39 @@ main {
   gap: 0.75rem;
 }
 .post-card {
+  position: relative;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--green);
-  border-radius: 4px var(--radius) var(--radius) 4px;
+  border-radius: var(--radius);
   padding: 1.1rem 1.25rem;
   background: var(--panel);
   transition: var(--transition);
 }
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 1.5rem;
+  width: 7px;
+  height: 1px;
+  background: var(--green);
+  transition: var(--transition);
+}
 .post-card:hover {
-  border-left-color: var(--cyan);
   border-color: var(--cyan);
-  border-left-width: 3px;
+}
+.post-card:hover::before {
+  background: var(--cyan);
+  width: 13px;
+}
+.post-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 0.55rem;
 }
 .post-card h3 {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-family: var(--font-display);
   font-size: 1.1rem;
   letter-spacing: -0.01em;
@@ -462,6 +717,13 @@ main {
   text-decoration: none;
   color: var(--cyan);
 }
+.post-date {
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  color: var(--dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .post-meta {
   color: var(--dim);
   font-size: 0.82rem;
@@ -469,7 +731,6 @@ main {
   gap: 0.75rem;
   flex-wrap: wrap;
   align-items: center;
-  font-family: var(--font-body);
 }
 
 /* ---- Tags ---- */
@@ -587,13 +848,24 @@ a.tag:hover {
   display: block;
   margin: 1rem auto;
 }
+/* A quoted passage reads as a marked division, not an alert bar. */
 .prose blockquote {
+  position: relative;
   margin: 1.25rem 0;
   padding: 0.75rem 1rem;
-  border-left: 3px solid var(--amber);
+  border-left: 1px solid var(--line);
   background: var(--panel);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   color: var(--text);
+}
+.prose blockquote::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 1.05rem;
+  width: 9px;
+  height: 1px;
+  background: var(--amber);
 }
 .prose blockquote p {
   margin: 0.35rem 0;
@@ -749,49 +1021,232 @@ a.tag:hover {
   background: var(--panel-2);
 }
 
-/* ---- CV ---- */
-.timeline {
+/* ---- CV ----
+   The one surface that drops the voice. Same materials, quieter register:
+   hairline rules instead of panels, one accent, and a measure built for
+   someone scanning it in two minutes. */
+.cv {
+  max-width: 46rem;
+}
+.cv-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.cv-head h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4vw, 2.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.01em;
+}
+.cv-role {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--amber);
+}
+.cv-place {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+.cv-print {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.cv-print:hover {
+  color: var(--text);
+  border-color: var(--cyan);
+}
+
+.cv-section {
+  margin-top: 2.6rem;
+}
+.cv-section h2 {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 1.1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.cv-section > p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
+.cv-role-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin: 0;
+}
+.cv-org {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.cv-dates {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.cv-role-note {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+
+.cv-projects {
   list-style: none;
+  margin: 1.2rem 0 0;
   padding: 0;
+  display: grid;
+  gap: 1.6rem;
+}
+.cv-project {
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+.cv-projects > li:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+.cv-project-head {
+  margin-bottom: 0.1rem;
+}
+.cv-project-head h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0;
+  text-wrap: balance;
+}
+.cv-project-context {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+
+.cv-project-summary {
+  margin: 0.7rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.cv-bullets {
+  margin: 0.7rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--dim);
+}
+.cv-bullets li::marker {
+  color: var(--line);
+}
+.cv-project .tags {
+  margin-top: 0.85rem;
+}
+
+.cv-skills {
   margin: 0;
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
 }
-.timeline-item {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  background: var(--panel);
-}
-.timeline-head {
-  display: flex;
+.cv-skill-row {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.5rem 1.25rem;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
+}
+.cv-skill-row dt {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.cv-skill-row dd {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.cv-availability {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+.cv-links {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  display: flex;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
-.timeline-head h3 {
-  margin: 0;
+.cv-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: var(--font-display);
-  font-size: 1.02rem;
-}
-.timeline-period {
-  color: var(--dim);
-  font-size: 0.78rem;
-  white-space: nowrap;
-}
-.timeline-item p.summary {
-  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--text);
-  opacity: 0.9;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  transition: var(--transition);
 }
-.timeline-item ul {
-  margin: 0.6rem 0 0;
-  padding-left: 1.1rem;
-  color: var(--dim);
+.cv-links a:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  text-decoration: none;
 }
-.timeline-item .tags {
-  margin-top: 0.7rem;
+.cv-links svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 620px) {
+  .cv-skill-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+.project-video {
+  width: 100%;
+  max-width: 640px;
+  display: block;
+  margin: 1.25rem auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
 /* ---- Emotes ---- */
@@ -810,7 +1265,7 @@ a.tag:hover {
 }
 .emote-caption {
   font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--dim);
@@ -823,15 +1278,6 @@ a.tag:hover {
 }
 .site-mascot:hover {
   opacity: 1;
-}
-.project-video {
-  width: 100%;
-  max-width: 640px;
-  height: auto;
-  display: block;
-  margin: 1.25rem auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
 }
 
 /* ---- Footer ---- */
@@ -865,25 +1311,123 @@ a.tag:hover {
   text-decoration: underline;
 }
 
-@media (max-width: 600px) {
+/* ---- Browser surfaces ----
+   The parts of the page the design system did not draw. Left alone these ship
+   the browser's defaults, which belong to nobody's design. */
+html {
+  caret-color: var(--cyan);
+  scrollbar-color: var(--line) var(--bg);
+}
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 3px solid var(--bg);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* The pointer already says these are interactive; the ring is for keyboards. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+a:not([class]) {
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+time,
+.tile-meta,
+.cv-dates,
+.figure-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Print: the CV, on paper ----
+   Answers "is there a PDF?" honestly — the page prints as one, rather than
+   linking a file that does not exist. */
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+  html,
   body {
-    font-size: 15px;
+    background: #fff;
+    color: #14181d;
+    font-size: 10.5pt;
+    line-height: 1.5;
   }
-  .site-header .container {
-    flex-wrap: wrap;
-    height: auto;
-    padding-top: 0.6rem;
-    padding-bottom: 0.6rem;
-    gap: 0.5rem 0.75rem;
+  .site-header,
+  .site-footer,
+  .cv-print,
+  .cv-links,
+  .copy-toast,
+  #cc-main {
+    display: none !important;
   }
-  .nav {
-    flex: 1 1 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.2rem;
+  main {
+    padding: 0;
   }
-  .nav a {
-    padding: 0.35rem 0.4rem;
-    font-size: 0.72rem;
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+  .cv {
+    max-width: none;
+  }
+  .cv-head {
+    border-bottom: 1pt solid #14181d;
+  }
+  .cv-role {
+    color: #14181d;
+  }
+  .cv-place,
+  .cv-dates,
+  .cv-project-context,
+  .cv-bullets,
+  .cv-skill-row dt {
+    color: #43505e;
+  }
+  .cv-section {
+    margin-top: 1.4rem;
+    break-inside: avoid;
+  }
+  .cv-section h2 {
+    color: #14181d;
+    border-bottom: 0.5pt solid #9aa6b2;
+    margin-bottom: 0.7rem;
+  }
+  .cv-project {
+    break-inside: avoid;
+    border-top: 0.5pt solid #c3ccd5;
+  }
+  .tag {
+    color: #43505e;
+    background: none;
+    border: 0.5pt solid #9aa6b2;
+  }
+  .cv-section-contact::after {
+    content: 'Contact via linkedin.com/in/scottmca or github.com/smcallister594';
+    display: block;
+    font-size: 9pt;
+    color: #43505e;
+  }
+  a {
+    color: #14181d;
+    text-decoration: none;
   }
 }
+

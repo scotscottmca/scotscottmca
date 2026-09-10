@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-10T00:00:00Z",
+  "title": "Design System: ScotScottMcA — Mission Control",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Console Ground", "canonical": "#12151a", "tonalRamp": ["#07090b", "#0d0f13", "#12151a", "#1b2027", "#2c333d", "#4a5462", "#8b95a2", "#dfe6ee"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#1b2027", "tonalRamp": ["#090b0d", "#12151a", "#1b2027", "#20262e", "#2c333d", "#4a5462", "#8b95a2", "#dfe6ee"] },
+      "panel-raised": { "role": "neutral", "displayName": "Panel Raised", "canonical": "#20262e", "tonalRamp": ["#0b0d10", "#151a1f", "#20262e", "#2c333d", "#3b4450", "#5c6775", "#98a2af", "#e3e9f0"] },
+      "line": { "role": "neutral", "displayName": "Hairline", "canonical": "#2c333d", "tonalRamp": ["#0e1014", "#171b21", "#20262e", "#2c333d", "#3d4653", "#5f6a79", "#9aa4b1", "#e0e6ed"] },
+      "text": { "role": "neutral", "displayName": "Readout Text", "canonical": "#dfe6ee", "tonalRamp": ["#1a1f26", "#2f3742", "#4a5462", "#68737f", "#8b95a2", "#b3bcc7", "#dfe6ee", "#f4f7fa"] },
+      "dim": { "role": "neutral", "displayName": "Dim Label", "canonical": "#8b95a2", "tonalRamp": ["#15181c", "#262c33", "#3b434c", "#556069", "#6f7a86", "#8b95a2", "#b5bdc7", "#e2e7ec"] },
+      "amber": { "role": "primary", "displayName": "Instrument Amber", "canonical": "#ffb400", "tonalRamp": ["#241900", "#3d2b00", "#5c4100", "#8a6200", "#b88300", "#e6a400", "#ffb400", "#ffd980"] },
+      "cyan": { "role": "primary", "displayName": "Console Cyan", "canonical": "#49e0ff", "tonalRamp": ["#04222a", "#073744", "#0b4d5e", "#106b83", "#1690ae", "#2bb8dc", "#49e0ff", "#a4efff"] },
+      "green": { "role": "secondary", "displayName": "Signal Green", "canonical": "#3ddc73", "tonalRamp": ["#062012", "#0a361f", "#0f4d2c", "#166e3f", "#1f9455", "#2dba6a", "#3ddc73", "#9defb9"] },
+      "red": { "role": "secondary", "displayName": "Fault Red", "canonical": "#ff5c5c", "tonalRamp": ["#2a0d0d", "#431414", "#601c1c", "#8a2727", "#b53434", "#df4545", "#ff5c5c", "#ffaeae"] },
+      "ink-on-amber": { "role": "neutral", "displayName": "Ink on Amber", "canonical": "#1a1200" },
+      "ink-on-cyan": { "role": "neutral", "displayName": "Ink on Cyan", "canonical": "#00232a" },
+      "ink-on-green": { "role": "neutral", "displayName": "Ink on Green", "canonical": "#06210f" },
+      "selection": { "role": "primary", "displayName": "Cyan Selection", "canonical": "rgba(73, 224, 255, 0.25)" },
+      "print-ink": { "role": "neutral", "displayName": "Print Ink", "canonical": "#14181d" },
+      "print-ink-muted": { "role": "neutral", "displayName": "Print Ink Muted", "canonical": "#43505e" },
+      "print-rule": { "role": "neutral", "displayName": "Print Rule", "canonical": "#9aa6b2" },
+      "print-rule-faint": { "role": "neutral", "displayName": "Print Rule Faint", "canonical": "#c3ccd5" },
+      "print-paper": { "role": "neutral", "displayName": "Print Paper", "canonical": "#ffffff" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The live state word. One per page, only for a live reading. Drops to clamp(1.6rem, 2.8vw, 2rem) in the failure state." },
+      "headline": { "displayName": "Headline", "purpose": "Page-level titles: article h1, CV name (as clamp(1.9rem, 4vw, 2.5rem))." },
+      "figure": { "displayName": "Figure", "purpose": "Headline figure values on the home ledger, set over a 0.72rem uppercase unit." },
+      "title": { "displayName": "Title", "purpose": "Repeating item titles: post card heading, work ledger row, project square." },
+      "body": { "displayName": "Body", "purpose": "Running prose, in monospace." },
+      "body-small": { "displayName": "Body Small", "purpose": "Supporting sentences: live detail (30ch cap), CV summaries, section intros." },
+      "body-fine": { "displayName": "Body Fine", "purpose": "Dense list copy: telemetry values, project summaries, CV skill values." },
+      "section-label": { "displayName": "Section Label", "purpose": "Block heading with a 1px underrule: work ledger and CV section headings." },
+      "label": { "displayName": "Label", "purpose": "The workhorse: definition terms, tile labels, drill-down affordances." },
+      "micro": { "displayName": "Micro", "purpose": "Pills and tags. Status pills bottom out at 0.66rem, which is the floor, not a step." }
+    },
+    "shadows": [
+      { "name": "led-glow", "value": "0 0 6px currentColor", "purpose": "Emissive glow on a lit LED, taking the accent of its state. Removed entirely on [data-tone='down']." },
+      { "name": "toast-lift", "value": "0 6px 24px rgba(0, 0, 0, 0.4)", "purpose": "The only floating-overlay shadow, on the copied-link toast. Nothing at rest carries a shadow." }
+    ],
+    "motion": [
+      { "name": "transition", "value": "160ms ease", "purpose": "Every state transition in the system: border colour, text colour, opacity, transform." },
+      { "name": "led-period-rest", "value": "4.8s", "purpose": "LED pulse period when asleep. The period is data, not decoration." },
+      { "name": "led-period-awake", "value": "2.4s", "purpose": "LED pulse period when awake." },
+      { "name": "led-period-active", "value": "1.6s", "purpose": "LED pulse period when up and active." },
+      { "name": "led-period-walking", "value": "1.4s", "purpose": "LED pulse period when out walking." },
+      { "name": "led-period-workout", "value": "0.9s", "purpose": "LED pulse period when working out — the fastest state." },
+      { "name": "led-timing", "value": "steps(2)", "purpose": "The lamp blinks rather than breathes; opacity drops to 0.25 at 50%." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion: reduce) { .led { animation: none } }", "purpose": "The global stylesheet suppresses the LED pulse; the status page carries its own reduced-motion block. Note: the project square's translateY(-3px) hover is NOT currently covered by a reduced-motion guard — that is a gap in the build, not a rule." }
+    ],
+    "breakpoints": [
+      { "name": "project-single", "value": "520px" },
+      { "name": "post-head-stack", "value": "560px" },
+      { "name": "cv-skills-stack", "value": "620px" },
+      { "name": "telemetry-stack", "value": "640px" },
+      { "name": "project-two-up", "value": "820px" },
+      { "name": "ledger-stack", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Live State Block",
+      "kind": "custom",
+      "refersTo": "live-block",
+      "description": "The home page's dominant instrument: a bordered panel whose state word, colour and LED pulse period all come from a real reading. Collapses its sprite slot when empty.",
+      "html": "<a class=\"ds-live\" href=\"/status\" data-tone=\"up\"><div class=\"ds-live-head\"><span class=\"ds-led\"></span><span class=\"ds-live-label\">Right now</span><span class=\"ds-live-meta\">high confidence</span></div><div class=\"ds-live-body\"><p class=\"ds-live-state\">Awake</p><p class=\"ds-live-detail\">Up for 3h 14m.</p></div><span class=\"ds-live-drill\">Full status</span></a>",
+      "css": ".ds-live { display: grid; background: var(--panel, #1b2027); border: 1px solid var(--line, #2c333d); border-radius: 6px; padding: 1.25rem 1.35rem; color: var(--text, #dfe6ee); text-decoration: none; transition: border-color 160ms ease; } .ds-live:hover { border-color: var(--cyan, #49e0ff); } .ds-live-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; } .ds-led { --led-period: 2.4s; width: 9px; height: 9px; border-radius: 50%; background: var(--green, #3ddc73); box-shadow: 0 0 6px var(--green, #3ddc73); animation: ds-ledpulse var(--led-period) steps(2) infinite; } @keyframes ds-ledpulse { 50% { opacity: 0.25; } } @media (prefers-reduced-motion: reduce) { .ds-led { animation: none; } } .ds-live-label { font-family: 'Chakra Petch', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-live-meta { margin-left: auto; font-size: 0.72rem; color: var(--dim, #8b95a2); font-variant-numeric: tabular-nums; } .ds-live-state { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: clamp(2.4rem, 5vw, 3.4rem); line-height: 1; letter-spacing: -0.015em; margin: 0 0 0.5rem; color: var(--green, #3ddc73); } .ds-live-detail { margin: 0; font-family: 'Space Mono', monospace; font-size: 0.9rem; line-height: 1.6; max-width: 30ch; } .ds-live-drill { margin-top: 0.9rem; font-family: 'Chakra Petch', sans-serif; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); transition: color 160ms ease; } .ds-live:hover .ds-live-drill { color: var(--cyan, #49e0ff); } .ds-live[data-tone='rest'] .ds-live-state { color: var(--cyan, #49e0ff); } .ds-live[data-tone='move'] .ds-live-state { color: var(--amber, #ffb400); } .ds-live[data-tone='down'] .ds-live-state { color: var(--text, #dfe6ee); font-size: clamp(1.6rem, 2.8vw, 2rem); } .ds-live[data-tone='down'] .ds-led { background: var(--dim, #8b95a2); box-shadow: none; animation: none; }"
+    },
+    {
+      "name": "Figure Row",
+      "kind": "custom",
+      "refersTo": "panel-block",
+      "description": "Headline figures on the home ledger: amber tabular value stacked over a dim uppercase unit, with a period tag and a drill-down to the CV.",
+      "html": "<a class=\"ds-figures\" href=\"/cv\"><span class=\"ds-figures-row\"><span class=\"ds-figure\"><span class=\"ds-figure-value\">1,284</span><span class=\"ds-figure-unit\">commits</span></span><span class=\"ds-figure\"><span class=\"ds-figure-value\">37</span><span class=\"ds-figure-unit\">releases</span></span><span class=\"ds-tag\">2026</span></span><span class=\"ds-figures-drill\">Full CV</span></a>",
+      "css": ".ds-figures { display: block; color: var(--text, #dfe6ee); text-decoration: none; } .ds-figures-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.4rem; } .ds-figure { display: grid; gap: 0.1rem; } .ds-figure-value { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.9rem; line-height: 1; color: var(--amber, #ffb400); font-variant-numeric: tabular-nums; } .ds-figure-unit { font-family: 'Chakra Petch', sans-serif; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-tag { font-family: 'Chakra Petch', sans-serif; font-size: 0.7rem; letter-spacing: 0.03em; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--line, #2c333d); background: var(--panel-2, #20262e); color: var(--dim, #8b95a2); align-self: center; } .ds-figures-drill { display: block; margin-top: 0.7rem; font-family: 'Chakra Petch', sans-serif; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); transition: color 160ms ease; } .ds-figures:hover .ds-figures-drill { color: var(--cyan, #49e0ff); }"
+    },
+    {
+      "name": "Telemetry Row",
+      "kind": "custom",
+      "refersTo": "panel-block",
+      "description": "A dot / label / value line, hairline-divided, full width beneath the ledger. The dot sits on the first line of its label, not centred across a wrapping value.",
+      "html": "<dl class=\"ds-telemetry\"><div class=\"ds-tel-row\"><span class=\"ds-dot\"></span><dt>Fuel</dt><dd>Black coffee and weird beers</dd></div><div class=\"ds-tel-row\"><span class=\"ds-dot\"></span><dt>Latest release</dt><dd><a href=\"#\">GifTamer 1.1.1 · 12 Aug 2026</a></dd></div></dl>",
+      "css": ".ds-telemetry { margin: 0; background: var(--panel, #1b2027); border: 1px solid var(--line, #2c333d); border-radius: 6px; } .ds-tel-row { display: grid; grid-template-columns: 22px 150px 1fr; align-items: baseline; gap: 0.7rem; padding: 0.8rem 1.1rem; border-top: 1px solid var(--line, #2c333d); } .ds-tel-row:first-child { border-top: none; } .ds-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green, #3ddc73); align-self: start; margin-top: 0.5rem; } .ds-tel-row dt { font-family: 'Chakra Petch', sans-serif; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-tel-row dd { margin: 0; font-family: 'Space Mono', monospace; font-size: 0.88rem; line-height: 1.6; color: var(--text, #dfe6ee); } .ds-tel-row a { color: var(--cyan, #49e0ff); text-decoration: none; } .ds-tel-row a:hover { text-decoration: underline; } @media (max-width: 640px) { .ds-tel-row { grid-template-columns: 22px 1fr; grid-template-rows: auto auto; gap: 0.3rem 0.7rem; } .ds-tel-row dt, .ds-tel-row dd { grid-column: 2; } .ds-tel-row .ds-dot { grid-row: 1 / 3; } }"
+    },
+    {
+      "name": "Work Ledger Row",
+      "kind": "custom",
+      "refersTo": "panel-block",
+      "description": "The shipped-work list: a labelled panel of hairline-divided rows, each a title with a status pill and a dim summary capped at 46ch.",
+      "html": "<section class=\"ds-work-panel\"><h2 class=\"ds-ledger-heading\">Personal projects</h2><ol class=\"ds-work\"><li><a href=\"#\"><span class=\"ds-work-head\"><span class=\"ds-work-name\">GifTamer</span><span class=\"ds-status ds-status-active\">active</span></span><span class=\"ds-work-summary\">A desktop GIF optimiser that keeps the frames you care about.</span></a></li><li><a href=\"#\"><span class=\"ds-work-head\"><span class=\"ds-work-name\">Fleet Status</span><span class=\"ds-status ds-status-maintained\">maintained</span></span><span class=\"ds-work-summary\">Reads a watch and answers one question honestly.</span></a></li></ol></section>",
+      "css": ".ds-work-panel { background: var(--panel, #1b2027); border: 1px solid var(--line, #2c333d); border-radius: 6px; padding: 1.25rem 1.35rem; } .ds-ledger-heading { font-family: 'Chakra Petch', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim, #8b95a2); margin: 0 0 0.4rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line, #2c333d); } .ds-work { list-style: none; margin: 0; padding: 0; } .ds-work li + li { border-top: 1px solid var(--line, #2c333d); } .ds-work a { display: block; padding: 1.3rem 0; color: var(--text, #dfe6ee); text-decoration: none; } .ds-work-head { display: block; margin-bottom: 0.4rem; } .ds-work-name { font-family: 'Chakra Petch', sans-serif; font-size: 1.1rem; letter-spacing: -0.01em; transition: color 160ms ease; } .ds-work a:hover .ds-work-name { color: var(--cyan, #49e0ff); } .ds-work-summary { display: block; font-family: 'Space Mono', monospace; font-size: 0.87rem; line-height: 1.6; color: var(--dim, #8b95a2); max-width: 46ch; } .ds-status { font-family: 'Chakra Petch', sans-serif; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid var(--line, #2c333d); color: var(--dim, #8b95a2); background: var(--panel-2, #20262e); margin-left: 0.7rem; vertical-align: 0.15em; } .ds-status-active { color: #06210f; background: var(--green, #3ddc73); border-color: transparent; } .ds-status-maintained { color: #00232a; background: var(--cyan, #49e0ff); border-color: transparent; }"
+    },
+    {
+      "name": "Post Card",
+      "kind": "card",
+      "refersTo": "post-card",
+      "description": "A bordered card with the date set small to the right of the title and a graticule tick crossing the left edge, green at rest and extending to cyan on hover.",
+      "html": "<li class=\"ds-post-card\"><div class=\"ds-post-head\"><h3><a href=\"#\">Patching WSUS without losing the weekend</a></h3><time class=\"ds-post-date\">12 Aug 2026</time></div><ul class=\"ds-tags\"><li><span class=\"ds-tag\">wsus</span></li><li><span class=\"ds-tag\">powershell</span></li></ul></li>",
+      "css": ".ds-post-card { position: relative; list-style: none; border: 1px solid var(--line, #2c333d); border-radius: 6px; padding: 1.1rem 1.25rem; background: var(--panel, #1b2027); transition: 160ms ease; } .ds-post-card::before { content: ''; position: absolute; left: -1px; top: 1.5rem; width: 7px; height: 1px; background: var(--green, #3ddc73); transition: 160ms ease; } .ds-post-card:hover { border-color: var(--cyan, #49e0ff); } .ds-post-card:hover::before { background: var(--cyan, #49e0ff); width: 13px; } .ds-post-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1.25rem; margin-bottom: 0.55rem; } .ds-post-card h3 { margin: 0; font-family: 'Chakra Petch', sans-serif; font-size: 1.1rem; letter-spacing: -0.01em; } .ds-post-card h3 a { color: var(--text, #dfe6ee); text-decoration: none; } .ds-post-card h3 a:hover { color: var(--cyan, #49e0ff); } .ds-post-date { flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 0.74rem; color: var(--dim, #8b95a2); white-space: nowrap; font-variant-numeric: tabular-nums; } .ds-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; list-style: none; } .ds-tag { font-family: 'Chakra Petch', sans-serif; font-size: 0.7rem; letter-spacing: 0.03em; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--line, #2c333d); background: var(--panel-2, #20262e); color: var(--dim, #8b95a2); } @media (max-width: 560px) { .ds-post-head { flex-direction: column; gap: 0.25rem; } }"
+    },
+    {
+      "name": "Bordered Button",
+      "kind": "button",
+      "refersTo": "button-bordered",
+      "description": "The system's only button shape: a panel-filled chip with a hairline that lights cyan on hover or keyboard focus. No fill change, no lift.",
+      "html": "<button type=\"button\" class=\"ds-btn\">Print / save as PDF</button>",
+      "css": ".ds-btn { font-family: 'Chakra Petch', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); background: var(--panel, #1b2027); border: 1px solid var(--line, #2c333d); border-radius: 4px; padding: 0.5rem 0.85rem; cursor: pointer; transition: 160ms ease; } .ds-btn:hover { color: var(--text, #dfe6ee); border-color: var(--cyan, #49e0ff); } .ds-btn:focus-visible { outline: 2px solid var(--cyan, #49e0ff); outline-offset: 2px; border-radius: 4px; } .ds-btn:active { color: var(--cyan, #49e0ff); }"
+    },
+    {
+      "name": "Primary Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Sticky translucent header: brand with the fleet LED (unlit until a real reading lights it) and small uppercase nav chips.",
+      "html": "<header class=\"ds-header\"><a class=\"ds-brand\" href=\"/\"><span class=\"ds-led-down\" data-tone=\"down\"></span> ScotScottMcA</a><nav class=\"ds-nav\"><a href=\"/posts\">Posts</a><a href=\"/projects\">Projects</a><a href=\"/cv\">CV</a></nav></header>",
+      "css": ".ds-header { display: flex; align-items: center; justify-content: space-between; min-height: 58px; gap: 1rem; flex-wrap: wrap; padding: 0 1.25rem; background: color-mix(in srgb, var(--panel, #1b2027) 92%, transparent); backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--line, #2c333d); } .ds-brand { display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.06em; color: var(--text, #dfe6ee); text-transform: uppercase; text-decoration: none; } .ds-brand:hover { color: var(--amber, #ffb400); } .ds-led-down { width: 9px; height: 9px; border-radius: 50%; background: var(--dim, #8b95a2); box-shadow: none; } .ds-nav { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; } .ds-nav a { font-family: 'Chakra Petch', sans-serif; font-weight: 600; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--dim, #8b95a2); border: 1px solid var(--line, #2c333d); border-radius: 4px; padding: 0.4rem 0.75rem; background: var(--panel-2, #20262e); text-decoration: none; } .ds-nav a:hover { color: var(--text, #dfe6ee); border-color: var(--cyan, #49e0ff); } .ds-nav a:focus-visible { outline: 2px solid var(--cyan, #49e0ff); outline-offset: 2px; }"
+    },
+    {
+      "name": "Topic Index Chip",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "A split pill: topic label on panel, tabular count on the raised tier behind a hairline. The count is the reason it exists.",
+      "html": "<ul class=\"ds-topics\"><li><span class=\"ds-topic-tag\">powershell</span><span class=\"ds-topic-count\">14</span></li><li><span class=\"ds-topic-tag\">intune</span><span class=\"ds-topic-count\">6</span></li></ul>",
+      "css": ".ds-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; } .ds-topics li { display: inline-flex; align-items: stretch; border: 1px solid var(--line, #2c333d); border-radius: 999px; overflow: hidden; background: var(--panel, #1b2027); } .ds-topic-tag { font-family: 'Chakra Petch', sans-serif; font-size: 0.7rem; letter-spacing: 0.03em; color: var(--text, #dfe6ee); padding: 0.2rem 0.55rem; } .ds-topic-count { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--dim, #8b95a2); background: var(--panel-2, #20262e); border-left: 1px solid var(--line, #2c333d); padding: 0.2rem 0.5rem; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Project Square",
+      "kind": "card",
+      "refersTo": "post-card",
+      "description": "A true 1/1 square with a status pill, a two-line clamped title and a five-line clamped summary. Carries the system's only hover transform.",
+      "html": "<a class=\"ds-square\" href=\"#\"><span class=\"ds-status ds-status-complete\">complete</span><h3>GifTamer</h3><p class=\"ds-square-summary\">A desktop GIF optimiser that keeps the frames you care about and throws away the ones you don't.</p></a>",
+      "css": ".ds-square { aspect-ratio: 1 / 1; display: flex; flex-direction: column; gap: 0.65rem; padding: 1.15rem 1.2rem; border: 1px solid var(--line, #2c333d); border-radius: 6px; background: var(--panel, #1b2027); color: var(--text, #dfe6ee); overflow: hidden; text-decoration: none; transition: 160ms ease; } .ds-square:hover { border-color: var(--cyan, #49e0ff); transform: translateY(-3px); } .ds-square:focus-visible { outline: 2px solid var(--cyan, #49e0ff); outline-offset: 2px; } .ds-square h3 { margin: 0; font-family: 'Chakra Petch', sans-serif; font-size: 1.1rem; letter-spacing: -0.01em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } .ds-square:hover h3 { color: var(--cyan, #49e0ff); } .ds-square-summary { color: var(--dim, #8b95a2); margin: 0; font-family: 'Space Mono', monospace; font-size: 0.88rem; line-height: 1.55; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden; } .ds-status { align-self: flex-start; font-family: 'Chakra Petch', sans-serif; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid transparent; } .ds-status-complete { color: #1a1200; background: var(--amber, #ffb400); }"
+    },
+    {
+      "name": "Social Link Row",
+      "kind": "custom",
+      "refersTo": "social-button",
+      "description": "34px square bordered buttons holding shared 24x24 SVG brand marks rendered at 17px in currentColor. Never an icon font.",
+      "html": "<div class=\"ds-social\"><a href=\"#\" aria-label=\"GitHub\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.1c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z\"/></svg></a></div>",
+      "css": ".ds-social { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; } .ds-social a { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 4px; border: 1px solid var(--line, #2c333d); background: var(--panel, #1b2027); color: var(--dim, #8b95a2); transition: 160ms ease; } .ds-social a:hover { color: var(--cyan, #49e0ff); border-color: var(--cyan, #49e0ff); } .ds-social a:focus-visible { outline: 2px solid var(--cyan, #49e0ff); outline-offset: 2px; } .ds-social svg { width: 17px; height: 17px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Console",
+    "overview": "One committed dark console. No light mode, no toggle: color-scheme: dark is declared and the theme is the theme. The surface reads like instrumentation that has been left running — panels on a near-black ground, hairline rules, small uppercase labels, one lamp that pulses at a rate carrying real data. The personality is competent and unshowy: it does not perform excitement, it reports.\n\nDensity is deliberately uneven. The home page is a two-column ledger (5fr 1fr 6fr, the middle column pure gap) whose blocks are separated by empty bands rather than by a lattice of borders, and whose left column is allowed to end early and leave the page ragged. This replaced an earlier twelve-cell bordered tile grid that read as noise in live use; the current world's rule is that structure comes from space first and from a border only when a block is genuinely a container.\n\nThe one loud element on any screen is a live reading — the current state word, set in display type at up to 3.4rem, coloured by what it says. Everything else sits between 0.7rem and 1.1rem. Nothing here is decorative-first: the topic counts, the figure row, the LED period and the graticule tick on a post card all encode data.",
+    "keyCharacteristics": [
+      "Single committed dark theme; no light variant anywhere in the system.",
+      "Structure from space and hairlines, not from a grid of boxes.",
+      "Monospace body against a squared technical display face.",
+      "Colour is semantic before it is aesthetic; accents are never mood lighting.",
+      "Motion is rare and, where it exists on the home page, carries a value.",
+      "Numbers are tabular everywhere they appear."
+    ],
+    "rules": [
+      { "name": "The Meaning-First Rule", "body": "Amber = figures and emphasis. Green = confirmed and online. Cyan = live, interactive, hover, focus. Red = fault. A colour is never chosen because a block \"needs some colour\"; if none of the four meanings applies, the element is text or dim.", "section": "colors" },
+      { "name": "The Honest Lamp Rule", "body": "A green LED must be backed by a real reading. The header lamp ships data-tone=\"down\" (unlit, grey, no animation) and is only lit by the live status fetch resolving successfully; a failed read pushes it back down. No lamp on any future surface may be lit by markup alone.", "section": "colors" },
+      { "name": "The One Border Colour Rule", "body": "Every rule, divider, and card edge is 1px of line. Depth changes come from the panel tier, never from a heavier or lighter stroke.", "section": "colors" },
+      { "name": "The One Shout Rule", "body": "A page gets one element above 1.9rem, and it must be a live or identifying reading. If a screen wants a second, the screen is wrong.", "section": "typography" },
+      { "name": "The Display-For-Chrome Rule", "body": "Chakra Petch is for labels, titles, figures and state words. Running prose is always Space Mono. An uppercase Chakra Petch label is the system's only way of naming a block — it never gets a decorative kicker or eyebrow above it.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Anything countable is tabular: time, tile meta, CV dates, figure values and topic counts all carry font-variant-numeric: tabular-nums.", "section": "typography" },
+      { "name": "The Gap-Not-Grid Rule", "body": "Columns are separated by an empty grid column, not by a divider. If two regions need distinguishing, put space between them before reaching for a border.", "section": "layout" },
+      { "name": "The Uneven Page Rule", "body": "Columns are not padded to match height. A short left column ending above a long right column is the intended result.", "section": "layout" },
+      { "name": "The No-Resting-Shadow Rule", "body": "Surfaces are flat at rest. Depth comes from the panel tier and the hairline. The only shadows in the system are a lamp's glow and a floating transient.", "section": "elevation" },
+      { "name": "The Border-Lights-Up Rule", "body": "Hover state on any container is a border colour change to cyan, not a lift, a fill, or a shadow. The one exception is the project square, which also rises 3px.", "section": "elevation" },
+      { "name": "The Failure Is A State Rule", "body": "When the fetch fails, the live block renders data-tone=\"down\": the word becomes \"No signal\" at the reduced display size, the LED goes grey and unlit with its animation and glow removed, the confidence reading empties, and the sprite is removed. It never guesses a state and it never shows a spinner in place of an answer.", "section": "components" }
+    ],
+    "dos": [
+      "Do separate regions with space first; reach for a 1px line border only when the region is genuinely a container.",
+      "Do give every screen exactly one element above 1.9rem, and make it a live or identifying reading.",
+      "Do assign colour by meaning: amber for figures and emphasis, green for confirmed, cyan for live and interactive, red for fault.",
+      "Do ship indicators unlit by default and let a real reading light them.",
+      "Do set every countable value in tabular numerals.",
+      "Do snap to the recorded ramp (0.7 / 0.74 / 0.75 / 0.88 / 0.9 / 1rem / 1.1rem / 1.9rem / the display clamp) instead of inventing a new size.",
+      "Do collapse an element that has no data rather than framing an empty slot.",
+      "Do theme browser surfaces — caret, scrollbar, selection, focus ring — on any new surface.",
+      "Do state failure as a named state in the same component, at a quieter size than the working state."
+    ],
+    "donts": [
+      "Don't add a light theme, a theme toggle, or any surface that is not committed dark.",
+      "Don't introduce a second border colour or a border weight above 1px.",
+      "Don't put a resting shadow on a panel, card, or button; hover changes the border, not the elevation.",
+      "Don't use print inks (#14181d, #43505e, #9aa6b2, #c3ccd5, #fff) on a screen surface; they exist only inside @media print.",
+      "Don't set text on a filled accent in ground — use the matched ink-on-accent tint.",
+      "Don't animate anything that is not carrying a value or answering an input.",
+      "Don't put a decorative kicker or eyebrow above a heading; a block is named by its uppercase display label or not at all.",
+      "Don't use icon fonts or glyph characters for icons; use the shared 24x24 SVG paths with currentColor.",
+      "Don't equalise the ledger columns to matching heights."
+    ]
+  }
+}

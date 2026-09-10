@@ -8,17 +8,41 @@ import PostCard from '../../components/PostCard.astro';
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
+
+// Tags, most-used first — the honest shape of what gets written about here.
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+}
+const topics = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+const span = {
+  from: posts.at(-1)?.data.date.getFullYear(),
+  to: posts[0]?.data.date.getFullYear(),
+};
 ---
 
-<BaseLayout title="Posts" description="All posts on ScotScottMcA.">
+<BaseLayout title="Posts" description="Technical writing on WSUS, ConfigMgr, Intune, PowerShell and the Microsoft Graph.">
   <Header />
   <main>
     <div class="container">
       <div class="statusstrip">
         <span class="led"></span>
         <span class="title">Transmission log · Posts</span>
-        <span class="meta">{posts.length} posts archived</span>
+        <span class="meta">{posts.length} posts · {span.from}–{span.to}</span>
       </div>
+
+      <ul class="topic-index">
+        {
+          topics.map(([tag, count]) => (
+            <li>
+              <span class="topic-tag">{tag}</span>
+              <span class="topic-count">{count}</span>
+            </li>
+          ))
+        }
+      </ul>
+
       <ul class="post-list">
         {posts.map((post) => <PostCard post={post} />)}
       </ul>

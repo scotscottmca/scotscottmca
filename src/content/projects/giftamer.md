@@ -4,6 +4,10 @@ summary: A Microsoft Edge extension that overlays video-style controls on any an
 date: 2026-07-20
 status: active
 featured: true
+demo:
+  video: /videos/giftamer/demo.mp4
+  poster: /videos/giftamer/demo-poster.jpg
+  alt: Silent screen recording of GifTamer scrubbing frame-by-frame through an animated GIF
 tags:
   - Browser Extension
   - Microsoft Edge
