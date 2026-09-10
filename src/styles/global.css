@@ -82,6 +82,11 @@ hr {
   margin: 0 auto;
   padding: 0 1.25rem;
 }
+/* The home page is a panel layout, not a column of prose, so it takes a wider
+   measure than the reading pages. */
+.container-wide {
+  max-width: 1180px;
+}
 
 main {
   flex: 1 0 auto;
@@ -265,26 +270,26 @@ main {
 }
 
 /* ---- The ledger ----
-   Two columns separated by space rather than by borders. Blocks are divided by
-   empty bands; only a block that genuinely needs naming carries a label. The
-   left column is allowed to end early and leave the page uneven. */
+   Three columns: who, what right now, and the readouts. Personal projects run
+   the full width beneath them. */
 .ledger {
   display: grid;
-  grid-template-columns: 5fr 1fr 6fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.6rem;
   align-items: start;
   margin: 1rem 0 3rem;
 }
-.ledger-left {
+.who {
   grid-column: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
 }
-.ledger-right {
+.tile-live {
+  grid-column: 2;
+}
+.telemetry {
   grid-column: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
+}
+.work-panel {
+  grid-column: 1 / -1;
 }
 
 /* Each block sits in its own panel again, with room left between them. */
@@ -375,10 +380,6 @@ a.tile-live:hover .tile-drill {
   width: 100%;
   aspect-ratio: 1 / 1;
   margin-top: 1rem;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
   pointer-events: none;
 }
 /* No reading, no square — the block closes up rather than framing nothing. */
@@ -388,9 +389,8 @@ a.tile-live:hover .tile-drill {
 .live-sprite {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border: none;
-  border-radius: 0;
   display: block;
 }
 /* Tones. The word carries the state; colour only agrees with it. */
@@ -495,11 +495,11 @@ a.tile-live:hover .tile-drill {
 }
 
 /* Telemetry — label/value lines with room to breathe. */
-.telemetry {
-  padding: 0;
-}
 .telemetry dl {
-  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.15rem 1.25rem;
+  margin: 1.1rem 0 0;
 }
 /* The row's confirmed light, back where it was. */
 .dot {
@@ -510,27 +510,16 @@ a.tile-live:hover .tile-drill {
   display: inline-block;
   flex-shrink: 0;
 }
-/* Full width beneath both columns: light, label, value. */
-.telemetry-row {
-  display: grid;
-  grid-template-columns: 22px 150px 1fr;
-  align-items: baseline;
-  gap: 0.7rem;
-  padding: 0.8rem 1.1rem;
-  border-top: 1px solid var(--line);
-}
-.telemetry-row:first-child {
-  border-top: none;
-}
-/* The light sits on the first line with its label, not centred across a value
-   that happens to wrap. */
-.telemetry-row .dot {
-  align-self: start;
-  margin-top: 0.5rem;
+/* One cell per readout: light and label on the first line, value beneath. */
+.telemetry-row dt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 .telemetry-row dt {
   font-family: var(--font-display);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dim);
@@ -555,15 +544,17 @@ a.tile-live:hover .tile-drill {
 }
 .work {
   list-style: none;
-  margin: 0;
+  margin: 1.1rem 0 0;
   padding: 0;
-}
-.work li + li {
-  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Rows are separated by space, not a rule: a border above a part-filled
+     final row reads as a stray line rather than a division. */
+  gap: 0.6rem 1.6rem;
 }
 .work a {
   display: block;
-  padding: 1.3rem 0;
+  padding: 1.1rem 0;
   color: var(--text);
 }
 .work a:hover {
@@ -588,10 +579,9 @@ a.tile-live:hover .tile-drill {
 }
 .work-summary {
   display: block;
-  font-size: 0.87rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   color: var(--dim);
-  max-width: 46ch;
 }
 
 /* ---- Mobile ----
@@ -647,14 +637,34 @@ a.tile-live:hover .tile-drill {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
+  .ledger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .who { grid-column: 1; }
+  .tile-live { grid-column: 2; }
+  .telemetry { grid-column: 1 / -1; }
+  .work { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
   .ledger {
     grid-template-columns: 1fr;
-    gap: 3.5rem;
   }
-  .ledger-left,
-  .ledger-right {
+  .who,
+  .tile-live,
+  .telemetry,
+  .work-panel {
     grid-column: 1;
+  }
+  .telemetry dl {
+    grid-template-columns: 1fr;
+  }
+  .work {
+    grid-template-columns: 1fr;
+  }
+  .work li + li {
+    border-top: 1px solid var(--line);
   }
 }
 

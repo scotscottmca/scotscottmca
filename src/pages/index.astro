@@ -38,83 +38,80 @@ if (latestRelease) {
 <BaseLayout>
   <Header />
   <main>
-    <div class="container">
-      <!-- Two columns, separated by space rather than by borders. -->
+    <div class="container container-wide">
+      <!-- Three columns: who, what right now, and the readouts. Projects run
+           the full width beneath them. -->
       <div class="ledger">
-        <div class="ledger-left">
-          <LiveStateTile />
+        <section class="who">
+          <h1 class="who-name">{SITE.author}</h1>
+          <p class="who-role">Software Developer <span aria-hidden="true">//</span> AI Janitor</p>
+          <dl class="who-facts">
+            <div>
+              <dt>Base</dt>
+              <dd>{ROLE.location}</dd>
+            </div>
+            <div>
+              <dt>Post</dt>
+              <dd>{ROLE.org}</dd>
+            </div>
+          </dl>
 
-          <section class="who">
-            <h1 class="who-name">{SITE.author}</h1>
-            <p class="who-role">Software Developer <span aria-hidden="true">//</span> AI Janitor</p>
-            <dl class="who-facts">
-              <div>
-                <dt>Base</dt>
-                <dd>{ROLE.location}</dd>
-              </div>
-              <div>
-                <dt>Post</dt>
-                <dd>{ROLE.org}</dd>
-              </div>
-            </dl>
-
-            <a class="who-figures" href="/cv">
-              <span class="figures-row">
-                {
-                  HEADLINE_FIGURES.map((figure) => (
-                    <span class="figure">
-                      <span class="figure-value">{figure.value}</span>
-                      <span class="figure-unit">{figure.unit}</span>
-                    </span>
-                  ))
-                }
-                <span class="tag figures-period">{FIGURES_PERIOD}</span>
-              </span>
-              <span class="who-figures-drill">Full CV</span>
-            </a>
-
-            <SocialLinks />
-          </section>
-
-        </div>
-
-        <div class="ledger-right">
-          <section class="work-panel">
-            <h2 class="ledger-heading">Personal projects</h2>
-            <ol class="work">
+          <a class="who-figures" href="/cv">
+            <span class="figures-row">
               {
-                projects.map((project) => (
-                  <li>
-                    <a href={`/projects/${project.id}/`}>
-                      <span class="work-head">
-                        <span class="work-name">{project.data.title}</span>
-                        <span class={`status status-${project.data.status}`}>{project.data.status}</span>
-                      </span>
-                      <span class="work-summary">{project.data.summary}</span>
-                    </a>
-                  </li>
+                HEADLINE_FIGURES.map((figure) => (
+                  <span class="figure">
+                    <span class="figure-value">{figure.value}</span>
+                    <span class="figure-unit">{figure.unit}</span>
+                  </span>
                 ))
               }
-            </ol>
-          </section>
+              <span class="tag figures-period">{FIGURES_PERIOD}</span>
+            </span>
+            <span class="who-figures-drill">Full CV</span>
+          </a>
 
-        </div>
+          <SocialLinks />
+        </section>
+
+        <LiveStateTile />
+
+        <section class="telemetry">
+          <h2 class="ledger-heading">Telemetry</h2>
+          <dl>
+            {
+              telemetry.map((t) => (
+                <div class="telemetry-row">
+                  <dt>
+                    <span class="dot" />
+                    {t.label}
+                  </dt>
+                  <dd>{t.href ? <a href={t.href}>{t.value}</a> : t.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="work-panel">
+          <h2 class="ledger-heading">Personal projects</h2>
+          <ol class="work">
+            {
+              projects.map((project) => (
+                <li>
+                  <a href={`/projects/${project.id}/`}>
+                    <span class="work-head">
+                      <span class="work-name">{project.data.title}</span>
+                      <span class={`status status-${project.data.status}`}>{project.data.status}</span>
+                    </span>
+                    <span class="work-summary">{project.data.summary}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
       </div>
-
-      <div class="section-heading">Telemetry <span class="rule"></span></div>
-      <section class="telemetry">
-        <dl>
-          {
-            telemetry.map((t) => (
-              <div class="telemetry-row">
-                <span class="dot" />
-                <dt>{t.label}</dt>
-                <dd>{t.href ? <a href={t.href}>{t.value}</a> : t.value}</dd>
-              </div>
-            ))
-          }
-        </dl>
-      </section>
     </div>
   </main>
   <Footer />
