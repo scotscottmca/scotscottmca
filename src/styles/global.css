@@ -594,6 +594,37 @@ a.tile-live:hover .tile-drill {
   max-width: 46ch;
 }
 
+/* ---- Mobile ----
+   Brand on one row, the whole nav on the next. Five destinations at this width
+   fit a single line once the pills are tightened, which keeps every route
+   visible: hiding Status and CV behind a menu would hide the two pages that
+   make this site worth reading. */
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+  .site-header .container {
+    flex-wrap: wrap;
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+    gap: 0.55rem 0.75rem;
+  }
+  .nav {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    /* Wrap rather than nowrap: on one row when it fits, and on narrower
+       handsets it steps to two rather than scrolling the page sideways. */
+    flex-wrap: wrap;
+    gap: 0.35rem 0.3rem;
+  }
+  .nav a {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 560px) {
   .post-card-head {
     flex-direction: column;
