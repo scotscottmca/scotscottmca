@@ -274,9 +274,13 @@ main {
    the full width beneath them. */
 .ledger {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Columns are weighted to their content: the identity block is a short list,
+     the telemetry pair needs the most room to keep its values off a shred. */
+  grid-template-columns: 0.85fr 1fr 1.35fr;
   gap: 1.6rem;
-  align-items: start;
+  /* Row one ends flush: the panels stretch to a common height and the status
+     sprite absorbs whatever slack is left, rather than setting the height. */
+  align-items: stretch;
   margin: 1rem 0 3rem;
 }
 .who {
@@ -310,6 +314,9 @@ main {
   display: grid;
   transition: border-color var(--transition);
   grid-template-columns: minmax(0, 1fr);
+  /* minmax(0,1fr) so the sprite's intrinsic size cannot inflate the row —
+     it takes the space left over instead of demanding its own. */
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     'head'
     'body'
@@ -375,11 +382,14 @@ a.tile-live:hover {
 a.tile-live:hover .tile-drill {
   color: var(--cyan);
 }
+/* The image is taken out of flow so its intrinsic height cannot size the row:
+   the slot contributes only its minimum, then fills whatever the row allows. */
 .live-sprite-slot {
   grid-area: sprite;
+  position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  margin-top: 1rem;
+  min-height: 8rem;
+  margin: 1rem 0;
   pointer-events: none;
 }
 /* No reading, no square — the block closes up rather than framing nothing. */
@@ -387,9 +397,12 @@ a.tile-live:hover .tile-drill {
   display: none;
 }
 .live-sprite {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center;
   border: none;
   display: block;
 }
@@ -405,6 +418,14 @@ a.tile-live:hover .tile-drill {
 .tile-live[data-tone='down'] .led { background: var(--dim); box-shadow: none; animation: none; }
 
 /* Who — identity, unboxed. */
+.who {
+  display: flex;
+  flex-direction: column;
+}
+.who .social {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
 .who-name {
   font-family: var(--font-display);
   font-weight: 700;
@@ -495,11 +516,17 @@ a.tile-live:hover .tile-drill {
 }
 
 /* Telemetry — label/value lines with room to breathe. */
+/* Two columns, but the toolbox readout is three times the length of the others,
+   so it takes a column of its own and the three short ones stack beside it.
+   An even 2x2 would shred the long value into a six-line ribbon. */
 .telemetry dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.15rem 1.25rem;
+  gap: 1.15rem 1.5rem;
   margin: 1.1rem 0 0;
+}
+.telemetry-row:first-child {
+  grid-row: span 3;
 }
 /* The row's confirmed light, back where it was. */
 .dot {
