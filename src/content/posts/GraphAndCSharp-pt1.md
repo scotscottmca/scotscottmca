@@ -48,17 +48,17 @@ Before doing anything, we must create a project and install the C# extension.
 
 I recommend keeping a location on your device that isn't synced to OneDrive just for your code because it should all be stored in GitHub anyway, right? I've created a folder called GraphAndCSharp, with a subfolder called ScotScottMcA, so let's open GraphAndCSharp in VScode and navigate to our subfolder. 
 
-![New Folder](/images/GraphAndCSharp/1NewFolder.png)
+![New Folder](../../assets/images/GraphAndCSharp/1NewFolder.png)
 
-![Open Folder](/images/GraphAndCSharp/2OpenFolder.png)
+![Open Folder](../../assets/images/GraphAndCSharp/2OpenFolder.png)
 
-![CD Folder](/images/GraphAndCSharp/4CDFolder.png)
+![CD Folder](../../assets/images/GraphAndCSharp/4CDFolder.png)
 
 ### CSharp Extension
 
 The most important thing is the C# extension for VSCode; we can install this easily. Select the extensions icon on the left, search for C#, and it should be the first one in your list. Click, Install.
 
-![CSharp extension](/images/GraphAndCSharp/3CSharpextension.png)
+![CSharp extension](../../assets/images/GraphAndCSharp/3CSharpextension.png)
 
 ### New project
 
@@ -66,25 +66,25 @@ We can use dotnet templates to spin up everything we need for a new project quic
 
 **dotnet new console** will give us all the prerequisites for a dotnet console application, e.g., our project file, target framework settings & debug path.
 
-![dotnet new console](/images/GraphAndCSharp/5dotnetnewconsole.png)
+![dotnet new console](../../assets/images/GraphAndCSharp/5dotnetnewconsole.png)
 
 ### Restart VSCode
 
 To finish creating our project, we want to restart VSCode so that it detects the new project file. Once restarted, VSCode will prompt you to add missing build and debug assets to our project; select Yes. 
 
-![restart vscode](/images/GraphAndCSharp/6restartvscode.png)
+![restart vscode](../../assets/images/GraphAndCSharp/6restartvscode.png)
 
 ### The project 
 
 We can now see all the files and folders of our new project, all created automatically for us. Let's focus primarily on Program.cs for now.
 
-![project folder](/images/GraphAndCSharp/7projectfolder.png)
+![project folder](../../assets/images/GraphAndCSharp/7projectfolder.png)
 
 In Program.cs, we'll see that the dotnet template has given us a super simple "Hello, World" app, which we can run by pressing F5 and view the output in our debug console. 
 
-![Hello world](/images/GraphAndCSharp/8Helloworld.png)
+![Hello world](../../assets/images/GraphAndCSharp/8Helloworld.png)
 
-![Hello world](/images/GraphAndCSharp/8-1Helloworld.png)
+![Hello world](../../assets/images/GraphAndCSharp/8-1Helloworld.png)
 
 -----
 

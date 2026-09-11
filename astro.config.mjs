@@ -51,6 +51,8 @@ export default defineConfig({
   site: 'https://scotscottmca.com',
   // /usage is unlisted: reachable by URL, kept out of the sitemap and robots.
   integrations: [sitemap({ filter: (page) => !page.includes('/usage') })],
+  // Some long animated GIFs exceed sharp's default pixel cap when all frames are stacked.
+  image: { service: { entrypoint: 'astro/assets/services/sharp', config: { limitInputPixels: false } } },
   markdown: {
     shikiConfig: {
       themes: {

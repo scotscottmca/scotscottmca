@@ -31,7 +31,7 @@ Before we dive into the 3 areas, you will need to check a few prerequisites to e
 
 [Link to Organizational message settings](https://endpoint.microsoft.com/#view/Microsoft_Intune_DeviceSettings/TenantAdminMenu/~/message)
 
-![Organizational Messages Start](/images/Organizationalmessages/Organizationalmessagesstart.png)
+![Organizational Messages Start](../../assets/images/Organizationalmessages/Organizationalmessagesstart.png)
 
 ### Licencing
 The licence types that allow the use of Organizational messages are:
@@ -61,7 +61,7 @@ You'll need three sizes of logo, in PNG format with transparent backgrounds:
 We'll look at these 2 areas together, as they're almost identical for configuration. 
 | Taskbar | Notification area |
 | ------ | ----------- |
-| ![](/images/Organizationalmessages/Taskbar_1.png)   | ![](/images/Organizationalmessages/NotificationArea_1.png) |
+| ![](../../assets/images/Organizationalmessages/Taskbar_1.png)   | ![](../../assets/images/Organizationalmessages/NotificationArea_1.png) |
 
 #### Themes
 When creating your Taskbar or Notification area message you can choose a theme, each theme has a slightly different look & feel for displaying different information.
@@ -107,7 +107,7 @@ The Getting Started app is slightly different to the Taskbar and Notification ar
 
 
 <!-- ![image](https://github.com/smcallister594/scotscottmca/blob/main/assets/images/Organizationalmessages/GetStartedApp.png?raw=true) -->
-![Getting Started App](/images/Organizationalmessages/GetStartedApp_1.png)
+![Getting Started App](../../assets/images/Organizationalmessages/GetStartedApp_1.png)
 
 #### Messages
 You're able to add 2 messages to the Getting Started App, each of which will require a URL to redirect to.
@@ -131,7 +131,7 @@ Well once your Organizational messages are out in the wild, you can see their st
 - Times clicked
 - Click-through rate
 
-![Organizational Messages Dashboard](/images/Organizationalmessages/Organizationalmessagesdashboard.png)
+![Organizational Messages Dashboard](../../assets/images/Organizationalmessages/Organizationalmessagesdashboard.png)
 
 ## Additional resources
 

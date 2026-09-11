@@ -2,6 +2,7 @@ export const SITE = {
   title: 'ScotScottMcA',
   description: 'Just a blog on things I find interesting.',
   url: 'https://scotscottmca.com',
+  ogImage: '/images/og-card.png',
   author: 'Scott McAllister',
   subtitle: 'Just a blog on things I find interesting.',
   since: 2022,

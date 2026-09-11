@@ -9,14 +9,16 @@ interface Props {
   image?: string;
   article?: boolean;
   noindex?: boolean;
+  jsonLd?: Record<string, unknown>;
 }
 
 const {
   title,
   description = SITE.description,
-  image = '/images/og-card.png',
+  image = SITE.ogImage,
   article = false,
   noindex = false,
+  jsonLd,
 } = Astro.props;
 
 const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
@@ -62,6 +64,15 @@ const ga = SITE.googleAnalyticsId;
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+
+    {
+      jsonLd && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify({ '@context': 'https://schema.org', ...jsonLd }).replace(/</g, '\\u003c')}
+        />
+      )
+    }
 
     <!-- Google Analytics with Consent Mode v2 (denied until the user opts in) -->
     {

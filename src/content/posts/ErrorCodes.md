@@ -21,16 +21,16 @@ I've found it's not always straight forward finding what an error code means, ma
 Looking up the same error code 4 different ways, returns 3 different results, which is confusing. 
 
 **[CMTrace](https://learn.microsoft.com/en-us/mem/configmgr/core/support/cmtrace)**
-![cmtrace](/images/errorCodes/cmtrace.png)
+![cmtrace](../../assets/images/errorCodes/cmtrace.png)
 
 **[OneTrace](https://learn.microsoft.com/en-us/mem/configmgr/core/support/support-center-onetrace)**
-![OneTrace](/images/errorCodes/OneTrace.png)
+![OneTrace](../../assets/images/errorCodes/OneTrace.png)
 
 **[ErrLookup tool](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-code-lookup-tool)**
-![errLookup](/images/errorCodes/errLookup.png)
+![errLookup](../../assets/images/errorCodes/errLookup.png)
 
 **PowerShell function**
-![PowerShell](/images/errorCodes/PowerShell.png)
+![PowerShell](../../assets/images/errorCodes/PowerShell.png)
 
 That being said, CMTrace, OneTrace and ErrLookup are extremely useful!
 

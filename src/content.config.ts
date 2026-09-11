@@ -7,6 +7,10 @@ const posts = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     lastModified: z.coerce.date().optional(),
+    // Meta description / SERP snippet. Falls back to an excerpt of the body.
+    description: z.string().optional(),
+    // Social card image (path under public/). Falls back to the site card.
+    image: z.string().optional(),
     tags: z.array(z.string()).default([]),
     author: z.string().default('Scott McAllister'),
     draft: z.boolean().default(false),
@@ -24,6 +28,8 @@ const projects = defineCollection({
     url: z.string().url().optional(),
     // Optional label for the outbound link button (e.g. "GitHub", "Live site").
     linkLabel: z.string().default('Visit project'),
+    // Social card image (path under public/). Falls back to the site card.
+    image: z.string().optional(),
     // Optional year/date used for ordering.
     date: z.coerce.date().optional(),
     // Current state of the project.

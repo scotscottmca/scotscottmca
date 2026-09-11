@@ -18,11 +18,11 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, url, linkLabel, status, tags } = project.data;
+const { title, summary, url, linkLabel, status, tags, image } = project.data;
 const { Content } = await render(project);
 ---
 
-<BaseLayout title={title} description={summary} article={true}>
+<BaseLayout title={title} description={summary} image={image} article={true}>
   <Header />
   <main>
     <div class="container">
