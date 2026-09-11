@@ -14,7 +14,7 @@ tags:
   - Parody
 ---
 
-![Clud Code](/images/youreabsolutelyrightlol/banner.png)
+![Clud Code](../../assets/images/youreabsolutelyrightlol/banner.png)
 
 **Clud Code** is a parody of AI coding assistants. It mimics the look and feel
 of a real CLI-based agent - tool calls, file operations, progress bars, thinking

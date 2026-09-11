@@ -15,7 +15,7 @@ tags:
   - GIF
 ---
 
-![GifTamer](/images/giftamer/promo.png)
+![GifTamer](../../assets/images/giftamer/promo.png)
 
 GifTamer is a Microsoft Edge (Chromium) extension that overlays **video-style
 controls on any animated GIF** - so you can play/pause, scrub frame-by-frame,

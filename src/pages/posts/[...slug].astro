@@ -4,7 +4,8 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import { formatDate, readingTime } from '../../utils';
+import { SITE } from '../../config';
+import { excerpt, formatDate, readingTime } from '../../utils';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -19,18 +20,25 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, date, lastModified, author, tags } = post.data;
+const { title, date, lastModified, author, tags, image = SITE.ogImage } = post.data;
 const { Content } = await render(post);
 const mins = readingTime(post.body);
+const description = post.data.description ?? excerpt(post.body);
 
-const description = (post.body || '')
-  .replace(/[#>*`_\-!\[\]()]/g, '')
-  .replace(/\s+/g, ' ')
-  .trim()
-  .slice(0, 160);
+const jsonLd = {
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: date.toISOString(),
+  dateModified: (lastModified ?? date).toISOString(),
+  author: { '@type': 'Person', name: author, url: SITE.url },
+  image: new URL(image, SITE.url).toString(),
+  keywords: tags.join(', '),
+  mainEntityOfPage: new URL(Astro.url.pathname, SITE.url).toString(),
+};
 ---
 
-<BaseLayout title={title} description={description} article={true}>
+<BaseLayout title={title} description={description} image={image} article={true} jsonLd={jsonLd}>
   <Header />
   <main>
     <div class="container">

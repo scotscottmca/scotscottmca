@@ -31,12 +31,12 @@ Thankfully Intune provides us with a handy Collect diagnostics button that remed
 ## Where can you find Collect diagnostics?
 
 You can find the Collect diagnostics button under Devices > Windows > [device name]
-![Collect Diagnostics](/images/CollectDiagnostics/CollectDiagnostics_1.png)
+![Collect Diagnostics](../../assets/images/CollectDiagnostics/CollectDiagnostics_1.png)
 
 When you click Collect diagnostics, you will be prompted to confirm that you want to proceed, and informed that you can see the progress of your diagnostic collection under Monitor > Device diagnostics
-![Collect Diagnostics](/images/CollectDiagnostics/CollectDiagnostics_2.png)
+![Collect Diagnostics](../../assets/images/CollectDiagnostics/CollectDiagnostics_2.png)
 
-![Collect Diagnostics](/images/CollectDiagnostics/CollectDiagnostics_3.png)
+![Collect Diagnostics](../../assets/images/CollectDiagnostics/CollectDiagnostics_3.png)
 
 > 💡 **Note**
 >
@@ -45,7 +45,7 @@ When you click Collect diagnostics, you will be prompted to confirm that you wan
 
 Once the diagnostic results are availalbe, you'll be presented with a download button
 
-![Collect Diagnostics](/images/CollectDiagnostics/CollectDiagnostics_4.png)
+![Collect Diagnostics](../../assets/images/CollectDiagnostics/CollectDiagnostics_4.png)
 
 ## What does Collect diagnostics give me?
 

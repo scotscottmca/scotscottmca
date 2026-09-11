@@ -14,7 +14,7 @@ draft: false
 
 ## Snooze
 
-![snooze](/images/Sleeping120MoreSeconds/snooze.gif)
+![snooze](../../assets/images/Sleeping120MoreSeconds/snooze.gif)
 
 While this post isn't about how you could sleep 120 more seconds, it may actually help you fall asleep. 
 
@@ -24,7 +24,7 @@ This is a bit of a personal one, because I've been really invested in it.
 
 For the last few years, Something that has always annoyed me was waiting for a SUP sync to finish, seeing "Sleeping 120 more seconds" in the wsyncmgr.log and just having to wait for it, never really knowing what it's actually doing during that snooze.
 
-![Sync Grace Period Default](/images/Sleeping120MoreSeconds/SyncGracePeriod_Default.png)
+![Sync Grace Period Default](../../assets/images/Sleeping120MoreSeconds/SyncGracePeriod_Default.png)
 
 I poked around at it a bit, tried to monitor SUSDB for changes and Procmon for file changes, as well as asking some colleagues if they had any insight. 
 But at the end of the day, it was just a thing that happened and that was that. 
@@ -41,11 +41,11 @@ Sometime back around 2007~ the sleep was added purely to make sure that WSUS had
 
 And that's it. All this time wondering about it and it is literally just taking a wee nap. 
 
-![nap](/images/Sleeping120MoreSeconds/nap.gif)
+![nap](../../assets/images/Sleeping120MoreSeconds/nap.gif)
 
 ## Brucie Bonus
 
-![surprise](/images/Sleeping120MoreSeconds/surprise.gif)
+![surprise](../../assets/images/Sleeping120MoreSeconds/surprise.gif)
 
 Meghan shared with me that it is actually possible to configure the length of time the WSUS Sync Manager sleeps for, not that you should though. 120 seconds is usually enough. 
 
@@ -55,7 +55,7 @@ To make the sleep longer, all that is needed is a registry key addition!
 
 By default, the required key does not exist, which makes it default to 120 seconds (120000 Milliseconds).
 
-![Sync Grace Period Default Registry](/images/Sleeping120MoreSeconds/SyncGracePeriod_Default_Registry.png)
+![Sync Grace Period Default Registry](../../assets/images/Sleeping120MoreSeconds/SyncGracePeriod_Default_Registry.png)
 
 We can add in this key and make it shorter or longer! 
 
@@ -63,13 +63,13 @@ You want to add a DWORD key called SyncGracePeriod here, **HKEY_LOCAL_MACHINE\SO
 
 Here you can see it set to 10 minutes!
 
-![Sync Grace Period 10 Minutes Registry](/images/Sleeping120MoreSeconds/SyncGracePeriod_10_Minutes_Registry.png)
+![Sync Grace Period 10 Minutes Registry](../../assets/images/Sleeping120MoreSeconds/SyncGracePeriod_10_Minutes_Registry.png)
 
-![Sync Grace Period 10 Minutes Log](/images/Sleeping120MoreSeconds/SyncGracePeriod_10_Minutes_Log.png)
+![Sync Grace Period 10 Minutes Log](../../assets/images/Sleeping120MoreSeconds/SyncGracePeriod_10_Minutes_Log.png)
 
 10 minutes is the maximum, and 2 minutes is the minimum, so you can't get too wild with it and if you try to it will complain and default back to 120 seconds. 
 
-![Sync Grace Period Max](/images/Sleeping120MoreSeconds/SyncGracePeriod_Max.png)
+![Sync Grace Period Max](../../assets/images/Sleeping120MoreSeconds/SyncGracePeriod_Max.png)
 
 Annnnnnnnnnnnnd that's that. 
 
@@ -77,10 +77,10 @@ A few of us at Patch My PC were super invested in this, and the idea of some sup
 
 So, we did. 
 
-![Sticker](/images/Sleeping120MoreSeconds/Sticker.png)
+![Sticker](../../assets/images/Sleeping120MoreSeconds/Sticker.png)
 
 If you ever see me, and want one, just ask! 
 
 ## Summary
 
-![sleep](/images/Sleeping120MoreSeconds/sleep.gif)
+![sleep](../../assets/images/Sleeping120MoreSeconds/sleep.gif)

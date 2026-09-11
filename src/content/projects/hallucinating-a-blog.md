@@ -13,7 +13,7 @@ tags:
   - Azure Static Web Apps
 ---
 
-![Hallucinating A Blog](/images/hallucinating-a-blog/promo.png)
+![Hallucinating A Blog](../../assets/images/hallucinating-a-blog/promo.png)
 
 [Hallucinating A Blog](https://hallucinatinga.blog) is a publication with a
 single rule: **every word is written by AI, and none of it is edited by a

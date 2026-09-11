@@ -62,10 +62,10 @@ $mobileAppsResults = Invoke-RestMethod -uri "https://graph.microsoft.com/beta/de
 This returned a total of 500 applications which seemed like a very low number, so I wondered if it affected all application types or if it was just a Win32 app limit I had reached. To test this, I tried to manually create some different app types manually in the Endpoint UI. 
 
 I received the same error when trying to create an MSfB app and an iOS Store app
-![MSfB iOS](/images/2022-09-01/MSfB_iOS.jpg)
+![MSfB iOS](../../assets/images/2022-09-01/MSfB_iOS.jpg)
 
 So I asked around some others and @IntuneSuppTeam on Twitter and received this response
-![Twitter Response](/images/2022-09-01/Twitter_Response.png)
+![Twitter Response](../../assets/images/2022-09-01/Twitter_Response.png)
 
 Intrigued further, I purchased an F1 licence and assigned it to my demo tenant and that 500 app limit was lifted immediately. 
 
@@ -143,10 +143,10 @@ Invoke-RestMethod: {
 Checking what limit I had hit this time, I reran the previous query to get a count and this time I was given a count of exactly 10000 apps. 
 
 Again curious if that was just Win32 apps, I attempted to manually create another MSfB and iOS app but was met with the same error in the UI
-![MSfB iOS](/images/2022-09-01/MSfB_iOS.jpg)
+![MSfB iOS](../../assets/images/2022-09-01/MSfB_iOS.jpg)
 
 I received an update from @IntuneSuppTeam on this 
-![Twitter response](/images/2022-09-01/Twitter_response_2.png)
+![Twitter response](../../assets/images/2022-09-01/Twitter_response_2.png)
 
 However as previously mentioned, at the 10k app limit I am unable to publish any more applications regardless of the type!
 
