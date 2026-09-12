@@ -61,6 +61,8 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 | `public/` | Static assets served at site root (`images/`, favicons, `CNAME`, `staticwebapp.config.json`). |
 | `assets/` | Retained only for files linked by external GitHub raw URLs (`files/DummyApps.json`, `ErrorCodes/`). Not part of the build. |
 | `scripts/migrate.mjs` | One-shot Hugo→Astro migration script (kept for reference). |
+| `scripts/status-sprites.mjs` | Draws the five pixel-art status sprites into `public/images/status/` from a 40×40 cell grid in the emote palette. Edit the grid there, then run `node scripts/status-sprites.mjs`; never hand-edit the SVGs. |
+| `src/pages/status.astro` | `/status`: the live reading on a 24-hour track, fed by `/api/status`. Rotating headlines/taglines live in its script. |
 | `src/pages/usage.astro` | Unlisted `/usage` page (noindex, out of the sitemap, not in nav): live Claude sessions, 7-day Claude/GitHub figures. Fetches JSON from `SITE.usageDataUrl`. |
 | `scripts/usage-stats.mjs` | Builds that JSON from `~/.claude/projects` transcripts + `gh` and pushes it to a gist. Run by launchd every 15 min via `scripts/com.scotscottmca.usage.plist` (see comments in the plist to install). |
 | `staticwebapp.config.json` | Azure SWA routing/headers/404 config. |

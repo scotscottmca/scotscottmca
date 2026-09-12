@@ -403,6 +403,7 @@ a.tile-live:hover .tile-drill {
   height: 100%;
   object-fit: contain;
   object-position: center;
+  image-rendering: pixelated;
   border: none;
   display: block;
 }

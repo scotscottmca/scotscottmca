@@ -7,63 +7,92 @@ import { SITE } from '../config';
 
 <BaseLayout
   title="Is Scott awake?"
-  description={`The live awake/asleep status of ${SITE.author}, powered by the Google Health API.`}
+  description={`The live awake/asleep status of ${SITE.author}, read from his watch through the Google Health API and drawn on a 24-hour track.`}
 >
   <Header />
   <main>
-    <section class="sky status-loading" data-status-root data-status-card aria-live="polite">
-      <div class="stars" aria-hidden="true">
-        <span style="top:12%;left:8%"></span>
-        <span style="top:22%;left:26%"></span>
-        <span style="top:16%;left:52%"></span>
-        <span style="top:9%;left:73%"></span>
-        <span style="top:28%;left:88%"></span>
-        <span style="top:40%;left:14%"></span>
-        <span style="top:52%;left:33%"></span>
-        <span style="top:46%;left:64%"></span>
-        <span style="top:60%;left:82%"></span>
-        <span style="top:70%;left:20%"></span>
-        <span style="top:76%;left:48%"></span>
-        <span style="top:66%;left:70%"></span>
-        <span style="top:84%;left:90%"></span>
-        <span style="top:34%;left:44%"></span>
-      </div>
-      <div class="orb" data-orb aria-hidden="true"></div>
+    <div class="container container-wide">
+      <!-- The reading, placed in time: the state word stands over the "now"
+           cursor at the right edge of a 24-hour track. Every element is
+           painted by the live fetch; nothing here ships a guessed state. -->
+      <section class="reading" data-status-root data-state="loading" data-tone="down" aria-live="polite">
+        <div class="statusstrip reading-strip">
+          <span class="led" data-tone="down" data-status-led></span>
+          <span class="title">Right now</span>
+          <span class="meta" data-status-meta>Asking the watch…</span>
+        </div>
 
-      <img class="me me-awake" src="/images/status/scott-awake.svg" alt="Vector Scott, awake at his desk" width="220" height="227" />
-      <img class="me me-asleep" src="/images/status/scott-asleep.svg" alt="Vector Scott, asleep in bed" width="220" height="227" />
-      <img class="me me-working-out" src="/images/status/scott-working-out.svg" alt="Vector Scott, working out" width="220" height="227" />
-      <img class="me me-walking" src="/images/status/scott-walking.svg" alt="Vector Scott, out walking the dachshunds" width="220" height="227" />
-      <img class="me me-active" src="/images/status/scott-active.svg" alt="Vector Scott, up and active" width="220" height="227" />
+        <div class="reading-head">
+          <div class="sprite-inset" data-sprite-slot aria-hidden="true"></div>
+          <div class="reading-copy">
+            <p class="reading-lead">Right now, Scott is</p>
+            <h1 class="reading-state" data-status-word>Reading…</h1>
+            <p class="reading-line">
+              <b data-status-headline></b>
+              <span data-status-tagline>Give the watch a second.</span>
+            </p>
+          </div>
+        </div>
 
-      <div class="status-panel">
-        <h1 class="status-headline">
-          <span class="status-lead">Right now, Scott is</span>
-          <span class="status-word" data-headline>Checking…</span>
-        </h1>
-        <p class="status-tagline" data-tagline>Asking my watch nicely.</p>
+        <div class="track">
+          <div class="track-head">
+            <span class="track-title">Last 24 hours</span>
+            <span class="track-key" aria-hidden="true">
+              <span class="key key-sleep">sleep</span>
+              <span class="key key-move">activity</span>
+              <span class="key key-now">now</span>
+            </span>
+          </div>
+          <div class="track-rail" role="img" data-track-rail aria-label="The last 24 hours">
+            <span class="track-block track-sleep" data-track-sleep hidden></span>
+            <span class="track-block track-move" data-track-move hidden></span>
+            <span class="track-cursor" data-track-cursor></span>
+          </div>
+          <ol class="track-axis" data-track-axis aria-label="Clock times along the track">
+            <li>−24 h</li><li>−18 h</li><li>−12 h</li><li>−6 h</li><li>now</li>
+          </ol>
+          <p class="track-empty" data-track-empty hidden>No sleep or activity on record in this window.</p>
+        </div>
 
-        <dl class="status-facts" data-facts hidden></dl>
+        <dl class="facts" data-facts hidden></dl>
 
-        <p class="status-source" data-source></p>
-
-        <p class="status-fineprint">
+        <p class="fineprint">
           From my Fitbit sleep and activity data via the
           <a href="https://developers.google.com/health/">Google Health API</a>.
           Syncs when my watch does, so I might be a few minutes behind.
+          <span data-status-note></span>
         </p>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
   <Footer />
 </BaseLayout>
 
 <script>
-  const card = document.querySelector('[data-status-card]');
-  const headline = document.querySelector('[data-headline]');
-  const tagline = document.querySelector('[data-tagline]');
-  const facts = document.querySelector('[data-facts]');
-  const source = document.querySelector('[data-source]');
+  const root = document.querySelector('[data-status-root]');
+  const led = root.querySelector('[data-status-led]');
+  const meta = root.querySelector('[data-status-meta]');
+  const spriteSlot = root.querySelector('[data-sprite-slot]');
+  const word = root.querySelector('[data-status-word]');
+  const headline = root.querySelector('[data-status-headline]');
+  const tagline = root.querySelector('[data-status-tagline]');
+  const sleepBlock = root.querySelector('[data-track-sleep]');
+  const moveBlock = root.querySelector('[data-track-move]');
+  const cursor = root.querySelector('[data-track-cursor]');
+  const axis = root.querySelector('[data-track-axis]');
+  const trackEmpty = root.querySelector('[data-track-empty]');
+  const facts = root.querySelector('[data-facts]');
+  const note = root.querySelector('[data-status-note]');
+
+  // The state word is the plain state, as on the home tile. The rotating
+  // headline and tagline pair become the line beneath it.
+  const STATES = {
+    asleep: { word: 'Asleep', sprite: 'scott-asleep', tone: 'rest', period: '4.8s' },
+    awake: { word: 'Awake', sprite: 'scott-awake', tone: 'up', period: '2.4s' },
+    walking: { word: 'Out walking', sprite: 'scott-walking', tone: 'move', period: '1.4s' },
+    'working-out': { word: 'Working out', sprite: 'scott-working-out', tone: 'move', period: '0.9s' },
+    active: { word: 'Up and active', sprite: 'scott-active', tone: 'move', period: '1.6s' },
+  };
 
   const AWAKE = {
     headlines: [
@@ -107,10 +136,6 @@ import { SITE } from '../config';
       'Powered down for the night. Do not touch the production database.',
       "Resting up for tomorrow's code review (and dog walk).",
     ],
-  };
-  const UNKNOWN = {
-    headlines: ['A mystery'],
-    taglines: ["My watch isn't telling. Try again shortly."],
   };
   const WORKOUT = {
     headlines: [
@@ -172,8 +197,12 @@ import { SITE } from '../config';
       'Active now, back at the keyboard soon.',
     ],
   };
+  const COPY = { awake: AWAKE, asleep: ASLEEP, 'working-out': WORKOUT, walking: WALKING, active: ACTIVE };
 
+  const HOUR = 3600000;
+  const WINDOW = 24 * HOUR;
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const clock = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   function humanize(mins) {
     if (mins == null || mins < 1) return 'just now';
@@ -202,50 +231,139 @@ import { SITE } from '../config';
     facts.hidden = false;
   }
 
+  // Place a block on the track. Times are ms; the window ends at `now`.
+  function placeBlock(el, start, end, label, now) {
+    const from = now - WINDOW;
+    const a = Math.max(from, start);
+    const b = Math.min(now, end);
+    if (!(b > a)) {
+      el.hidden = true;
+      return false;
+    }
+    const left = ((a - from) / WINDOW) * 100;
+    const width = Math.max(((b - a) / WINDOW) * 100, 0.6);
+    el.style.left = `${left}%`;
+    el.style.width = `${width}%`;
+    el.textContent = label;
+    el.hidden = false;
+    fit(el);
+    return true;
+  }
+
+  // A label that does not fit its block is hidden rather than clipped.
+  function fit(el) {
+    el.dataset.narrow = 'false';
+    if (el.scrollWidth > el.clientWidth + 1) el.dataset.narrow = 'true';
+  }
+  let fitTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(() => [sleepBlock, moveBlock].forEach((b) => !b.hidden && fit(b)), 120);
+  });
+
+  function paintTrack(data, status, now) {
+    const stamps = [];
+    for (let i = 4; i >= 1; i--) stamps.push(clock(new Date(now - i * 6 * HOUR)));
+    stamps.push('now');
+    axis.innerHTML = stamps.map((s) => `<li>${s}</li>`).join('');
+
+    let drawn = 0;
+    if (data.lastSleep && data.lastSleep.start && data.lastSleep.end) {
+      const s = Date.parse(data.lastSleep.start);
+      const e = status === 'asleep' ? now : Date.parse(data.lastSleep.end);
+      if (placeBlock(sleepBlock, s, e, `Sleep ${humanize(Math.round((e - s) / 60000))}`, now)) drawn++;
+    } else {
+      sleepBlock.hidden = true;
+    }
+
+    let move = null;
+    const session = status === 'walking' ? data.walk : status === 'working-out' ? data.workout : null;
+    if (session && session.durationMin != null) {
+      const end = now - (session.endedMinAgo || 0) * 60000;
+      move = [end - session.durationMin * 60000, end, `${session.name || 'Activity'} ${humanize(session.durationMin)}`];
+    } else if (status === 'walking' && data.steps && data.steps.recent != null) {
+      move = [now - data.steps.windowMin * 60000, now, `${data.steps.recent} steps`];
+    } else if (status === 'active' && data.heartRate && data.heartRate.bpm != null) {
+      const at = now - (data.heartRate.atMinAgo || 0) * 60000;
+      move = [at - 5 * 60000, at + 5 * 60000, `${data.heartRate.bpm} bpm`];
+    }
+    if (move && placeBlock(moveBlock, move[0], move[1], move[2], now)) drawn++;
+    else moveBlock.hidden = true;
+
+    trackEmpty.hidden = drawn > 0;
+  }
+
+  function paintSprite(state) {
+    if (!state) {
+      spriteSlot.replaceChildren();
+      return;
+    }
+    let img = spriteSlot.firstElementChild;
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'sprite';
+      img.width = 240;
+      img.height = 240;
+      img.alt = '';
+      spriteSlot.appendChild(img);
+    }
+    img.src = `/images/status/${state.sprite}.svg`;
+  }
+
+  // The header lamp reports whatever this reading found.
+  function announce(ok) {
+    const fleet = document.querySelector('[data-fleet-led]');
+    if (fleet) fleet.dataset.tone = ok ? 'ok' : 'down';
+  }
+
   function render(data) {
     const status = data.status || 'unknown';
-    const COPY = {
-      awake: AWAKE,
-      asleep: ASLEEP,
-      'working-out': WORKOUT,
-      walking: WALKING,
-      active: ACTIVE,
-    };
-    const CLASS = {
-      awake: 'is-awake',
-      asleep: 'is-asleep',
-      'working-out': 'is-working-out',
-      walking: 'is-walking',
-      active: 'is-active',
-    };
-    const copy = COPY[status] || UNKNOWN;
+    const state = STATES[status];
+    const now = data.updated ? Date.parse(data.updated) : Date.now();
 
-    card.classList.remove(
-      'status-loading',
-      'is-awake',
-      'is-asleep',
-      'is-working-out',
-      'is-walking',
-      'is-active',
-      'is-unknown'
-    );
-    card.classList.add(CLASS[status] || 'is-unknown');
+    if (!state) {
+      root.dataset.state = 'unknown';
+      root.dataset.tone = 'down';
+      led.dataset.tone = 'down';
+      cursor.dataset.tone = 'down';
+      word.textContent = 'No signal';
+      headline.textContent = '';
+      tagline.textContent = data.note || 'Could not reach the status service. Retrying.';
+      meta.textContent = 'service unreachable';
+      paintSprite(null);
+      sleepBlock.hidden = true;
+      moveBlock.hidden = true;
+      trackEmpty.hidden = true;
+      setFacts([]);
+      note.textContent = '';
+      announce(false);
+      return;
+    }
 
-    headline.textContent = pick(copy.headlines);
+    const copy = COPY[status];
+    root.dataset.state = status;
+    root.dataset.tone = state.tone;
+    led.dataset.tone = state.tone;
+    cursor.dataset.tone = state.tone;
+    root.style.setProperty('--led-period', state.period);
+    word.textContent = state.word;
+    headline.textContent = `${pick(copy.headlines)}.`;
     tagline.textContent = pick(copy.taglines);
+    paintSprite(state);
+    paintTrack(data, status, now);
 
     const entries = [];
-    if (status === 'asleep' && data.asleepForMin != null) {
-      entries.push(['Asleep for', humanize(data.asleepForMin)]);
+    if (status === 'asleep' && data.asleepForMin != null) entries.push(['Asleep for', humanize(data.asleepForMin)]);
+    if (status === 'asleep' && data.lastSleep && data.lastSleep.start) {
+      entries.push(['Went down', clock(new Date(data.lastSleep.start))]);
     }
-    if (status === 'awake' && data.awakeForMin != null) {
-      entries.push(['Awake for', humanize(data.awakeForMin)]);
+    if (status === 'awake' && data.awakeForMin != null) entries.push(['Awake for', humanize(data.awakeForMin)]);
+    if (status === 'awake' && data.lastSleep && data.lastSleep.end) {
+      entries.push(['Woke at', clock(new Date(data.lastSleep.end))]);
     }
     if (status === 'working-out' && data.workout) {
       if (data.workout.name) entries.push(['Activity', data.workout.name]);
-      if (data.workout.durationMin != null) {
-        entries.push(['Duration', humanize(data.workout.durationMin)]);
-      }
+      if (data.workout.durationMin != null) entries.push(['Duration', humanize(data.workout.durationMin)]);
     }
     if (status === 'walking' && data.walk) {
       if (data.walk.name) entries.push(['Activity', data.walk.name]);
@@ -257,23 +375,25 @@ import { SITE } from '../config';
     if (status === 'active' && data.heartRate && data.heartRate.bpm != null) {
       entries.push(['Heart rate', `${data.heartRate.bpm} bpm`]);
     }
-    if (data.lastSleep && data.lastSleep.durationMin != null) {
+    if (status !== 'asleep' && data.lastSleep && data.lastSleep.durationMin != null) {
       entries.push(['Last sleep', humanize(data.lastSleep.durationMin)]);
     }
     setFacts(entries);
 
-    if (data.source === 'mock' || data.source === 'fallback' || data.source === 'cache-stale') {
-      source.textContent = data.note || 'Showing a demo status.';
-    } else {
-      const when = data.updated ? new Date(data.updated) : new Date();
-      source.textContent = `Updated ${when.toLocaleTimeString()}`;
-    }
+    const degraded = data.source === 'mock' || data.source === 'fallback' || data.source === 'cache-stale';
+    const conf = data.confidence ? `${data.confidence} confidence · ` : '';
+    meta.textContent = `${conf}synced ${clock(new Date(now))}`;
+    note.textContent = degraded ? data.note || 'Showing a demo status.' : '';
+    announce(!degraded);
   }
 
   let retryTimer = null;
 
   async function refresh() {
-    if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000);
     try {
@@ -300,273 +420,309 @@ import { SITE } from '../config';
 </script>
 
 <style>
-  /* Framed sky: floats in the middle of the page with a black border. */
-  .sky {
-    position: relative;
-    width: auto;
-    min-height: calc(100vh - 200px);
-    margin: 1.5rem clamp(1rem, 8vw, 100px) 2rem;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    border: 2px solid #000;
-    border-radius: 22px;
-    box-shadow: 0 24px 70px -28px rgba(0, 0, 0, 0.7);
-    background: linear-gradient(180deg, #d0d3da, #b9bcc6);
-    transition: background 0.8s ease;
+  /* The page's one instrument, unboxed: blocks separated by space, and a
+     hairline only where a block is a container. */
+  .reading {
+    --led-period: 2.4s;
+    display: grid;
+    gap: 1.8rem;
+    margin: 0.5rem 0 1rem;
   }
-  .sky.is-awake {
-    background: linear-gradient(180deg, #3f97ec 0%, #7ec8ff 38%, #cfefff 100%);
+  .reading-strip {
+    margin-bottom: 0;
   }
-  .sky.is-asleep {
-    background: linear-gradient(180deg, #070b22 0%, #141c44 55%, #26305e 100%);
+  .reading [hidden] {
+    display: none !important;
   }
-  .sky.is-working-out {
-    background: linear-gradient(180deg, #ff6a3d 0%, #ff9d54 45%, #ffd27a 100%);
-  }
-  .sky.is-walking {
-    background: linear-gradient(180deg, #3f97ec 0%, #8fd0ff 42%, #cdeaa8 100%);
-  }
-  .sky.is-active {
-    background: linear-gradient(180deg, #7b1fa2 0%, #c2185b 55%, #ff5470 100%);
+  .reading-strip .meta {
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Stars: only visible at night. */
-  .stars {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.8s ease;
-    pointer-events: none;
+  /* Sprite left, the word block right, its right edge on the cursor. */
+  .reading-head {
+    display: grid;
+    grid-template-columns: minmax(150px, 200px) minmax(0, 1fr);
+    gap: 1.6rem;
+    align-items: end;
   }
-  .is-asleep .stars {
-    opacity: 1;
+  .sprite-inset {
+    aspect-ratio: 1;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 5%;
+    display: grid;
+    place-items: center;
   }
-  .stars span {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.8);
-    animation: twinkle 2.6s ease-in-out infinite;
+  .sprite-inset:empty::after {
+    content: 'No reading';
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
   }
-  .stars span:nth-child(odd) { animation-delay: 0.8s; }
-  .stars span:nth-child(3n) { animation-delay: 1.4s; width: 2px; height: 2px; }
-  .stars span:nth-child(4n) { animation-delay: 0.4s; }
-
-  /* Sun / moon, upper-right of the sky. */
-  .orb {
-    position: absolute;
-    top: 14%;
-    right: 12%;
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    pointer-events: none;
-    transition: all 0.8s ease;
-  }
-  .is-awake .orb {
-    background: radial-gradient(circle at 35% 35%, #fff0b8, #ffb454 72%);
-    box-shadow: 0 0 60px 12px rgba(255, 190, 90, 0.55);
-    animation: bob 5s ease-in-out infinite;
-  }
-  .is-working-out .orb,
-  .is-walking .orb {
-    background: radial-gradient(circle at 35% 35%, #fff0b8, #ffb454 72%);
-    box-shadow: 0 0 60px 12px rgba(255, 190, 90, 0.5);
-    animation: bob 5s ease-in-out infinite;
-  }
-  .is-active .orb {
-    background: radial-gradient(circle at 38% 36%, #ffd1e0, #ff5470 72%);
-    box-shadow: 0 0 60px 14px rgba(255, 84, 112, 0.55);
-    animation: pulse 1.3s ease-in-out infinite;
-  }
-  .is-asleep .orb {
-    background: radial-gradient(circle at 36% 34%, #ffffff, #c3cbe8 72%);
-    box-shadow: inset -16px -6px 0 -2px rgba(30, 38, 76, 0.65),
-      0 0 34px 6px rgba(190, 200, 235, 0.4);
-    animation: bob 6s ease-in-out infinite;
-  }
-  .status-loading .orb,
-  .is-unknown .orb {
-    background: radial-gradient(circle at 35% 35%, #d8d8d8, #9a9a9a 72%);
-    animation: pulse 1.6s ease-in-out infinite;
-  }
-
-  /* Character sprite, standing to the right of the card. */
-  .me {
-    position: absolute;
-    z-index: 2;
-    right: clamp(0.5rem, 3vw, 2.5rem);
-    bottom: clamp(1.5rem, 6vh, 4rem);
-    width: clamp(140px, 20vw, 240px);
-    height: auto;
+  .sprite {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
     border: none;
     border-radius: 0;
-    display: none;
   }
-  .is-awake .me-awake { display: block; }
-  .is-asleep .me-asleep { display: block; }
-  .is-working-out .me-working-out { display: block; }
-  .is-walking .me-walking { display: block; }
-  .is-active .me-active { display: block; }
-
-  /* Off-centre glass status card. */
-  .status-panel {
-    position: relative;
-    z-index: 2;
-    margin: 2.5rem 0 2.5rem clamp(1rem, 3vw, 2.5rem);
-    width: min(440px, calc(100% - 2.5rem));
-    padding: 2rem 1.75rem;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(12, 16, 32, 0.55);
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
-    color: #f3f5fb;
-    text-align: left;
+  .reading-copy {
+    text-align: right;
+    display: grid;
+    justify-items: end;
   }
-
-  .status-headline {
-    margin: 0 0 0.4rem;
+  .reading-lead {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  /* The one shout on the page: the live reading, at the size the home tile
+     only hints at. Colour agrees with the word; the word carries the state. */
+  .reading-state {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(3rem, 8vw, 5.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--green);
+    text-wrap: balance;
+    transition: color 300ms ease;
+  }
+  [data-tone='rest'] .reading-state {
+    color: var(--cyan);
+  }
+  [data-tone='move'] .reading-state {
+    color: var(--amber);
+  }
+  /* Failure is a state, at a quieter size. */
+  [data-tone='down'] .reading-state {
+    color: var(--text);
+    font-size: clamp(1.6rem, 2.8vw, 2rem);
+  }
+  .reading-line {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 46ch;
+    text-wrap: balance;
+  }
+  .reading-line b {
     font-weight: 700;
   }
-  /* Reads as the opening of the sentence the state word finishes — sentence
-     case and no tracking, so it cannot revert to a label. */
-  .status-lead {
-    display: block;
-    font-size: clamp(1rem, 2.2vw, 1.2rem);
-    line-height: 1.3;
-    font-weight: 500;
-    letter-spacing: 0;
-    color: rgba(243, 245, 251, 0.78);
-  }
-  .status-word {
-    display: block;
-    padding: 0.08em 0.04em 0.14em;
-    font-size: clamp(2.6rem, 7vw, 3.6rem);
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    background: linear-gradient(120deg, #a5b4ff, #7c8dff 45%, #c6b3ff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .is-awake .status-word {
-    background: linear-gradient(120deg, #ffd27a, #ff9d54 55%, #ffc27a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .is-working-out .status-word {
-    background: linear-gradient(120deg, #fff1c2, #ffd27a 55%, #ffe6a0);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .is-walking .status-word {
-    background: linear-gradient(120deg, #eaffd0, #b6f08a 55%, #ffffff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .is-active .status-word {
-    background: linear-gradient(120deg, #ffd1e0, #ff8fa3 55%, #ffe0c2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .status-tagline {
-    margin: 0 0 1.5rem;
-    color: rgba(243, 245, 251, 0.82);
-  }
 
-  .status-facts {
+  /* The track. Hour stubs along the bottom, six-hour rules full height,
+     sleep in cyan, activity in amber, the cursor lit like the LED. */
+  .track {
+    display: grid;
+    gap: 0.5rem;
+    transition: opacity 300ms ease;
+  }
+  [data-state='loading'] .track,
+  [data-state='unknown'] .track {
+    opacity: 0.45;
+  }
+  .track-head {
     display: flex;
-    gap: 1.75rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
     flex-wrap: wrap;
-    margin: 0 0 1.25rem;
-  }
-  .status-facts dt {
-    font-size: 0.7rem;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(243, 245, 251, 0.6);
+    color: var(--dim);
   }
-  .status-facts dd {
-    margin: 0.15rem 0 0;
-    font-size: 1.15rem;
-    font-weight: 600;
+  .track-key {
+    display: flex;
+    gap: 1rem;
   }
-
-  .status-source {
+  .key {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .key::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border: 1px solid currentColor;
+  }
+  .key-sleep::before {
+    color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 22%, transparent);
+  }
+  .key-move::before {
+    color: var(--amber);
+    background: color-mix(in srgb, var(--amber) 22%, transparent);
+  }
+  .key-now::before {
+    width: 2px;
+    border: 0;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+  .track-rail {
+    position: relative;
+    height: clamp(48px, 7vw, 76px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 100% / calc(100% / 24) 38% repeat-x,
+      linear-gradient(90deg, color-mix(in srgb, var(--dim) 40%, transparent) 1px, transparent 1px) 0 0 / 25% 100% repeat-x,
+      var(--panel);
+  }
+  .track-block {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 0.55rem;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+  }
+  .track-block[data-narrow='true'] {
+    color: transparent;
+    padding: 0;
+  }
+  .track-sleep {
+    background: color-mix(in srgb, var(--cyan) 22%, transparent);
+    border-inline: 1px solid var(--cyan);
+    color: var(--cyan);
+  }
+  .track-move {
+    background: color-mix(in srgb, var(--amber) 22%, transparent);
+    border-inline: 1px solid var(--amber);
+    color: var(--amber);
+  }
+  .track-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: ledpulse var(--led-period) steps(2) infinite;
+  }
+  .track-cursor[data-tone='rest'] {
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+  .track-cursor[data-tone='move'] {
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber);
+  }
+  .track-cursor[data-tone='down'] {
+    background: var(--dim);
+    box-shadow: none;
+    animation: none;
+  }
+  .track-axis {
+    list-style: none;
     margin: 0;
-    font-size: 0.8rem;
-    color: rgba(243, 245, 251, 0.6);
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
   }
-  .status-fineprint {
-    margin: 1.25rem 0 0;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    font-size: 0.78rem;
-    line-height: 1.5;
-    color: rgba(243, 245, 251, 0.62);
-  }
-  .status-fineprint a {
-    color: #b9c4ff;
+  .track-empty {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--dim);
   }
 
-  @keyframes bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+  /* Facts: the state's own figures as hairline-divided cells. */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem 0;
+    margin: 0;
+    padding: 1.4rem 0 0;
+    border-top: 1px solid var(--line);
   }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.6; transform: scale(0.96); }
-    50% { opacity: 1; transform: scale(1.02); }
+  .facts div {
+    padding: 0 1.2rem;
+    border-left: 1px solid var(--line);
   }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.2; transform: scale(0.7); }
-    50% { opacity: 1; transform: scale(1.1); }
+  .facts div:first-child {
+    padding-left: 0;
+    border-left: 0;
   }
+  .facts dt {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.25rem;
+  }
+  .facts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.9rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fineprint {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--dim);
+    max-width: 70ch;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .orb, .stars span { animation: none !important; }
+    .track-cursor {
+      animation: none;
+    }
   }
 
-  /* Mobile: stack the card above the sprite and give the frame room. */
   @media (max-width: 640px) {
-    .sky {
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: stretch;
-      min-height: 0;
-      margin: 1rem clamp(0.75rem, 4vw, 1.5rem) 1.5rem;
-      padding-bottom: clamp(150px, 44vw, 240px);
+    .reading {
+      gap: 1.5rem;
     }
-    .status-panel {
-      position: relative;
-      z-index: 2;
-      width: auto;
-      margin: 1.5rem clamp(0.9rem, 4vw, 1.5rem) 0;
-      padding: 1.5rem 1.35rem;
+    .reading-head {
+      grid-template-columns: minmax(96px, 128px) minmax(0, 1fr);
+      gap: 1rem;
     }
-    .status-word {
-      font-size: clamp(2.1rem, 11vw, 2.9rem);
-      overflow-wrap: break-word;
+    .reading-state {
+      font-size: clamp(2.2rem, 11vw, 3rem);
     }
-    .orb {
-      width: 64px;
-      height: 64px;
-      top: 5%;
-      right: 8%;
+    .track-rail {
+      height: 44px;
     }
-    /* Sprite sits at the bottom of the frame, clear of the card. */
-    .me {
-      right: 50%;
-      transform: translateX(50%);
-      bottom: clamp(0.75rem, 4vw, 1.5rem);
-      width: clamp(120px, 38vw, 200px);
+    .track-axis li:nth-child(even) {
+      visibility: hidden;
+    }
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 0;
+    }
+    .facts div:nth-child(odd) {
+      padding-left: 0;
+      border-left: 0;
     }
   }
 </style>
