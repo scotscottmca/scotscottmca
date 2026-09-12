@@ -59,7 +59,8 @@ import { SITE } from '../config';
         <p class="fineprint">
           From my Fitbit sleep and activity data via the
           <a href="https://developers.google.com/health/">Google Health API</a>.
-          Syncs when my watch does, so I might be a few minutes behind.
+          Syncs when my watch does, so I might be a few minutes behind. The
+          track draws my latest sleep and current activity only.
           <span data-status-note></span>
         </p>
       </section>
@@ -431,7 +432,7 @@ import { SITE } from '../config';
   .reading-strip {
     margin-bottom: 0;
   }
-  .reading [hidden] {
+  .reading :global([hidden]) {
     display: none !important;
   }
   .reading-strip .meta {
@@ -447,7 +448,7 @@ import { SITE } from '../config';
   }
   .sprite-inset {
     aspect-ratio: 1;
-    background: var(--panel);
+    background: var(--bg);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 5%;
@@ -462,7 +463,7 @@ import { SITE } from '../config';
     text-transform: uppercase;
     color: var(--dim);
   }
-  .sprite {
+  .sprite-inset :global(.sprite) {
     display: block;
     width: 100%;
     height: 100%;
@@ -477,11 +478,9 @@ import { SITE } from '../config';
     justify-items: end;
   }
   .reading-lead {
-    margin: 0 0 0.3rem;
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    margin: 0 0 0.2rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
     color: var(--dim);
   }
   /* The one shout on the page: the live reading, at the size the home tile
@@ -660,15 +659,15 @@ import { SITE } from '../config';
     padding: 1.4rem 0 0;
     border-top: 1px solid var(--line);
   }
-  .facts div {
+  .facts :global(div) {
     padding: 0 1.2rem;
     border-left: 1px solid var(--line);
   }
-  .facts div:first-child {
+  .facts :global(div:first-child) {
     padding-left: 0;
     border-left: 0;
   }
-  .facts dt {
+  .facts :global(dt) {
     font-family: var(--font-display);
     font-size: 0.72rem;
     letter-spacing: 0.06em;
@@ -676,7 +675,7 @@ import { SITE } from '../config';
     color: var(--dim);
     margin-bottom: 0.25rem;
   }
-  .facts dd {
+  .facts :global(dd) {
     margin: 0;
     font-family: var(--font-display);
     font-weight: 700;
@@ -713,14 +712,15 @@ import { SITE } from '../config';
     .track-rail {
       height: 44px;
     }
-    .track-axis li:nth-child(even) {
+    .track-axis :global(li:nth-child(even)) {
       visibility: hidden;
     }
+    /* One figure per row so a 1.9rem value never wraps. */
     .facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       gap: 1rem 0;
     }
-    .facts div:nth-child(odd) {
+    .facts :global(div) {
       padding-left: 0;
       border-left: 0;
     }
