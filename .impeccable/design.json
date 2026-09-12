@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-10T00:00:00Z",
+  "generatedAt": "2026-09-12T00:00:00Z",
   "title": "Design System: ScotScottMcA — Mission Control",
   "extensions": {
     "colorMeta": {
@@ -25,7 +25,8 @@
       "print-paper": { "role": "neutral", "displayName": "Print Paper", "canonical": "#ffffff" }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The live state word. One per page, only for a live reading. Drops to clamp(1.6rem, 2.8vw, 2rem) in the failure state." },
+      "display": { "displayName": "Display", "purpose": "The live state word on the home tile. One per page, only for a live reading. Drops to clamp(1.6rem, 2.8vw, 2rem) in the failure state." },
+      "display-large": { "displayName": "Display Large", "purpose": "The same state word on /status, where the reading is the whole page; clamp(2.2rem, 11vw, 3rem) at 640px and below. The only surface that takes the larger step; shares Display's failure size." },
       "headline": { "displayName": "Headline", "purpose": "Page-level titles: article h1, CV name (as clamp(1.9rem, 4vw, 2.5rem))." },
       "figure": { "displayName": "Figure", "purpose": "Headline figure values on the home ledger, set over a 0.72rem uppercase unit." },
       "title": { "displayName": "Title", "purpose": "Repeating item titles: post card heading, work ledger row, project square." },
@@ -34,14 +35,16 @@
       "body-fine": { "displayName": "Body Fine", "purpose": "Dense list copy: telemetry values, project summaries, CV skill values." },
       "section-label": { "displayName": "Section Label", "purpose": "Block heading with a 1px underrule: work ledger and CV section headings." },
       "label": { "displayName": "Label", "purpose": "The workhorse: definition terms, tile labels, drill-down affordances." },
+      "unit": { "displayName": "Unit", "purpose": "The label that sits directly against a figure or a scale: the unit under a home figure, the facts-row term, the day track's head, key and clock axis." },
       "micro": { "displayName": "Micro", "purpose": "Pills and tags. Status pills bottom out at 0.66rem, which is the floor, not a step." }
     },
     "shadows": [
-      { "name": "led-glow", "value": "0 0 6px currentColor", "purpose": "Emissive glow on a lit LED, taking the accent of its state. Removed entirely on [data-tone='down']." },
+      { "name": "led-glow", "value": "0 0 6px currentColor", "purpose": "Emissive glow on a lit LED, taking the accent of its state; also on the day track's 2px cursor and its key swatch. Removed entirely on [data-tone='down']." },
       { "name": "toast-lift", "value": "0 6px 24px rgba(0, 0, 0, 0.4)", "purpose": "The only floating-overlay shadow, on the copied-link toast. Nothing at rest carries a shadow." }
     ],
     "motion": [
-      { "name": "transition", "value": "160ms ease", "purpose": "Every state transition in the system: border colour, text colour, opacity, transform." },
+      { "name": "transition", "value": "160ms ease", "purpose": "Every pointer-driven state transition in the system: border colour, text colour, opacity, transform." },
+      { "name": "reading-settle", "value": "300ms ease", "purpose": "The status page's tone change on the state word and the track's opacity when a reading arrives or fails. Slower than the hover transition because it answers a reading, not a pointer." },
       { "name": "led-period-rest", "value": "4.8s", "purpose": "LED pulse period when asleep. The period is data, not decoration." },
       { "name": "led-period-awake", "value": "2.4s", "purpose": "LED pulse period when awake." },
       { "name": "led-period-active", "value": "1.6s", "purpose": "LED pulse period when up and active." },
@@ -55,16 +58,41 @@
       { "name": "post-head-stack", "value": "560px" },
       { "name": "cv-skills-stack", "value": "620px" },
       { "name": "telemetry-stack", "value": "640px" },
+      { "name": "status-compact", "value": "640px" },
       { "name": "project-two-up", "value": "820px" },
       { "name": "ledger-stack", "value": "900px" }
     ]
   },
   "components": [
     {
+      "name": "Day Track",
+      "kind": "custom",
+      "refersTo": "track-rail",
+      "description": "The status page's signature: the last 24 hours as one panel-inset rail with painted hour stubs and six-hour rules, a cyan sleep block and an amber activity block under the Tint Rule, and a 2px cursor at the right edge lit and pulsed like the LED.",
+      "html": "<div class=\"ds-track\" data-tone=\"up\"><div class=\"ds-track-head\"><span>Last 24 hours</span><span class=\"ds-track-key\"><span class=\"ds-key ds-key-sleep\">sleep</span><span class=\"ds-key ds-key-move\">activity</span><span class=\"ds-key ds-key-now\">now</span></span></div><div class=\"ds-track-rail\" role=\"img\" aria-label=\"The last 24 hours\"><span class=\"ds-track-block ds-track-sleep\" style=\"left:12%;width:30%\">Sleep 7 hr 12 min</span><span class=\"ds-track-block ds-track-move\" style=\"left:88%;width:4%\" data-narrow=\"true\">Walk 38 min</span><span class=\"ds-track-cursor\"></span></div><ol class=\"ds-track-axis\"><li>09:14</li><li>15:14</li><li>21:14</li><li>03:14</li><li>now</li></ol></div>",
+      "css": ".ds-track { --led-period: 2.4s; display: grid; gap: 0.5rem; font-family: 'Space Mono', monospace; } .ds-track-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-family: 'Chakra Petch', sans-serif; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-track-key { display: flex; gap: 1rem; } .ds-key { display: inline-flex; align-items: center; gap: 0.4rem; } .ds-key::before { content: ''; width: 8px; height: 8px; border: 1px solid currentColor; } .ds-key-sleep::before { color: var(--cyan, #49e0ff); background: color-mix(in srgb, var(--cyan, #49e0ff) 22%, transparent); } .ds-key-move::before { color: var(--amber, #ffb400); background: color-mix(in srgb, var(--amber, #ffb400) 22%, transparent); } .ds-key-now::before { width: 2px; border: 0; background: var(--green, #3ddc73); box-shadow: 0 0 6px var(--green, #3ddc73); } .ds-track-rail { position: relative; height: clamp(48px, 7vw, 76px); border: 1px solid var(--line, #2c333d); border-radius: 4px; overflow: hidden; background: linear-gradient(90deg, var(--line, #2c333d) 1px, transparent 1px) 0 100% / calc(100% / 24) 38% repeat-x, linear-gradient(90deg, color-mix(in srgb, var(--dim, #8b95a2) 40%, transparent) 1px, transparent 1px) 0 0 / 25% 100% repeat-x, var(--panel, #1b2027); } .ds-track-block { position: absolute; top: 0; bottom: 0; box-sizing: border-box; display: flex; align-items: center; padding: 0 0.55rem; font-family: 'Chakra Petch', sans-serif; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; } .ds-track-block[data-narrow='true'] { color: transparent; padding: 0; } .ds-track-sleep { background: color-mix(in srgb, var(--cyan, #49e0ff) 22%, transparent); border-inline: 1px solid var(--cyan, #49e0ff); color: var(--cyan, #49e0ff); } .ds-track-move { background: color-mix(in srgb, var(--amber, #ffb400) 22%, transparent); border-inline: 1px solid var(--amber, #ffb400); color: var(--amber, #ffb400); } .ds-track-cursor { position: absolute; top: 0; bottom: 0; right: 0; width: 2px; background: var(--green, #3ddc73); box-shadow: 0 0 6px var(--green, #3ddc73); animation: ds-cursorpulse var(--led-period) steps(2) infinite; } @keyframes ds-cursorpulse { 50% { opacity: 0.25; } } .ds-track[data-tone='rest'] .ds-track-cursor { background: var(--cyan, #49e0ff); box-shadow: 0 0 6px var(--cyan, #49e0ff); } .ds-track[data-tone='move'] .ds-track-cursor { background: var(--amber, #ffb400); box-shadow: 0 0 6px var(--amber, #ffb400); } .ds-track[data-tone='down'] .ds-track-cursor { background: var(--dim, #8b95a2); box-shadow: none; animation: none; } .ds-track[data-tone='down'] { opacity: 0.45; } .ds-track-axis { list-style: none; margin: 0; padding: 0; display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--dim, #8b95a2); font-variant-numeric: tabular-nums; } @media (prefers-reduced-motion: reduce) { .ds-track-cursor { animation: none; } } @media (max-width: 640px) { .ds-track-rail { height: 44px; } .ds-track-axis li:nth-child(even) { visibility: hidden; } }"
+    },
+    {
+      "name": "Facts Row",
+      "kind": "custom",
+      "refersTo": "facts-cell",
+      "description": "The state's own figures under the day track: hairline-divided cells, each a 0.72rem uppercase unit term over a 1.9rem tabular bold value. Hidden when the state has no figures; one column below 640px.",
+      "html": "<dl class=\"ds-facts\"><div><dt>Awake for</dt><dd>3 hr 14 min</dd></div><div><dt>Woke at</dt><dd>06:52</dd></div><div><dt>Last sleep</dt><dd>7 hr 12 min</dd></div></dl>",
+      "css": ".ds-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem 0; margin: 0; padding: 1.4rem 0 0; border-top: 1px solid var(--line, #2c333d); color: var(--text, #dfe6ee); } .ds-facts div { padding: 0 1.2rem; border-left: 1px solid var(--line, #2c333d); } .ds-facts div:first-child { padding-left: 0; border-left: 0; } .ds-facts dt { font-family: 'Chakra Petch', sans-serif; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); margin-bottom: 0.25rem; } .ds-facts dd { margin: 0; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; } @media (max-width: 640px) { .ds-facts { grid-template-columns: minmax(0, 1fr); } .ds-facts div { padding-left: 0; border-left: 0; } }"
+    },
+    {
+      "name": "Sprite Inset",
+      "kind": "custom",
+      "refersTo": "sprite-inset",
+      "description": "A square ground inset with a hairline and 6px radius framing a 40x40 pixel sprite at pixel rendering. Empty, it states 'No reading' in a section-label voice rather than framing nothing.",
+      "html": "<div class=\"ds-sprite-inset\"><svg class=\"ds-sprite\" viewBox=\"0 0 40 40\" width=\"240\" height=\"240\" shape-rendering=\"crispEdges\" aria-hidden=\"true\"><rect x=\"14\" y=\"3\" width=\"10\" height=\"1\" fill=\"#141514\"/><rect x=\"13\" y=\"4\" width=\"12\" height=\"6\" fill=\"#d0a43d\"/><rect x=\"13\" y=\"10\" width=\"12\" height=\"11\" fill=\"#ebceb5\"/><rect x=\"16\" y=\"12\" width=\"3\" height=\"2\" fill=\"#64a8e5\"/><rect x=\"22\" y=\"12\" width=\"3\" height=\"2\" fill=\"#64a8e5\"/><rect x=\"13\" y=\"18\" width=\"12\" height=\"7\" fill=\"#c06230\"/><rect x=\"8\" y=\"26\" width=\"25\" height=\"11\" fill=\"#343542\"/><rect x=\"2\" y=\"30\" width=\"5\" height=\"5\" fill=\"#bfbdaa\"/><rect x=\"3\" y=\"31\" width=\"3\" height=\"3\" fill=\"#49e0ff\"/></svg></div><div class=\"ds-sprite-inset\"></div>",
+      "css": ".ds-sprite-inset { display: inline-grid; place-items: center; width: 160px; aspect-ratio: 1; margin-right: 1rem; padding: 5%; background: var(--bg, #12151a); border: 1px solid var(--line, #2c333d); border-radius: 6px; } .ds-sprite-inset:empty::after { content: 'No reading'; font-family: 'Chakra Petch', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; border: none; border-radius: 0; }"
+    },
+    {
       "name": "Live State Block",
       "kind": "custom",
       "refersTo": "live-block",
-      "description": "The home page's dominant instrument: a bordered panel whose state word, colour and LED pulse period all come from a real reading. Collapses its sprite slot when empty.",
+      "description": "The home page's dominant instrument: a bordered panel whose state word, colour and LED pulse period all come from a real reading. Its sprite is pixel-rendered at a 240x240 intrinsic size; the slot collapses when empty.",
       "html": "<a class=\"ds-live\" href=\"/status\" data-tone=\"up\"><div class=\"ds-live-head\"><span class=\"ds-led\"></span><span class=\"ds-live-label\">Right now</span><span class=\"ds-live-meta\">high confidence</span></div><div class=\"ds-live-body\"><p class=\"ds-live-state\">Awake</p><p class=\"ds-live-detail\">Up for 3h 14m.</p></div><span class=\"ds-live-drill\">Full status</span></a>",
       "css": ".ds-live { display: grid; background: var(--panel, #1b2027); border: 1px solid var(--line, #2c333d); border-radius: 6px; padding: 1.25rem 1.35rem; color: var(--text, #dfe6ee); text-decoration: none; transition: border-color 160ms ease; } .ds-live:hover { border-color: var(--cyan, #49e0ff); } .ds-live-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; } .ds-led { --led-period: 2.4s; width: 9px; height: 9px; border-radius: 50%; background: var(--green, #3ddc73); box-shadow: 0 0 6px var(--green, #3ddc73); animation: ds-ledpulse var(--led-period) steps(2) infinite; } @keyframes ds-ledpulse { 50% { opacity: 0.25; } } @media (prefers-reduced-motion: reduce) { .ds-led { animation: none; } } .ds-live-label { font-family: 'Chakra Petch', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim, #8b95a2); } .ds-live-meta { margin-left: auto; font-size: 0.72rem; color: var(--dim, #8b95a2); font-variant-numeric: tabular-nums; } .ds-live-state { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: clamp(2.4rem, 5vw, 3.4rem); line-height: 1; letter-spacing: -0.015em; margin: 0 0 0.5rem; color: var(--green, #3ddc73); } .ds-live-detail { margin: 0; font-family: 'Space Mono', monospace; font-size: 0.9rem; line-height: 1.6; max-width: 30ch; } .ds-live-drill { margin-top: 0.9rem; font-family: 'Chakra Petch', sans-serif; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim, #8b95a2); transition: color 160ms ease; } .ds-live:hover .ds-live-drill { color: var(--cyan, #49e0ff); } .ds-live[data-tone='rest'] .ds-live-state { color: var(--cyan, #49e0ff); } .ds-live[data-tone='move'] .ds-live-state { color: var(--amber, #ffb400); } .ds-live[data-tone='down'] .ds-live-state { color: var(--text, #dfe6ee); font-size: clamp(1.6rem, 2.8vw, 2rem); } .ds-live[data-tone='down'] .ds-led { background: var(--dim, #8b95a2); box-shadow: none; animation: none; }"
     },
@@ -143,27 +171,28 @@
   ],
   "narrative": {
     "northStar": "The Quiet Console",
-    "overview": "One committed dark console. No light mode, no toggle: color-scheme: dark is declared and the theme is the theme. The surface reads like instrumentation that has been left running — panels on a near-black ground, hairline rules, small uppercase labels, one lamp that pulses at a rate carrying real data. The personality is competent and unshowy: it does not perform excitement, it reports.\n\nDensity is deliberately uneven. The home page is a two-column ledger (5fr 1fr 6fr, the middle column pure gap) whose blocks are separated by empty bands rather than by a lattice of borders, and whose left column is allowed to end early and leave the page ragged. This replaced an earlier twelve-cell bordered tile grid that read as noise in live use; the current world's rule is that structure comes from space first and from a border only when a block is genuinely a container.\n\nThe one loud element on any screen is a live reading — the current state word, set in display type at up to 3.4rem, coloured by what it says. Everything else sits between 0.7rem and 1.1rem. Nothing here is decorative-first: the topic counts, the figure row, the LED period and the graticule tick on a post card all encode data.",
+    "overview": "One committed dark console. No light mode, no toggle: color-scheme: dark is declared and the theme is the theme. The surface reads like instrumentation that has been left running — panels on a near-black ground, hairline rules, small uppercase labels, one lamp that pulses at a rate carrying real data. The personality is competent and unshowy: it does not perform excitement, it reports.\n\nDensity is deliberately uneven. The home page is a two-column ledger (5fr 1fr 6fr, the middle column pure gap) whose blocks are separated by empty bands rather than by a lattice of borders, and whose left column is allowed to end early and leave the page ragged. This replaced an earlier twelve-cell bordered tile grid that read as noise in live use; the current world's rule is that structure comes from space first and from a border only when a block is genuinely a container.\n\nThe one loud element on any screen is a live reading — the current state word, set in display type at up to 3.4rem on the home tile and up to 5.4rem on /status, the one page whose whole job is that reading — coloured by what it says. Everything else sits between 0.7rem and 1.1rem, with figures at exactly 1.9rem. Nothing here is decorative-first: the topic counts, the figure row, the LED period, the day track's cursor and the graticule tick on a post card all encode data.",
     "keyCharacteristics": [
       "Single committed dark theme; no light variant anywhere in the system.",
       "Structure from space and hairlines, not from a grid of boxes.",
       "Monospace body against a squared technical display face.",
       "Colour is semantic before it is aesthetic; accents are never mood lighting.",
-      "Motion is rare and, where it exists on the home page, carries a value.",
+      "Motion is rare and, where it exists, carries a value: the LED period, the track cursor, a sprite's per-state frame.",
       "Numbers are tabular everywhere they appear."
     ],
     "rules": [
       { "name": "The Meaning-First Rule", "body": "Amber = figures and emphasis. Green = confirmed and online. Cyan = live, interactive, hover, focus. Red = fault. A colour is never chosen because a block \"needs some colour\"; if none of the four meanings applies, the element is text or dim.", "section": "colors" },
       { "name": "The Honest Lamp Rule", "body": "A green LED must be backed by a real reading. The header lamp ships data-tone=\"down\" (unlit, grey, no animation) and is only lit by the live status fetch resolving successfully; a failed read pushes it back down. No lamp on any future surface may be lit by markup alone.", "section": "colors" },
       { "name": "The One Border Colour Rule", "body": "Every rule, divider, and card edge is 1px of line. Depth changes come from the panel tier, never from a heavier or lighter stroke.", "section": "colors" },
-      { "name": "The One Shout Rule", "body": "A page gets one element above 1.9rem, and it must be a live or identifying reading. If a screen wants a second, the screen is wrong.", "section": "typography" },
+      { "name": "The Tint Rule", "body": "A signal colour never fills an area at full strength. Where it has to cover a region — the sleep and activity blocks on the day track, the key swatches beside it — it is a 22% mix over transparent (color-mix(in srgb, <accent> 22%, transparent)) bounded by a 1px solid edge of the same accent, with the accent itself reserved for the label inside. A full-strength accent is for a line, a lamp, a word or a pill, never a field.", "section": "colors" },
+      { "name": "The One Shout Rule", "body": "A page gets one element above 1.9rem, and it must be a live or identifying reading. If a screen wants a second, the screen is wrong. /status takes the Display Large step for its one shout; its facts figures sit at exactly 1.9rem, the ceiling, not above it.", "section": "typography" },
       { "name": "The Display-For-Chrome Rule", "body": "Chakra Petch is for labels, titles, figures and state words. Running prose is always Space Mono. An uppercase Chakra Petch label is the system's only way of naming a block — it never gets a decorative kicker or eyebrow above it.", "section": "typography" },
       { "name": "The Tabular Rule", "body": "Anything countable is tabular: time, tile meta, CV dates, figure values and topic counts all carry font-variant-numeric: tabular-nums.", "section": "typography" },
       { "name": "The Gap-Not-Grid Rule", "body": "Columns are separated by an empty grid column, not by a divider. If two regions need distinguishing, put space between them before reaching for a border.", "section": "layout" },
       { "name": "The Uneven Page Rule", "body": "Columns are not padded to match height. A short left column ending above a long right column is the intended result.", "section": "layout" },
       { "name": "The No-Resting-Shadow Rule", "body": "Surfaces are flat at rest. Depth comes from the panel tier and the hairline. The only shadows in the system are a lamp's glow and a floating transient.", "section": "elevation" },
       { "name": "The Border-Lights-Up Rule", "body": "Hover state on any container is a border colour change to cyan, not a lift, a fill, or a shadow. The one exception is the project square, which also rises 3px.", "section": "elevation" },
-      { "name": "The Failure Is A State Rule", "body": "When the fetch fails, the live block renders data-tone=\"down\": the word becomes \"No signal\" at the reduced display size, the LED goes grey and unlit with its animation and glow removed, the confidence reading empties, and the sprite is removed. It never guesses a state and it never shows a spinner in place of an answer.", "section": "components" }
+      { "name": "The Failure Is A State Rule", "body": "When the fetch fails, the block renders data-tone=\"down\": the word becomes \"No signal\" at the reduced display size, the LED goes grey and unlit with its animation and glow removed, the confidence reading empties, and the sprite is removed. On /status the same tone also greys the track cursor, dims the track to 45% and clears its blocks, while the sprite inset shows \"No reading\" in its own uppercase unit label. It never guesses a state and it never shows a spinner in place of an answer.", "section": "components" }
     ],
     "dos": [
       "Do separate regions with space first; reach for a 1px line border only when the region is genuinely a container.",
@@ -171,7 +200,9 @@
       "Do assign colour by meaning: amber for figures and emphasis, green for confirmed, cyan for live and interactive, red for fault.",
       "Do ship indicators unlit by default and let a real reading light them.",
       "Do set every countable value in tabular numerals.",
-      "Do snap to the recorded ramp (0.7 / 0.74 / 0.75 / 0.88 / 0.9 / 1rem / 1.1rem / 1.9rem / the display clamp) instead of inventing a new size.",
+      "Do snap to the recorded ramp (0.7 / 0.72 / 0.74 / 0.75 / 0.88 / 0.9 / 1rem / 1.1rem / 1.9rem / the two display clamps) instead of inventing a new size.",
+      "Do fill a region with a signal colour only as a 22% tint bounded by a 1px edge of the same colour, keeping the full accent for lines, lamps, words and pills.",
+      "Do keep pixel art pixel-shaped: image-rendering: pixelated, no border, no radius, framed by its inset rather than by itself.",
       "Do collapse an element that has no data rather than framing an empty slot.",
       "Do theme browser surfaces — caret, scrollbar, selection, focus ring — on any new surface.",
       "Do state failure as a named state in the same component, at a quieter size than the working state."
