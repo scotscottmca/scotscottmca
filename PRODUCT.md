@@ -109,8 +109,10 @@ make them read as deliberate, not unfinished.
   recycling bin (`public/images/emotes/`: self, clippy, crt-monitor, email,
   internet-explorer, pdf, printer). These are personal, paid-for assets and are
   part of the identity.
-- Vector "status sprites" of Scott for each live state
-  (`public/images/status/scott-{awake,asleep,walking,working-out,active}.svg`).
+- Pixel-art "status sprites" of Scott for each live state
+  (`public/images/status/scott-{awake,asleep,walking,working-out,active}.svg`),
+  drawn by `scripts/status-sprites.mjs` in the emote set's own palette so the
+  two Scotts are the same person.
 - Socials: GitHub `smcallister594`, LinkedIn `/in/scottmca`, X `@ScotScottMcA`,
   Reddit `Scott-PatchMyPC`.
 - Licence CC BY-NC 4.0. Google Analytics ID `G-2DLW833T23` must be preserved.
