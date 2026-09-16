@@ -9,13 +9,21 @@
 // JSONL per session); live sessions from the pid files in ~/.claude/sessions.
 // GitHub data comes from the authenticated `gh` CLI. Runs from launchd every
 // 15 minutes — see scripts/com.scotscottmca.usage.plist.
+//
+// Transcripts are per-machine, so every device publishes its own
+// usage-<device>.json to the gist and each run rebuilds the merged usage.json
+// the page reads. Run --selftest to exercise the merge.
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
-import { homedir, tmpdir } from 'node:os';
+import { homedir, hostname, tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
+import assert from 'node:assert/strict';
 
 const HOME = homedir();
+// First label only: the rest is whatever the current network calls us
+// (.local, .fritz.box), and a name that moves would double-count the device.
+const DEVICE = (process.env.USAGE_DEVICE || hostname().split('.')[0] || 'unknown').replace(/[^a-zA-Z0-9-]+/g, '-');
 const DAYS = 7;
 const NOW = Date.now();
 const SINCE = NOW - DAYS * 86400000;
@@ -140,15 +148,84 @@ function github() {
   };
 }
 
-const data = { updated: new Date(NOW).toISOString(), windowDays: DAYS, claude: claude(), github: github() };
+// A live session older than two publish intervals is a closed lid, not a session.
+const LIVE_TTL_MS = 30 * 60000;
+
+// Sum the numeric leaves of b into a, so totals/models/projects/days all merge
+// without naming a field twice.
+function sumInto(a, b) {
+  for (const [k, v] of Object.entries(b)) {
+    if (typeof v === 'number') a[k] = (a[k] || 0) + v;
+    else if (v && typeof v === 'object') sumInto((a[k] ??= {}), v);
+  }
+  return a;
+}
+
+// A device silent for longer than the window has nothing left inside it, so its
+// file stops counting rather than pinning stale figures to the page forever.
+function merge(parts, own) {
+  const claude = { live: [], sessions: 0, hoursActive: 0, totals: {}, models: {}, projects: {}, days: {} };
+  const devices = [];
+  for (const p of parts) {
+    const age = NOW - Date.parse(p.updated);
+    if (!(age < DAYS * 86400000)) continue;
+    devices.push(p.device);
+    claude.sessions += p.claude.sessions;
+    claude.hoursActive += p.claude.hoursActive;
+    for (const k of ['totals', 'models', 'projects', 'days']) sumInto(claude[k], p.claude[k]);
+    if (age < LIVE_TTL_MS) claude.live.push(...p.claude.live.map((l) => ({ ...l, device: p.device })));
+  }
+  // GitHub figures are account-wide, so the publishing device's are current.
+  return { updated: new Date(NOW).toISOString(), windowDays: DAYS, devices, claude, github: own.github };
+}
+
+if (process.argv.includes('--selftest')) {
+  const at = (msAgo) => new Date(NOW - msAgo).toISOString();
+  const dev = (device, updated) => ({
+    device,
+    updated,
+    claude: {
+      live: [{ project: 'p' }], sessions: 1, hoursActive: 1.5, totals: { cost: 1, messages: 2 },
+      models: { 'claude-opus-5': { cost: 1 } }, projects: { p: { sessions: 1 } },
+      days: { '2026-01-01': { tokens: 2, sessions: 1 } },
+    },
+    github: { commits: 7 },
+  });
+  const here = dev('here', at(0));
+  const m = merge([here, dev('nap', at(60 * 60000)), dev('gone', at(8 * 86400000))], here);
+  assert.deepEqual(m.devices, ['here', 'nap']); // the silent device drops out
+  assert.equal(m.claude.sessions, 2);
+  assert.equal(m.claude.hoursActive, 3);
+  assert.equal(m.claude.days['2026-01-01'].tokens, 4); // numeric leaves summed
+  assert.equal(m.claude.models['claude-opus-5'].cost, 2);
+  assert.equal(m.claude.live.length, 1); // the napping device is not live
+  assert.equal(m.github.commits, 7); // account-wide, not summed per device
+  console.log('selftest ok');
+  process.exit(0);
+}
+
+const data = { updated: new Date(NOW).toISOString(), device: DEVICE, windowDays: DAYS, claude: claude(), github: github() };
 const json = JSON.stringify(data, null, 1);
+
+// `gh gist edit` wants -a for a file the gist has never seen, -f to replace one.
+function put(existing, name, body) {
+  const tmp = join(tmpdir(), name);
+  writeFileSync(tmp, body);
+  const args = existing[name] ? ['-f', name, tmp] : ['-a', tmp];
+  execFileSync('gh', ['gist', 'edit', GIST_ID, ...args], { stdio: 'inherit', timeout: 30000 });
+}
 
 if (process.argv.includes('--publish')) {
   if (!GIST_ID) throw new Error('USAGE_GIST_ID is not set');
-  const tmp = join(tmpdir(), 'usage.json');
-  writeFileSync(tmp, json);
-  execFileSync('gh', ['gist', 'edit', GIST_ID, '-f', 'usage.json', tmp], { stdio: 'inherit', timeout: 30000 });
-  console.log(`published ${json.length} bytes to gist ${GIST_ID}`);
+  const mine = `usage-${DEVICE}.json`;
+  const files = gh(['api', `gists/${GIST_ID}`]).files;
+  const others = Object.entries(files)
+    .filter(([name]) => name.startsWith('usage-') && name !== mine)
+    .map(([, f]) => JSON.parse(f.content));
+  const merged = merge([data, ...others], data);
+  put(files, mine, json);
+  put(files, 'usage.json', JSON.stringify(merged, null, 1));
+  console.log(`published ${mine} and merged usage.json (${merged.devices.join(', ')}) to gist ${GIST_ID}`);
 } else {
   console.log(json);
 }
