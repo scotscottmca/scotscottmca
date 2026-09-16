@@ -2,7 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   Publishes Claude + GitHub usage to the gist behind scotscottmca.com/usage
-  every 15 minutes. Install / reinstall:
+  every 15 minutes. Install it on every Mac you work on: each publishes its own
+  usage-<device>.json to the same gist and the figures are summed. A second Mac
+  needs this repo cloned, `gh auth login`, and node at the path below.
+
+  Install / reinstall:
 
     cp scripts/com.scotscottmca.usage.plist ~/Library/LaunchAgents/
     launchctl bootout gui/$(id -u)/com.scotscottmca.usage 2>/dev/null
