@@ -201,6 +201,7 @@ linkLabel: View on GitHub       # optional — button text
 date: 2024-02-10                 # optional — used for ordering
 status: active                   # active | maintained | archived | complete
 featured: false                  # optional — sorts to the top of the list
+npmPackage: '@scope/name'        # optional — adds the live release-state block
 tags:
   - PowerShell
   - Intune
@@ -217,6 +218,7 @@ draft: false
 | `date` | no | Used for ordering. |
 | `status` | no | One of `active`, `maintained`, `archived`, `complete`. Shown as a badge (`active` is highlighted). |
 | `featured` | no | `true` pushes it to the top of the list. |
+| `npmPackage` | no | npm package name. Adds a block that reads the registry in the browser and shows the published version, its age and the last five releases. |
 | `tags` | no | Labels. |
 | `draft` | no | `true` hides it. |
 
@@ -225,7 +227,9 @@ draft: false
 The Markdown body is the about page — same formatting options as a blog post
 (headings, images, code, callouts, tables). The outbound **link button is added
 automatically** at the bottom from `url` + `linkLabel`; you don't write it
-yourself.
+yourself. So is the **release-state block**, when `npmPackage` is set — don't
+write a version number into the body, it will go stale the next time the package
+publishes.
 
 ### Full project example
 

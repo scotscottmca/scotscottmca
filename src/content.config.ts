@@ -37,6 +37,10 @@ const projects = defineCollection({
     tags: z.array(z.string()).default([]),
     // Show near the top / on the home page.
     featured: z.boolean().default(false),
+    // npm package the project ships as, e.g. "@scotscottmca/away-team". When
+    // set, the project page reads the registry live and shows the published
+    // release state — the site build is not the source of truth for a version.
+    npmPackage: z.string().optional(),
     // A silent screen recording of the project in use. When present, the home
     // page can show the project working rather than describing it.
     demo: z

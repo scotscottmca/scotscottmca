@@ -55,7 +55,7 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 | `src/content/projects/` | Projects (Markdown): each has a write-up + outbound link. |
 | `src/content.config.ts` | Content collection schema/loader. |
 | `src/layouts/BaseLayout.astro` | HTML shell: head, meta/OG, GA, theme init. |
-| `src/components/` | Header, Footer, ThemeToggle, SocialLinks, PostCard. |
+| `src/components/` | Header, Footer, ThemeToggle, SocialLinks, PostCard, ReleaseStateTile. |
 | `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `projects/`, `projects/[...slug]`, `404`, `rss.xml`. |
 | `src/styles/global.css` | All styling + the three theme palettes. |
 | `public/` | Static assets served at site root (`images/`, favicons, `CNAME`, `staticwebapp.config.json`). |
@@ -120,6 +120,11 @@ Markdown body = the project's about page.
 
 - Project URL = `/projects/<filename-without-extension>/`.
 - The outbound link button uses `url` + `linkLabel`.
+- Set `npmPackage` (e.g. `'@scotscottmca/away-team'`) when the project ships to
+  npm. The page then renders `ReleaseStateTile`, which reads
+  `registry.npmjs.org` in the browser and shows the live published version, its
+  age, the version count and the last five releases. Nothing is baked in at
+  build time, so a publish is visible without rebuilding the site.
 
 ## Local development
 
