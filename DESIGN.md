@@ -587,6 +587,23 @@ home ledger. The row is `hidden` when the state has no figures; it is never
 padded out with placeholders. Below 640px it is one figure per row with no
 dividers.
 
+### Release state
+A project's published version, read live from the npm registry on its project
+page — the site build is never the source of truth for a version number. The
+shared `.statusstrip` names it ("Release state · npm", right-aligned meta
+carrying the read time), and below it, unboxed: a three-figure row (latest,
+time since publish, versions shipped) in the home ledger's value-over-unit
+stack, one 0.88rem line of detail, and a ladder of the last five versions as
+hairline-divided rows — version in tabular body type on the left, its date (plus
+its time when it landed today) in 0.75rem `dim` on the right. A dim uppercase
+drill closes the block.
+
+It obeys the Failure Is A State Rule: the LED ships unlit and only a real
+reading lights it, the figures and ladder carry the `hidden` attribute until
+data arrives rather than holding placeholder digits, and a failed read states
+"No signal" in body ink and points at the package page instead of showing a
+spinner or a stale number.
+
 ### Sprite inset
 A square `ground` inset with a `line` hairline and 6px radius, 5% internal
 padding, holding the state's 40×40 pixel sprite at full width and pixel

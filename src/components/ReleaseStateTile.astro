@@ -1,0 +1,156 @@
+---
+// The published release state of a project, read live from the npm registry.
+// away-team ships from a GitHub Actions workflow on every push that touches an
+// agent, a skill or the installer, so the registry — not the last site build —
+// is the only honest source for "what version is out right now".
+//
+// Follows the live block's rules: the LED ships unlit, a real reading lights it,
+// and a failed read is a named state ("No signal") rather than a spinner or a
+// guess.
+
+interface Props {
+  /** npm package name, e.g. "@scotscottmca/away-team". */
+  pkg: string;
+}
+
+const { pkg } = Astro.props;
+const npmUrl = `https://www.npmjs.com/package/${pkg}`;
+---
+
+<section class="release-state" data-release data-package={pkg}>
+  <div class="statusstrip">
+    <span class="led" data-tone="down" data-release-led></span>
+    <span class="title">Release state · npm</span>
+    <span class="meta" data-release-meta>{pkg}</span>
+  </div>
+
+  <div aria-live="polite">
+    {/* Figures stay hidden until a reading arrives: no placeholder digits. */}
+    <span class="figures-row release-figures" hidden data-release-figures>
+      <span class="figure">
+        <span class="figure-value" data-release-version></span>
+        <span class="figure-unit">Latest</span>
+      </span>
+      <span class="figure">
+        <span class="figure-value" data-release-age></span>
+        <span class="figure-unit">Since publish</span>
+      </span>
+      <span class="figure">
+        <span class="figure-value" data-release-count></span>
+        <span class="figure-unit">Versions</span>
+      </span>
+    </span>
+
+    <p class="release-note" data-release-note>Reading the registry…</p>
+
+    {/* The last few versions, newest first. Collapses when there is nothing. */}
+    <ol class="release-ladder" hidden data-release-ladder></ol>
+  </div>
+
+  <a class="release-drill" href={npmUrl} target="_blank" rel="noopener noreferrer">
+    Package on npm
+  </a>
+</section>
+
+<script>
+  const block = document.querySelector('[data-release]');
+  if (block) {
+    const pkg = block.dataset.package;
+    const led = block.querySelector('[data-release-led]');
+    const meta = block.querySelector('[data-release-meta]');
+    const figures = block.querySelector('[data-release-figures]');
+    const note = block.querySelector('[data-release-note]');
+    const ladder = block.querySelector('[data-release-ladder]');
+    const versionEl = block.querySelector('[data-release-version]');
+    const ageEl = block.querySelector('[data-release-age]');
+    const countEl = block.querySelector('[data-release-count]');
+
+    const DAY = 86_400_000;
+
+    // Age as one compact figure, so the value stays a number plus a unit letter
+    // rather than a sentence: 4h, 3d, 5w, 2y.
+    function age(from) {
+      const ms = Date.now() - from.getTime();
+      if (ms < 3_600_000) return `${Math.max(1, Math.round(ms / 60_000))}m`;
+      if (ms < DAY) return `${Math.round(ms / 3_600_000)}h`;
+      if (ms < 14 * DAY) return `${Math.round(ms / DAY)}d`;
+      if (ms < 365 * DAY) return `${Math.round(ms / (7 * DAY))}w`;
+      return `${(ms / (365 * DAY)).toFixed(1)}y`;
+    }
+
+    const stamp = (d) =>
+      d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    const clock = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    // Patch releases often land several times in a day, so a same-day entry
+    // carries its time — otherwise the ladder would read as five identical rows.
+    const rowStamp = (d) =>
+      d.toDateString() === new Date().toDateString() ? `${stamp(d)} · ${clock(d)}` : stamp(d);
+
+    function paint(data) {
+      const latest = data['dist-tags']?.latest;
+      const times = data.time || {};
+      // Every published version, newest first. "created"/"modified" are registry
+      // bookkeeping, not releases.
+      const published = Object.keys(data.versions || {})
+        .filter((v) => times[v])
+        .map((v) => ({ version: v, date: new Date(times[v]) }))
+        .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+      if (!latest || published.length === 0) return fail('Nothing published yet');
+
+      const latestAt = new Date(times[latest] || published[0].date);
+
+      versionEl.textContent = latest;
+      ageEl.textContent = age(latestAt);
+      countEl.textContent = String(published.length);
+      figures.hidden = false;
+
+      note.textContent = `${latest} published ${stamp(latestAt)}.`;
+      block.dataset.tone = 'ok';
+      led.dataset.tone = 'ok';
+
+      ladder.replaceChildren(
+        ...published.slice(0, 5).map(({ version, date }) => {
+          const li = document.createElement('li');
+          const v = document.createElement('span');
+          v.className = 'release-ver';
+          v.textContent = version;
+          const d = document.createElement('span');
+          d.className = 'release-date';
+          d.textContent = rowStamp(date);
+          li.append(v, d);
+          return li;
+        })
+      );
+      ladder.hidden = false;
+      meta.textContent = `read ${clock(new Date())}`;
+    }
+
+    // An honest failure: the registry is unreachable, not "no releases exist".
+    function fail(reason) {
+      block.dataset.tone = 'down';
+      led.dataset.tone = 'down';
+      figures.hidden = true;
+      ladder.hidden = true;
+      ladder.replaceChildren();
+      note.textContent = `No signal — ${reason}. The package page on npm still has the answer.`;
+      meta.textContent = pkg;
+    }
+
+    async function read() {
+      try {
+        const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg)}`, {
+          headers: { accept: 'application/json' },
+        });
+        if (!res.ok) return fail(`the registry returned ${res.status}`);
+        paint(await res.json());
+      } catch {
+        fail('could not reach the npm registry');
+      }
+    }
+
+    read();
+  }
+</script>

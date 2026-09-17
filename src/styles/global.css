@@ -1099,6 +1099,75 @@ a.tag:hover {
   background: var(--panel-2);
 }
 
+/* ---- Release state ----
+   A project's published release, read live from the npm registry on its own
+   page. The same instrument as the home page's live block: the LED ships
+   unlit, a real reading lights it, and a failed read is a named state at a
+   quieter size rather than a spinner. Only the strip is a container; the
+   reading under it is separated by space. */
+.release-state {
+  margin-top: 2rem;
+}
+.release-state .statusstrip {
+  margin-bottom: 1.1rem;
+}
+.release-figures {
+  margin-bottom: 0.9rem;
+}
+.release-note {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--dim);
+}
+/* No signal reads as the state it is: body ink, not a dimmed aside. */
+.release-state[data-tone='down'] .release-note {
+  color: var(--text);
+}
+.release-ladder {
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.release-ladder li {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.release-ver {
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+.release-date {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.release-drill {
+  display: inline-block;
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: color var(--transition);
+}
+.release-drill:hover {
+  color: var(--cyan);
+  text-decoration: none;
+}
+/* Flex and list layouts would otherwise win over the hidden attribute, and the
+   block must close up rather than frame an absent reading. */
+.release-figures[hidden],
+.release-ladder[hidden] {
+  display: none;
+}
+
 /* ---- CV ----
    The one surface that drops the voice. Same materials, quieter register:
    hairline rules instead of panels, one accent, and a measure built for

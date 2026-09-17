@@ -4,6 +4,7 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import ReleaseStateTile from '../../components/ReleaseStateTile.astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects', ({ data }) => !data.draft);
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, url, linkLabel, status, tags, image } = project.data;
+const { title, summary, url, linkLabel, status, tags, image, npmPackage } = project.data;
 const { Content } = await render(project);
 ---
 
@@ -48,6 +49,7 @@ const { Content } = await render(project);
         <div class="prose">
           <Content />
         </div>
+        {npmPackage && <ReleaseStateTile pkg={npmPackage} />}
         {
           url && (
             <p style="margin-top:2rem">
