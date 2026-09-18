@@ -55,7 +55,7 @@ import { SITE } from '../config';
 
       <section class="panel" data-merged hidden>
         <h2 class="ledger-heading">Merged</h2>
-        <ol class="merged" data-merged-rows></ol>
+        <div class="merged" data-merged-rows></div>
       </section>
 
       <p class="fineprint">
@@ -85,8 +85,12 @@ import { SITE } from '../config';
   const dayLabel = (d: string) => utc(d).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
   const dmy = (d: string) => utc(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
+  const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
   let latest: any = null;
   let range = '7d';
+  // Repos the reader has opened, so a repaint does not shut them again.
+  const openRepos = new Set<string>();
 
   // A feed from a device still on the single-window format has no `windows`;
   // read it as the 7-day one it is rather than showing nothing.
@@ -164,16 +168,54 @@ import { SITE } from '../config';
     );
     q('[data-models]').hidden = models.length === 0;
 
+    // Grouped by repo, busiest first, each group shut until asked. A repaint
+    // every five minutes would otherwise close whatever the reader just opened.
+    const byRepo = new Map<string, any[]>();
+    for (const p of g.merged) {
+      if (!byRepo.has(p.repo)) byRepo.set(p.repo, []);
+      byRepo.get(p.repo)!.push(p);
+    }
+    for (const prs of byRepo.values()) prs.sort((x, y) => Date.parse(y.mergedAt) - Date.parse(x.mergedAt));
+    const groups = [...byRepo.entries()].sort(
+      (a, b) => b[1].length - a[1].length || Date.parse(b[1][0].mergedAt) - Date.parse(a[1][0].mergedAt)
+    );
+
     q('[data-merged-rows]').replaceChildren(
-      ...g.merged.map((p: any) => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = p.url; a.textContent = p.title; a.rel = 'noopener';
-        const meta = document.createElement('span');
-        meta.className = 'merged-meta';
-        meta.textContent = `${p.repo} #${p.number} · ${new Date(p.mergedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
-        li.append(a, meta);
-        return li;
+      ...groups.map(([repo, prs]) => {
+        const details = document.createElement('details');
+        details.className = 'merged-group';
+        details.open = openRepos.has(repo);
+        details.addEventListener('toggle', () => {
+          if (details.open) openRepos.add(repo);
+          else openRepos.delete(repo);
+        });
+
+        const summary = document.createElement('summary');
+        const name = document.createElement('span');
+        name.className = 'merged-repo';
+        name.textContent = repo;
+        const count = document.createElement('span');
+        count.className = 'merged-meta';
+        count.textContent = `${prs.length} · ${shortDate(prs[0].mergedAt)}`;
+        summary.append(name, count);
+
+        const list = document.createElement('ol');
+        list.className = 'merged-list';
+        list.append(
+          ...prs.map((p: any) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = p.url; a.textContent = p.title; a.rel = 'noopener';
+            const meta = document.createElement('span');
+            meta.className = 'merged-meta';
+            meta.textContent = `#${p.number} · ${shortDate(p.mergedAt)}`;
+            li.append(a, meta);
+            return li;
+          })
+        );
+
+        details.append(summary, list);
+        return details;
       })
     );
     q('[data-merged]').hidden = g.merged.length === 0;
@@ -312,9 +354,37 @@ import { SITE } from '../config';
   .usage th { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
   .usage tr:last-child td { border-bottom: 0; }
 
-  .usage .merged { list-style: none; margin: 0.6rem 0 0; padding: 0; }
-  .usage .merged li { display: grid; gap: 0.2rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); font-size: 0.88rem; }
-  .usage .merged li:last-child { border-bottom: 0; }
+  .usage .merged { margin: 0.6rem 0 0; }
+  .usage .merged-group { border-bottom: 1px solid var(--line); }
+  .usage .merged-group:last-child { border-bottom: 0; }
+  .usage .merged-group summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.7rem 0;
+    font-size: 0.88rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .usage .merged-group summary::-webkit-details-marker { display: none; }
+  /* Right and bottom borders on a rotated square: a chevron that points along
+     at rest and down once the group is open. */
+  .usage .merged-group summary::before {
+    content: '';
+    flex: none;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1px solid var(--dim);
+    border-bottom: 1px solid var(--dim);
+    transform: rotate(-45deg);
+    transition: var(--transition);
+  }
+  .usage .merged-group[open] summary::before { transform: rotate(45deg); }
+  .usage .merged-group summary:hover { color: var(--cyan); }
+  .usage .merged-group summary:hover::before { border-color: var(--cyan); }
+  .usage .merged-group summary .merged-meta { margin-left: auto; }
+  .usage .merged-list { list-style: none; margin: 0 0 0.5rem; padding: 0 0 0 1rem; }
+  .usage .merged-list li { display: grid; gap: 0.2rem; padding: 0.55rem 0; border-top: 1px solid var(--line); font-size: 0.88rem; }
   .usage .merged-meta { color: var(--dim); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
 
   .usage .fineprint { margin: 0; font-size: 0.78rem; line-height: 1.6; color: var(--dim); }
