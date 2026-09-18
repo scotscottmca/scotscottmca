@@ -7,8 +7,10 @@
 //
 // Claude data comes from the local transcripts in ~/.claude/projects (one
 // JSONL per session); live sessions from the pid files in ~/.claude/sessions.
-// GitHub data comes from the authenticated `gh` CLI. Runs from launchd every
-// 15 minutes — see scripts/com.scotscottmca.usage.plist.
+// GitHub data comes from the authenticated `gh` CLI. Every path is built from
+// os.homedir(), so the same script reads %USERPROFILE%\.claude on Windows.
+// Scheduled every 15 minutes by launchd on a Mac (scripts/com.scotscottmca.usage.plist)
+// and by Task Scheduler on Windows (scripts/usage-task.ps1).
 //
 // Every figure is cut three ways — last 7 days, last 14 days, and the month so
 // far on the billing cycle (anchored on USAGE_CYCLE_DAY, default the 1st) — so

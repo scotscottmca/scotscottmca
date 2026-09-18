@@ -2,9 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   Publishes Claude + GitHub usage to the gist behind scotscottmca.com/usage
-  every 15 minutes. Install it on every Mac you work on: each publishes its own
-  usage-<device>.json to the same gist and the figures are summed. A second Mac
-  needs this repo cloned, `gh auth login`, and node at the path below.
+  every 15 minutes. Install it on every Mac you work on: each machine publishes
+  its own usage-<device>.json to the same gist and the figures are summed. A
+  second Mac needs this repo cloned, `gh auth login`, and node at the path
+  below. On Windows the collector is the same script — only the scheduling
+  differs; run scripts/usage-task.ps1 there instead of installing this.
 
   Install / reinstall:
 
@@ -14,7 +16,7 @@
 
   USAGE_CYCLE_DAY is the day of the month the Claude subscription renews; it
   sets where the billing-cycle window on the page starts. Keep it the same on
-  every Mac, or the merged figures will disagree about the cycle.
+  every machine, or the merged figures will disagree about the cycle.
 
   Logs: /tmp/scotscottmca-usage.log
 -->
