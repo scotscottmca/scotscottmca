@@ -12,6 +12,10 @@
     launchctl bootout gui/$(id -u)/com.scotscottmca.usage 2>/dev/null
     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.scotscottmca.usage.plist
 
+  USAGE_CYCLE_DAY is the day of the month the Claude subscription renews; it
+  sets where the billing-cycle window on the page starts. Keep it the same on
+  every Mac, or the merged figures will disagree about the cycle.
+
   Logs: /tmp/scotscottmca-usage.log
 -->
 <plist version="1.0">
@@ -30,6 +34,8 @@
     <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
     <key>USAGE_GIST_ID</key>
     <string>5321ac84ddec1de6e66f6f49f0f5d57f</string>
+    <key>USAGE_CYCLE_DAY</key>
+    <string>1</string>
   </dict>
   <key>StartInterval</key>
   <integer>900</integer>
