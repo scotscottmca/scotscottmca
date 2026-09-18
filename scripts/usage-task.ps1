@@ -1,3 +1,4 @@
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Registers the Scheduled Task that publishes Claude + GitHub usage to the gist
@@ -7,8 +8,8 @@
 .DESCRIPTION
   Every machine you work on publishes its own usage-<device>.json to the same
   gist and the figures are summed, so run this on the Windows box as well as
-  the launchd agent on each Mac. usage-stats.mjs itself is portable — it reads
-  %USERPROFILE%\.claude\projects the same way it reads ~/.claude/projects — so
+  the launchd agent on each Mac. usage-stats.mjs itself is portable: it reads
+  %USERPROFILE%\.claude\projects the same way it reads ~/.claude/projects, so
   only the scheduling differs.
 
   Needs: node on PATH, the GitHub CLI signed in (gh auth login), and this repo
@@ -24,7 +25,19 @@
   powershell -ExecutionPolicy Bypass -File scripts\usage-task.ps1
 
 .EXAMPLE
+  pwsh -ExecutionPolicy Bypass -File scripts\usage-task.ps1
+
+.EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\usage-task.ps1 -Unregister
+
+.NOTES
+  Runs on Windows PowerShell 5.1 and PowerShell 7+ alike: no pipeline chain
+  operators, ternaries or null-coalescing, and ScheduledTasks is a CIM module
+  both load natively.
+
+  Keep this file ASCII, saved with a UTF-8 BOM. Windows PowerShell 5.1 reads a
+  .ps1 as ANSI without one, and an em dash's third UTF-8 byte decodes to a
+  double quote under CP1252, which ends a string mid-line and breaks the parse.
 #>
 [CmdletBinding()]
 param(
@@ -53,7 +66,7 @@ if ($Unregister) {
 
 $stats = Join-Path $PSScriptRoot 'usage-stats.mjs'
 if (-not (Test-Path -LiteralPath $stats)) {
-  throw "Cannot find $stats — run this from the repo's scripts folder."
+  throw "Cannot find $stats. Run this from the repo's scripts folder."
 }
 
 $node = Get-Command node -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -94,7 +107,7 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
   -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
 
 # S4U keeps the console window from flashing every quarter of an hour, but
-# registering it needs rights a plain user may not have — fall back rather
+# registering it needs rights a plain user may not have, so fall back rather
 # than leave the machine unscheduled.
 $register = {
   param($LogonType)
