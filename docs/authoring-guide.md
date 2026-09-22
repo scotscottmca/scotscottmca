@@ -4,6 +4,9 @@ How to add a **blog post** or a **project** to the site. Everything is plain
 Markdown — no Hugo shortcodes, no special build steps. Add a file, run the dev
 server, and it shows up.
 
+For how the writing itself should sound, see
+[`writing-style-guide.md`](./writing-style-guide.md).
+
 - Blog posts live in `src/content/posts/`
 - Projects live in `src/content/projects/`
 - Images live in `public/images/`
@@ -50,6 +53,7 @@ draft: false                  # true = hidden from the site, lists, RSS
 | `author` | no | Defaults to `Scott McAllister`. |
 | `tags` | no | List of strings. Shown as labels (not clickable). |
 | `draft` | no | `true` keeps it out of the build entirely. |
+| `unlisted` | no | `true` builds the page but hides it from lists, RSS, the sitemap and search engines. Use it to review a post on a PR preview. |
 
 > ℹ️ **Note**
 >
@@ -117,7 +121,8 @@ is an emoji + bold label on the first line:
 > Keep each post focused on one problem and its fix.
 ```
 
-Common ones: `ℹ️ **Note**`, `💡 **Tip**`, `⚠️ **Warning**`.
+The existing posts only ever use `💡 **Note**` (even for warnings); `ℹ️` and
+`⚠️` render fine but aren't the house habit.
 
 #### Tables
 

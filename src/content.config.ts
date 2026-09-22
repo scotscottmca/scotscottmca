@@ -14,6 +14,9 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     author: z.string().default('Scott McAllister'),
     draft: z.boolean().default(false),
+    // Builds the page (so PR previews render it) but keeps it out of lists,
+    // RSS, the sitemap and search engines. For reviewing a post live.
+    unlisted: z.boolean().default(false),
   }),
 });
 

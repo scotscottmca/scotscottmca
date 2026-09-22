@@ -3,6 +3,13 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { rehypeHeadingIds } from '@astrojs/markdown-remark';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// Posts with `unlisted: true` build but stay out of the sitemap. The config
+// can't read the content collection, so scan the front matter directly.
+const unlistedPosts = readdirSync('src/content/posts')
+  .filter((f) => f.endsWith('.md') && /^unlisted:\s*true/m.test(readFileSync(`src/content/posts/${f}`, 'utf8')))
+  .map((f) => `/posts/${f.slice(0, -3).toLowerCase()}/`);
 
 // Chain / link glyph appended to each heading, revealed on hover.
 const linkIcon = {
@@ -49,8 +56,10 @@ const linkIcon = {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://scotscottmca.com',
-  // /usage is unlisted: reachable by URL, kept out of the sitemap and robots.
-  integrations: [sitemap({ filter: (page) => !page.includes('/usage') })],
+  // /usage and unlisted posts: reachable by URL, kept out of the sitemap and robots.
+  integrations: [
+    sitemap({ filter: (page) => !page.includes('/usage') && !unlistedPosts.some((p) => page.endsWith(p)) }),
+  ],
   // Some long animated GIFs exceed sharp's default pixel cap when all frames are stacked.
   image: { service: { entrypoint: 'astro/assets/services/sharp', config: { limitInputPixels: false } } },
   markdown: {

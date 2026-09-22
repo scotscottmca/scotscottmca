@@ -17,7 +17,7 @@ const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eig
   'seventeen', 'eighteen', 'nineteen', 'twenty'];
 const spell = (n: number) => WORDS[n] ?? String(n);
 
-const postCount = spell((await getCollection('posts', ({ data }) => !data.draft)).length);
+const postCount = spell((await getCollection('posts', ({ data }) => !data.draft && !data.unlisted)).length);
 const projectCount = spell((await getCollection('projects', ({ data }) => !data.draft)).length);
 ---
 

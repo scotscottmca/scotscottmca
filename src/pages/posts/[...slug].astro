@@ -20,7 +20,7 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, date, lastModified, author, tags, image = SITE.ogImage } = post.data;
+const { title, date, lastModified, author, tags, unlisted, image = SITE.ogImage } = post.data;
 const { Content } = await render(post);
 const mins = readingTime(post.body);
 const description = post.data.description ?? excerpt(post.body);
@@ -38,7 +38,7 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={title} description={description} image={image} article={true} jsonLd={jsonLd}>
+<BaseLayout title={title} description={description} image={image} article={true} jsonLd={jsonLd} noindex={unlisted}>
   <Header />
   <main>
     <div class="container">
