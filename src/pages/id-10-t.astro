@@ -1,0 +1,396 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Unlisted: no nav link. Reads as a straight root cause analysis until the
+// last section, where the one component that was never eliminated is named.
+
+const eliminated = [
+  ['Hardware', 'Swapped for an identical unit, then for a different vendor’s unit', ],
+  ['Operating system', 'Reimaged. Reproduced on Windows 11, macOS and Ubuntu', ],
+  ['Network', 'Wired, Wi-Fi, tethered 5G, fully offline', ],
+  ['Application', 'Repaired, reinstalled, rolled back three versions, replaced with a competitor', ],
+  ['User profile', 'New profile, new account, new tenant', ],
+  ['Peripherals', 'Keyboard, mouse and display replaced', ],
+  ['Power', 'Different socket, UPS, different building', ],
+  ['Time', 'Reproduced across time zones, a DST change and a leap second', ],
+];
+---
+
+<BaseLayout
+  title="Error ID-10-T"
+  description="A root cause analysis of error ID-10-T: symptoms, affected configurations, reproduction, elimination and the root cause."
+>
+  <Header />
+  <main>
+    <div class="container rca">
+      <article>
+        <header class="article-header">
+          <h1>Error ID-10-T: a root cause analysis</h1>
+          <div class="post-meta">
+            <span>Scott McAllister</span>
+            <time datetime="2026-09-22">22 Sep 2026</time>
+            <span>Severity: persistent</span>
+            <span class="rca-state"><span class="led" style="--led-period:1.2s"></span>Root cause identified</span>
+          </div>
+        </header>
+
+        <div class="prose">
+          <p class="rca-lede">
+            ID-10-T is the most frequently reported fault in end-user computing and the least frequently fixed.
+            It has been seen on every platform, every release and every configuration that shipped with a person attached.
+            It survives reimaging, hardware replacement and change of vendor. It has no knowledge-base article, no hotfix and no owner.
+            This document traces it to its source.
+          </p>
+
+          <h2 id="symptoms">Symptoms</h2>
+          <p>
+            Reports arrive with high urgency and low detail. The reported symptom and the observed state of the system rarely agree,
+            and the fault is usually gone by the time an engineer attaches to the session.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>As reported</th><th>As observed</th></tr></thead>
+              <tbody>
+                <tr><td>“The internet is down.”</td><td>One browser tab failing to load. Every other service healthy.</td></tr>
+                <tr><td>“My password stopped working.”</td><td>Fourteen failed sign-ins in four minutes, followed by a lockout. Caps Lock on.</td></tr>
+                <tr><td>“The screen is completely dead.”</td><td>Device powered and responsive. Display off at its own switch.</td></tr>
+                <tr><td>“I haven’t changed anything.”</td><td>Eleven configuration changes in the preceding hour, each made interactively.</td></tr>
+                <tr><td>“It just started working again.”</td><td>No system-side change logged between failure and recovery.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            That last row matters most. In a normal incident, recovery follows a change: a patch, a restart, a failover.
+            With ID-10-T, the system logs nothing between broken and fixed. Whatever changed isn’t visible to the system.
+          </p>
+
+          <h2 id="affected">Affected configurations</h2>
+          <p>All of them. Including, as far as this page can tell, yours:</p>
+          <dl class="rca-config" data-config>
+            <div><dt>Platform</dt><dd data-c="os">Not detected</dd></div>
+            <div><dt>Browser</dt><dd data-c="browser">Not detected</dd></div>
+            <div><dt>Viewport</dt><dd data-c="viewport">Not detected</dd></div>
+            <div><dt>Local time</dt><dd data-c="time">Not detected</dd></div>
+            <div class="rca-config-verdict"><dt>Status</dt><dd>Affected</dd></div>
+          </dl>
+
+          <h2 id="identifier">The identifier</h2>
+          <p>
+            The code doesn’t fit any error-code scheme in use. It isn’t an HRESULT, which would read <code>0x8007xxxx</code> or similar.
+            It isn’t an NTSTATUS, a Win32 system error, an <code>errno</code> value or an HTTP status.
+            It returns nothing from Microsoft’s Error Lookup tool.
+            It isn’t among the 597 ConfigMgr and Intune codes in the list behind
+            <a href="/projects/search-json-for-error-codes">Search-JsonForErrorCodes</a>. I checked.
+          </p>
+          <p>
+            No vendor has registered it, yet support staff everywhere use it and recognise it immediately.
+            It spreads by word of mouth, mostly among helpdesk staff and mostly out of the user’s hearing.
+            That’s unusual for an error code, and it’s the first sign that this one doesn’t describe the system.
+          </p>
+
+          <h2 id="reproduction">Reproduction</h2>
+          <p>A representative session, taken from a support trace:</p>
+          <pre class="rca-trace"><code><span class="t">09:14:02.118</span> <span class="i">INFO</span>  session.start      device=healthy  network=healthy
+<span class="t">09:14:02.301</span> <span class="i">INFO</span>  ticket.open        priority=URGENT  subject="nothing works"
+<span class="t">09:14:40.552</span> <span class="i">INFO</span>  engineer.attach    remote=true
+<span class="t">09:14:41.007</span> <span class="i">INFO</span>  diag.run           cpu=ok  mem=ok  disk=ok  net=ok  app=ok
+<span class="t">09:15:30.920</span> <span class="w">WARN</span>  diag.result        fault=not_reproduced
+<span class="t">09:16:12.334</span> <span class="i">INFO</span>  engineer.detach
+<span class="t">09:16:58.781</span> <span class="e">ERROR</span> fault.recur        code=ID-10-T  device=healthy  network=healthy
+<span class="t">09:17:03.114</span> <span class="i">INFO</span>  engineer.attach    remote=true
+<span class="t">09:17:03.900</span> <span class="w">WARN</span>  diag.result        fault=not_reproduced
+<span class="t">09:18:44.265</span> <span class="i">INFO</span>  ticket.resolve     resolution="started working on its own"</code></pre>
+          <p>
+            Two observations. The fault never reproduces while an engineer is watching, and it comes back within a minute of them leaving.
+            Faults that go quiet under observation usually point at the observer. Here they point at whoever was left in the session when the observer went.
+          </p>
+
+          <h2 id="elimination">Elimination</h2>
+          <p>
+            The standard method: change one component at a time and see whether the fault survives.
+            A component whose replacement leaves the fault in place is not the cause.
+          </p>
+          <div class="table-wrap">
+            <table class="rca-matrix">
+              <thead><tr><th>Component</th><th>Method</th><th>Verdict</th></tr></thead>
+              <tbody>
+                {eliminated.map(([c, m]) => (
+                  <tr>
+                    <td class="rca-comp">{c}</td>
+                    <td>{m}</td>
+                    <td class="rca-out">Eliminated</td>
+                  </tr>
+                ))}
+                <tr class="rca-remaining">
+                  <td class="rca-comp"><span class="rca-redact" aria-label="Withheld">withheld</span></td>
+                  <td>Could not be replaced. Fault present in 100% of sessions, on every configuration, at every site.</td>
+                  <td class="rca-out">Not eliminated</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Eight components replaced, eight eliminated. One component remained in every reproduction and could not be swapped out for testing.
+            That makes it the only candidate left.
+          </p>
+
+          <h2 id="cause">Root cause</h2>
+          <p>
+            The fault is not in the system under test. Every layer of that system has been replaced and the fault carried on regardless.
+            It sits at the interface between the system and whoever is using it, on the far side of that interface, where logging doesn’t reach.
+          </p>
+          <p>
+            That fits every finding above. It explains why the fault follows the user across devices, why it disappears when a competent observer attaches,
+            why no configuration change appears between failure and recovery, and why no vendor will put its name to the code.
+          </p>
+          <p>
+            One step remains: decoding the identifier itself. Read it as characters rather than as a code, and substitute each numeral with the letter it most resembles.
+          </p>
+        </div>
+      </article>
+
+      <section class="rca-reveal" aria-labelledby="reveal-heading" data-reveal>
+        <p class="rca-decode" aria-hidden="true">
+          <span>I</span><span>D</span><span class="rca-dash">-</span><span class="rca-flip" data-to="I">1</span><span class="rca-flip" data-to="O">0</span><span class="rca-dash">-</span><span>T</span>
+        </p>
+        <h2 id="reveal-heading" class="rca-hi">
+          Hi.<br />
+          It’s you.<br />
+          <span class="rca-you">You’re the <span class="rca-nowrap">ID-10-T.</span></span>
+        </h2>
+        <dl class="rca-close">
+          <div><dt>Component</dt><dd>You</dd></div>
+          <div><dt>Resolution</dt><dd>Closed, won’t fix. Working as designed.</dd></div>
+          <div><dt>Time spent reading about yourself</dt><dd data-dwell>Not measured</dd></div>
+        </dl>
+        <div class="emote-panel">
+          <img
+            src="/images/emotes/self.png"
+            alt="Pixel-art illustration of Scott holding a tiny version of himself overhead next to a recycling bin"
+            width="60"
+            height="60"
+          />
+          <span class="emote-caption">Archiving: operator.exe</span>
+        </div>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  const ua = navigator.userAgent;
+  const os =
+    /iPhone|iPad/.test(ua) ? 'iOS' :
+    /Android/.test(ua) ? 'Android' :
+    /Mac OS X/.test(ua) ? 'macOS' :
+    /Windows/.test(ua) ? 'Windows' :
+    /CrOS/.test(ua) ? 'ChromeOS' :
+    /Linux/.test(ua) ? 'Linux' : '';
+  const browser =
+    /Edg\//.test(ua) ? 'Edge' :
+    /Firefox\//.test(ua) ? 'Firefox' :
+    /Chrome\//.test(ua) ? 'Chrome' :
+    /Safari\//.test(ua) ? 'Safari' : '';
+  const set = (k: string, v: string) => {
+    const el = document.querySelector(`[data-c="${k}"]`);
+    if (el && v) el.textContent = v;
+  };
+  set('os', os);
+  set('browser', browser);
+  if (innerWidth) set('viewport', `${innerWidth} × ${innerHeight}`);
+  set('time', new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+  // The decode plays once, when the reveal is reached. Reduced motion gets
+  // the decoded letters straight away.
+  const reveal = document.querySelector('[data-reveal]') as HTMLElement;
+  const dwell = reveal.querySelector('[data-dwell]') as HTMLElement;
+  const start = performance.now();
+  new IntersectionObserver((entries, obs) => {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+    const s = Math.round((performance.now() - start) / 1000);
+    dwell.textContent = s < 60 ? `${s} second${s === 1 ? '' : 's'}` : `${Math.floor(s / 60)} min ${s % 60} s`;
+    reveal.classList.add('is-decoded');
+    reveal.querySelectorAll<HTMLElement>('.rca-flip').forEach((el) => {
+      setTimeout(() => (el.textContent = el.dataset.to!), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450);
+    });
+  }, { threshold: 0.4 }).observe(reveal);
+</script>
+
+<style>
+  .rca-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--green);
+  }
+  .rca-lede {
+    font-size: 1.05rem;
+    color: var(--text);
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  .rca-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    margin: 1.25rem 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+  }
+  .rca-config div {
+    padding: 0.8rem 1.1rem;
+    border-right: 1px solid var(--line);
+  }
+  .rca-config div:last-child {
+    border-right: 0;
+  }
+  .rca-config dt {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .rca-config dd {
+    margin: 0.2rem 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .rca-config-verdict dd {
+    color: var(--red);
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .rca-trace {
+    background: var(--panel);
+    font-size: 0.8rem;
+    white-space: pre;
+  }
+  .rca-trace .t { color: var(--dim); }
+  .rca-trace .i { color: var(--cyan); }
+  .rca-trace .w { color: var(--amber); }
+  .rca-trace .e { color: var(--red); font-weight: 700; }
+  .rca-matrix .rca-comp {
+    font-family: var(--font-display);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .rca-matrix .rca-out {
+    white-space: nowrap;
+    color: var(--dim);
+  }
+  .rca-matrix tbody tr:not(.rca-remaining) .rca-comp {
+    text-decoration: line-through;
+    text-decoration-color: var(--dim);
+    color: var(--dim);
+  }
+  .rca-remaining td {
+    background: var(--panel-2);
+  }
+  .rca-remaining .rca-out {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .rca-redact {
+    display: inline-block;
+    min-width: 5.5em;
+    background: var(--text);
+    color: transparent;
+    border-radius: 2px;
+    line-height: 1.2;
+    user-select: none;
+  }
+
+  /* The reveal. Everything above is the report; this is the finding. */
+  .rca-reveal {
+    margin: 6rem 0 3rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--line);
+  }
+  .rca-decode {
+    display: flex;
+    gap: 0.35em;
+    margin: 0 0 2.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    letter-spacing: 0.05em;
+    color: var(--dim);
+  }
+  .rca-decode span {
+    display: inline-block;
+    min-width: 0.7em;
+    text-align: center;
+  }
+  .rca-flip {
+    transition: color 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .is-decoded .rca-flip {
+    color: var(--amber);
+  }
+  .is-decoded .rca-dash {
+    opacity: 0.3;
+  }
+  .rca-hi {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 9vw, 5.4rem);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 0 0 2.5rem;
+    color: var(--text);
+    text-wrap: balance;
+  }
+  .rca-you {
+    color: var(--amber);
+  }
+  .rca-nowrap {
+    white-space: nowrap;
+  }
+  .rca-close {
+    margin: 0 0 2rem;
+    max-width: 34rem;
+  }
+  .rca-close div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rca-close dt {
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .rca-close dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 560px) {
+    .rca-config div {
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .rca-config div:last-child {
+      border-bottom: 0;
+    }
+    .rca-close div {
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .rca-close dd {
+      text-align: left;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rca-flip { transition: none; }
+  }
+</style>
