@@ -9,6 +9,9 @@
 // callouts on every sprite. The grid behind it is the page's .sprite-inset.
 // Motion runs at the state's period from STATES in src/pages/status.astro;
 // reduced motion stills everything.
+//
+// /images/* is served immutable for a week, so after redrawing bump the ?v=
+// on the sprite URL in src/pages/status.astro or visitors keep the old art.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
