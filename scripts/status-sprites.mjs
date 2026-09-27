@@ -1,389 +1,127 @@
-// Draws the five pixel-art status sprites of Scott into public/images/status/.
+// Draws the five blueprint status sprites of Scott into public/images/status/.
 //
 //   node scripts/status-sprites.mjs
 //
-// The art is a 40×40 cell grid per state in the palette sampled from the
-// commissioned emote set (public/images/emotes/), so status Scott and emote
-// Scott are the same person. Props take the site's signal colours: cyan for
-// live and rest (laptop screen, Zs), amber for move (mug, dumbbell, heart),
-// green for confirmed (cap, ECG). Output is crisp-edged SVG: one <rect> per
-// horizontal run, grouped into layers so a few cells can animate (a blink,
-// rising Zs, a wagging tail) without a sprite sheet. Reduced motion stills
-// everything and shows the resting frame.
+// One vector head-and-shoulders (hair, specs, full beard, tee) drawn as a
+// schematic in the state's tone: violet for rest, cyan for everything else,
+// matching --violet-text and --cyan in global.css. Each state swaps the face
+// and adds a prop (Zs, mug, dachshund, dumbbell, heartbeat), with spec-sheet
+// callouts on every sprite. The grid behind it is the page's .sprite-inset.
+// Motion runs at the state's period from STATES in src/pages/status.astro;
+// reduced motion stills everything.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'images', 'status');
 
-const PAL = {
-  K: '#141514', // outline
-  H: '#d0a43d', h: '#c38a2c', // hair
-  S: '#ebceb5', s: '#d78c68', // skin, shadow
-  B: '#c06230', b: '#a34a1b', // beard
-  W: '#ffffff', E: '#64a8e5', // eye white, iris
-  M: '#861a27', // mouth
-  T: '#343542', t: '#2a2b35', // tee
-  L: '#5bb53f', l: '#d1d85c', // tee mark
-  D: '#8a5a28', d: '#6b4420', // desk
-  P: '#bfbdaa', p: '#9a9888', // laptop shell
-  C: '#49e0ff', // console cyan
-  A: '#ffb400', a: '#b57f00', // instrument amber
-  R: '#ae3342', r: '#861a27', // headband
-  G: '#3ddc73', g: '#2a9a50', // signal green
-  N: '#8b95a2', // dim
-  Q: '#dfe6ee', // readout text (pillow, duvet hem)
-  U: '#324861', u: '#28365e', // duvet
-  X: '#a34a1b', x: '#7a3512', Y: '#d78c68', // dachshund
+const CYAN = '#00d4ff';
+const VIOLET = '#b794ff';
+const FAINT = '#5a6076';
+const MUTED = '#8d93a8';
+
+const STATES = {
+  asleep: { tone: VIOLET, period: '4.8s', label: 'Scott, asleep' },
+  awake: { tone: CYAN, period: '2.4s', label: 'Scott, awake with a coffee' },
+  walking: { tone: CYAN, period: '1.4s', label: 'Scott, out walking the dachshund' },
+  'working-out': { tone: CYAN, period: '0.9s', label: 'Scott, working out' },
+  active: { tone: CYAN, period: '1.6s', label: 'Scott, up and active' },
 };
 
-const W = 40;
-const Hh = 40;
-const blank = (w = W) => Array.from({ length: Hh }, () => Array(w).fill('.'));
-
-// Paste a block of rows at (x, y). '.' and ' ' are transparent; '_' clears.
-function paste(g, x, y, rows) {
-  rows.forEach((row, j) => {
-    [...row].forEach((ch, i) => {
-      if (ch === ' ' || ch === '.') return;
-      const yy = y + j;
-      const xx = x + i;
-      if (yy < 0 || yy >= Hh || xx < 0 || xx >= g[0].length) return;
-      g[yy][xx] = ch === '_' ? '.' : ch;
-    });
-  });
+function scott(k) {
+  const shut = k === 'asleep';
+  const grin = k === 'working-out' || k === 'active';
+  const eyes = shut
+    ? '<path class="line" d="M39.5 43.5q2.5 1.8 5 0M55.5 43.5q2.5 1.8 5 0"/>'
+    : '<circle class="dot" cx="42" cy="43" r="1.7"/><circle class="dot" cx="58" cy="43" r="1.7"/>';
+  const mouth = grin
+    ? '<path class="s" d="M44 60q6 7 12 0z"/>'
+    : shut
+      ? '<ellipse class="s" cx="50" cy="61.5" rx="2.2" ry="1.4"/>'
+      : '<path class="s" d="M45 60.5q5 3.2 10 0q-5 1.2-10 0z"/>';
+  const band = k === 'working-out' ? '<path class="s" d="M31.5 31q18.5-7 37 0l-.4 4.2q-18.2-6.5-36.2 0z"/>' : '';
+  return `<g class="fig">
+    <path class="s" d="M22 100c0-15 10-22 20-24l8 5 8-5c10 2 20 9 20 24z"/>
+    <ellipse class="s" cx="31.5" cy="45" rx="3" ry="4.5"/>
+    <ellipse class="s" cx="68.5" cy="45" rx="3" ry="4.5"/>
+    <path class="s" d="M32 42c0-13 7-20 18-20s18 7 18 20v8c0 13-8 22-18 22s-18-9-18-22z"/>
+    <path class="s" d="M31.2 40c-1-15 7-24 18.8-24s20 9 18.8 24c-2-7-5-10.5-9.5-11.5-5 2-13 2-18.5 0-4.8 1-7.8 4.5-9.6 11.5z"/>
+    ${band}
+    <path class="s" d="M32 47c1 5 3 7.5 6 8.5 4-2.5 8-2.8 12-1.2 4-1.6 8-1.3 12 1.2 3-1 5-3.5 6-8.5 1.5 18-5 30-18 31s-19.5-13-18-31z"/>
+    ${mouth}
+    <path class="line" d="M38 36.5q4-1.8 8 0M54 36.5q4-1.8 8 0"/>
+    ${eyes}
+    <rect class="s" x="36" y="38.5" width="12" height="9" rx="2.5"/>
+    <rect class="s" x="52" y="38.5" width="12" height="9" rx="2.5"/>
+    <path class="line" d="M48 42q2-1.5 4 0M36 41l-4-1.5M64 41l4-1.5"/>
+  </g>`;
 }
 
-const flip = (rows) => rows.map((r) => [...r].reverse().join(''));
+const PROPS = {
+  asleep: `<text class="dot z" x="74" y="28" font-size="9">z</text>
+    <text class="dot z z2" x="81" y="18" font-size="12">Z</text>
+    <path class="p" d="M14 16a6 6 0 0 0 8 8 8 8 0 1 1-8-8z"/>`,
+  awake: `<path class="p" d="M80 80h11v11a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4zM91 83h1.5a3 3 0 0 1 0 6H91"/>
+    <path class="p steam" d="M83 76q-1.5-2 0-4t0-4M88 76q-1.5-2 0-4t0-4"/>`,
+  walking: `<g class="trot">
+      <path class="p" d="M75 88q-4-2-3.5-6.5"/>
+      <rect class="p" x="73.5" y="85.5" width="19" height="7.5" rx="3.75"/>
+      <path class="p" d="M76.5 92.5v4.5M79.5 92.5v4.5M87 92.5v4.5M90 92.5v4.5"/>
+      <ellipse class="p" cx="93" cy="83.5" rx="4.2" ry="3.8"/>
+      <ellipse class="p" cx="97.2" cy="85.2" rx="2.9" ry="2"/>
+      <path class="p" d="M90.5 81.5q-2.2 4 .2 7.5 2.2-2.8 1.4-7z"/>
+      <circle class="dot" cx="99.6" cy="84.6" r=".9"/>
+      <circle class="dot" cx="94" cy="82.4" r=".75"/>
+    </g>
+    <path class="p dim" d="M10 70h8M6 76h10M10 82h6"/>`,
+  'working-out': `<g class="reps"><path class="p" d="M76 24h18M78 18v12M81 20v8M92 18v12M89 20v8"/></g>
+    <path class="dot dim" d="M72 36q2 3 0 5a2.2 2.2 0 0 1-3-1.5c0-1.5 1.5-2.5 3-3.5z"/>`,
+  active: `<path class="dot beat" d="M84 26c-2-3-7-2-7 2 0 4 7 8 7 8s7-4 7-8c0-4-5-5-7-2z"/>
+    <path class="p dim" d="M6 22h6l2-5 3 10 2-5h5"/>`,
+};
 
-// ---- Scott: head and shoulders ----
-const HEAD = [
-  '..KKKKKKKKKK....',
-  '.KHHHHHHHHHHK...',
-  'KHHHHHHHHHHHHK..',
-  'KHHHHHHHHHHHHHK.',
-  'KHHhHHHHHHhHHHK.',
-  'KHHSSSHHSSSSHHK.',
-  'KHSSSSSSSSSSSSHK',
-  'KHShhhSSSShhhSHK', // brows
-  'KSSKKKKKSSKKKKKS',
-  'SSSKWEEKKKKWEEKS',
-  'SSSKWEEKSSKWEEKS',
-  'KSSKKKKKSSKKKKKS',
-  'KSSSSSSSsSSSSSSK',
-  'KBSSSSSSsSSSSSBK',
-  'KBBSSSSSSSSSSBBK',
-  'KBBBBBBBBBBBBBBK',
-  'KBBBBBMMMMBBBBBK',
-  'KBBBBBBBBBBBBBBK',
-  'KbBBBBBBBBBBBBbK',
-  '.KbbBBBBBBBBbbK.',
-  '..KKbbbbbbbbKK..',
-  '....KKssssKK....',
-  '.....KssssK.....',
-];
-const EARS_L = ['K', 'KS', 'KS', 'K'];
-const EARS_R = ['K', 'SK', 'SK', 'K'];
-const BODY = [
-  '..KKKKKKKtttttttKKKKKKK..',
-  '.KTTTTTTTtTTTTTTtTTTTTTK.',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTLLTTTTTTTTTTTK',
-  'KTTTTTTTTTTlLTTTTTTTTTTTK',
-  'KTTTTTTTTTTLlTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-  'KTTTTTTTTTTTTTTTTTTTTTTTK',
-];
+// Spec-sheet callouts: a construction circle and three leader lines.
+const NOTES = `<g class="note">
+    <circle class="guide" cx="50" cy="44" r="27"/>
+    <line x1="42" y1="17" x2="34" y2="8.5"/><text x="2" y="7">hair: #d0a43d</text>
+    <line x1="36" y1="43" x2="4" y2="54"/><text x="2" y="58.5">specs: x2</text>
+    <line x1="36" y1="66" x2="8" y2="66"/><text x="2" y="71">beard: 100%</text>
+  </g>`;
 
-function scott(g, { eyes = 'open', mouth = 'flat' } = {}) {
-  paste(g, 12, 3, HEAD);
-  paste(g, 10, 11, EARS_L);
-  paste(g, 28, 11, EARS_R);
-  paste(g, 8, 26, BODY);
-  if (eyes === 'closed') {
-    paste(g, 16, 12, ['SSS', 'KKK']);
-    paste(g, 23, 12, ['SSS', 'KKK']);
-  }
-  if (eyes === 'side') {
-    paste(g, 16, 12, ['EEW', 'EEW']);
-    paste(g, 23, 12, ['EEW', 'EEW']);
-  }
-  if (mouth === 'open') paste(g, 17, 19, ['MMWWMM']);
-  if (mouth === 'smile') paste(g, 17, 19, ['BMMMMB', 'KBMMBK']);
-  if (mouth === 'none') paste(g, 17, 19, ['BBBBBB']);
-}
-
-// The closed-eye frame used by the blink: lids over both lenses.
-function lids() {
-  const g = blank();
-  paste(g, 16, 12, ['SSS', 'KKK']);
-  paste(g, 23, 12, ['SSS', 'KKK']);
-  return g;
-}
-
-const DOG = [
-  '..K...........KK..',
-  '.KXK.........KXXK.',
-  'KXXXK.......KXXXXK',
-  'KXXXKKKKKKKKXXXXXK',
-  'KXXXXXXXXXXXCXXKXK',
-  'KxXXXXXXXXXXCXXXXK',
-  '.KYYYYYYYYYYCYYKK.',
-];
-const DOG_LEGS_A = ['..KKxKK..KKxKK....', '..KKKKK..KKKKK....'];
-const DOG_LEGS_B = ['...KKxKK..KKxKK...', '...KKKKK..KKKKK...'];
-const DOG_TAIL_UP = ['..K', '.KX', 'KXX'];
-const DOG_TAIL_DOWN = ['...', '...', 'KXX'];
-
-// ---- States: each is a list of layers { name, grid, cls } ----
-const states = {};
-
-// AWAKE: at the desk with the laptop and an amber mug.
-{
-  const base = blank();
-  scott(base, { mouth: 'smile' });
-  paste(base, 0, 34, [
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
-    'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
-    'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD',
-    'dddddddddddddddddddddddddddddddddddddddd',
-    'dddddddddddddddddddddddddddddddddddddddd',
-    'dddddddddddddddddddddddddddddddddddddddd',
-  ]);
-  paste(base, 13, 26, [
-    'KKKKKKKKKKKKKK',
-    'KPPPPPPPPPPPPK',
-    'KPPPPPCCPPPPPK',
-    'KPPPPCCCCPPPPK',
-    'KPPPPPCCPPPPPK',
-    'KPPPPPPPPPPPPK',
-    'KPPPPPPPPPPPPK',
-    'KppppppppppppK',
-  ]);
-  paste(base, 11, 34, ['KKKKKKKKKKKKKKKKKK', 'KppppppppppppppppK', 'KKKKKKKKKKKKKKKKKK']);
-  paste(base, 31, 28, ['.KKKK.', 'KAAAAKK', 'KAAAAKaK', 'KAAAAKaK', 'KAAAAKK', '.KKKK.']);
-  const steam1 = blank();
-  paste(steam1, 32, 25, ['.N.N', 'N.N.']);
-  const steam2 = blank();
-  paste(steam2, 32, 24, ['N.N.', '.N.N']);
-  states.awake = [
-    { name: 'base', grid: base },
-    { name: 'lids', grid: lids(), cls: 'blink' },
-    { name: 'steam-a', grid: steam1, cls: 'f1' },
-    { name: 'steam-b', grid: steam2, cls: 'f2' },
-  ];
-}
-
-// ASLEEP: pillow, duvet, eyes shut, Zs rising.
-{
-  const base = blank();
-  paste(base, 6, 8, [
-    '..KKKKKKKKKKKKKKKKKKKKKKKKKK..',
-    '.KQQQQQQQQQQQQQQQQQQQQQQQQQQK.',
-    ...Array(12).fill('KQQQQQQQQQQQQQQQQQQQQQQQQQQQQK'),
-    '.KNNNNNNNNNNNNNNNNNNNNNNNNNNK.',
-    '..KKKKKKKKKKKKKKKKKKKKKKKKKK..',
-  ]);
-  scott(base, { eyes: 'closed', mouth: 'none' });
-  paste(base, 0, 27, [
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
-    'QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',
-    'QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ',
-    'KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'uUUUUUUUUUuUUUUUUUUUUuUUUUUUUUUUuUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
-    'uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu',
-  ]);
-  const z1 = blank();
-  paste(z1, 30, 8, ['CCC', '..C', '.C.', 'CCC']);
-  const z2 = blank();
-  paste(z2, 34, 3, ['CCCC', '...C', '..C.', '.C..', 'CCCC']);
-  states.asleep = [
-    { name: 'base', grid: base },
-    { name: 'z-small', grid: z1, cls: 'z1' },
-    { name: 'z-big', grid: z2, cls: 'z2' },
-  ];
-}
-
-// WORKING OUT: headband, open mouth, an amber dumbbell doing reps.
-{
-  const base = blank();
-  scott(base, { mouth: 'open' });
-  paste(base, 12, 7, ['KRRRRRRRRRRRRRRK', 'KRrRRRRRRRRRRrRK']);
-  const bell = blank();
-  const plate = ['KKKK.', 'KAAAK', 'KAAAK', 'KAAAK', 'KAAAK', 'KAAAK', 'KAAAK', 'KAAAK', 'KKKK.'];
-  paste(bell, 2, 27, plate);
-  paste(bell, 33, 27, flip(plate));
-  paste(bell, 6, 30, ['KKKKKKKKKKKKKKKKKKKKKKKKKKKK', 'NNNNNNNNNNNNNNNNNNNNNNNNNNNN', 'KKKKKKKKKKKKKKKKKKKKKKKKKKKK']);
-  paste(bell, 8, 29, ['KSSSK', 'KSSSK', 'KSSSK', 'KKKKK']);
-  paste(bell, 27, 29, ['KSSSK', 'KSSSK', 'KSSSK', 'KKKKK']);
-  const sweat = blank();
-  paste(sweat, 30, 9, ['C', 'CC']);
-  states['working-out'] = [
-    { name: 'base', grid: base },
-    { name: 'lids', grid: lids(), cls: 'blink' },
-    { name: 'dumbbell', grid: bell, cls: 'reps' },
-    { name: 'sweat', grid: sweat, cls: 'drip' },
-  ];
-}
-
-// WALKING: green cap, eyes on the path, two dachshunds on leads.
-{
-  const base = blank();
-  scott(base, { eyes: 'side', mouth: 'smile' });
-  paste(base, 12, 1, [
-    '...KKKKKKKKK....',
-    '..KGGGGGGGGGK...',
-    '.KGGGGGGGGGGGK..',
-    'KGGGGGGGGGGGGGK.',
-    'KGGGGGGGGGGGGGKKKKKK',
-    'KgggggggggggggggggggK',
-    'KKKKKKKKKKKKKKKKKKKK',
-  ]);
-  // hands holding the leads, which drop straight down to the collars
-  paste(base, 9, 29, ['KKKK', 'KSSK', 'KKKK']);
-  paste(base, 27, 29, ['KKKK', 'KSSK', 'KKKK']);
-  paste(base, 12, 32, ['K', 'K', 'K']);
-  paste(base, 27, 32, ['K', 'K', 'K']);
-  // two dachshunds, nose to nose under him: one facing right, one facing left
-  paste(base, 0, 31, DOG);
-  paste(base, 12, 33, ['xx', 'xx']);
-  paste(base, 22, 31, flip(DOG));
-  paste(base, 26, 33, ['xx', 'xx']);
-  const legsA = blank();
-  paste(legsA, 0, 38, DOG_LEGS_A);
-  paste(legsA, 22, 38, flip(DOG_LEGS_A));
-  const legsB = blank();
-  paste(legsB, 0, 38, DOG_LEGS_B);
-  paste(legsB, 22, 38, flip(DOG_LEGS_B));
-  const tailUp = blank();
-  paste(tailUp, 0, 30, DOG_TAIL_UP);
-  paste(tailUp, 37, 30, flip(DOG_TAIL_UP));
-  const tailDown = blank();
-  paste(tailDown, 0, 30, DOG_TAIL_DOWN);
-  paste(tailDown, 37, 30, flip(DOG_TAIL_DOWN));
-  states.walking = [
-    { name: 'base', grid: base },
-    { name: 'lids', grid: lids(), cls: 'blink' },
-    { name: 'legs-a', grid: legsA, cls: 'f1' },
-    { name: 'legs-b', grid: legsB, cls: 'f2' },
-    { name: 'tail-up', grid: tailUp, cls: 'f1' },
-    { name: 'tail-down', grid: tailDown, cls: 'f2' },
-  ];
-}
-
-// ACTIVE: heart rate up. An amber heart beating, flushed, a live trace on the tee.
-{
-  const base = blank();
-  scott(base, { mouth: 'open' });
-  paste(base, 13, 15, ['s']);
-  paste(base, 26, 15, ['s']);
-  const heartSmall = blank();
-  paste(heartSmall, 31, 2, ['.KK.KK.', 'KAAKAAK', 'KAAAAAK', '.KAAAK.', '..KAK..', '...K...']);
-  const heartBig = blank();
-  paste(heartBig, 30, 1, ['.KK..KK.', 'KAAKKAAK', 'KAAAAAAK', 'KAAAAAAK', '.KAAAAK.', '..KAAK..', '...KK...']);
-  const sweat = blank();
-  paste(sweat, 29, 8, ['C', 'CC']);
-  // ECG trace on the tee: a 14-cell beat repeated across a grid one beat wider
-  // than the canvas, scrolled left by one beat per cycle behind a clip.
-  const BEAT = ['.....G........', 'GGGG.G.GGGGGGG', '......G.......'];
-  const trace = blank(54);
-  paste(trace, 0, 33, BEAT.map((r) => r.repeat(4).slice(0, 54)));
-  states.active = [
-    { name: 'base', grid: base },
-    { name: 'lids', grid: lids(), cls: 'blink' },
-    { name: 'heart-small', grid: heartSmall, cls: 'f1 beat' },
-    { name: 'heart-big', grid: heartBig, cls: 'f2 beat' },
-    { name: 'sweat', grid: sweat, cls: 'drip' },
-    { name: 'trace', grid: trace, cls: 'trace', clip: 'M9 33h23v3H9z' },
-  ];
-}
-
-// ---- Emit ----
-function rects(g) {
-  const out = [];
-  for (let y = 0; y < Hh; y++) {
-    const w = g[y].length;
-    let x = 0;
-    while (x < w) {
-      const c = g[y][x];
-      if (c === '.' || !PAL[c]) {
-        x++;
-        continue;
-      }
-      let run = 1;
-      while (x + run < w && g[y][x + run] === c) run++;
-      out.push(`<rect x="${x}" y="${y}" width="${run}" height="1" fill="${PAL[c]}"/>`);
-      x += run;
-    }
-  }
-  return out.join('');
-}
-
-const STYLE = `
-    .f2, .z1, .z2 { opacity: 0; }
-    .blink { opacity: 0; animation: blink 4.8s steps(1, end) infinite; }
-    .f1 { animation: f1 1.2s steps(1, end) infinite; }
-    .f2 { animation: f2 1.2s steps(1, end) infinite; }
-    .beat.f1 { animation-duration: 0.9s; }
-    .beat.f2 { animation-duration: 0.9s; }
-    .z1 { animation: rise 3.2s steps(4, end) infinite; }
-    .z2 { animation: rise 3.2s steps(4, end) infinite 1.1s; }
-    .reps { animation: reps 1.6s steps(1, end) infinite; }
-    .drip { animation: drip 2.4s steps(3, end) infinite; }
-    .trace { animation: trace 2.8s steps(14, end) infinite; }
-    @keyframes blink { 0%, 93% { opacity: 0; } 94%, 97% { opacity: 1; } 98%, 100% { opacity: 0; } }
-    @keyframes f1 { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-    @keyframes f2 { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
-    @keyframes rise { 0% { opacity: 0; transform: translateY(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-4px); } }
-    @keyframes reps { 0%, 49% { transform: translateY(0); } 50%, 100% { transform: translateY(-2px); } }
-    @keyframes drip { 0% { opacity: 1; transform: translateY(0); } 66% { opacity: 1; transform: translateY(2px); } 100% { opacity: 0; transform: translateY(3px); } }
-    @keyframes trace { from { transform: translateX(0); } to { transform: translateX(-14px); } }
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; }
-      .f2, .blink, .z2 { opacity: 0 !important; }
-      .f1, .z1 { opacity: 1 !important; }
-    }
+const style = (tone, period) => `
+    .s { fill: ${tone}; fill-opacity: 0.06; stroke: ${tone}; stroke-width: 0.8; stroke-linejoin: round; }
+    .line, .p { fill: none; stroke: ${tone}; stroke-width: 0.9; stroke-linecap: round; stroke-linejoin: round; }
+    .dot { fill: ${tone}; }
+    .dim { opacity: 0.7; }
+    text { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-weight: 700; }
+    .note line, .guide { stroke: ${FAINT}; stroke-width: 0.4; fill: none; }
+    .guide { stroke-dasharray: 1.5 1.5; }
+    .note text { font-size: 5.2px; font-weight: 400; fill: ${MUTED}; }
+    .fig { animation: bob ${period} ease-in-out infinite; }
+    .z { animation: rise ${period} ease-out infinite; }
+    .z2 { animation-delay: calc(${period} / 2); }
+    .steam { animation: steam ${period} ease-in-out infinite; }
+    .reps { animation: reps ${period} ease-in-out infinite; }
+    .trot { animation: reps calc(${period} * 2) ease-in-out infinite; }
+    .beat { transform-box: fill-box; transform-origin: center; animation: beat ${period} ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-1.5px); } }
+    @keyframes rise { 0% { opacity: 0; transform: translate(0, 4px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(3px, -6px); } }
+    @keyframes steam { 0%, 100% { opacity: 0.2; transform: translateY(1px); } 50% { opacity: 1; transform: translateY(-2px); } }
+    @keyframes reps { 50% { transform: translateY(-7px); } }
+    @keyframes beat { 0%, 60%, 100% { transform: scale(1); } 20% { transform: scale(1.18); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 `;
-
-const LABELS = {
-  awake: 'Pixel Scott, awake at his desk',
-  asleep: 'Pixel Scott, asleep',
-  'working-out': 'Pixel Scott, working out',
-  walking: 'Pixel Scott, out walking the dachshunds',
-  active: 'Pixel Scott, up and active',
-};
 
 fs.mkdirSync(OUT, { recursive: true });
-for (const [name, layers] of Object.entries(states)) {
-  const clips = layers
-    .filter((l) => l.clip)
-    .map((l) => `  <clipPath id="${l.name}-clip"><path d="${l.clip}"/></clipPath>`)
-    .join('\n');
-  const body = layers
-    .map((l) => {
-      const g = `<g id="${l.name}"${l.cls ? ` class="${l.cls}"` : ''}>${rects(l.grid)}</g>`;
-      return l.clip ? `  <g clip-path="url(#${l.name}-clip)">${g}</g>` : `  ${g}`;
-    })
-    .join('\n');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="240" height="240" shape-rendering="crispEdges" role="img" aria-label="${LABELS[name]}">
-  <!-- Generated by scripts/status-sprites.mjs; edit the grid there, not this file. -->
-  <style>${STYLE}  </style>
-${clips ? clips + '\n' : ''}${body}
+for (const [k, { tone, period, label }] of Object.entries(STATES)) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="240" height="240" role="img" aria-label="${label}">
+  <!-- Generated by scripts/status-sprites.mjs; edit the drawing there, not this file. -->
+  <style>${style(tone, period)}  </style>
+  ${NOTES}
+  ${scott(k)}
+  ${PROPS[k]}
 </svg>
 `;
-  fs.writeFileSync(path.join(OUT, `scott-${name}.svg`), svg);
+  fs.writeFileSync(path.join(OUT, `scott-${k}.svg`), svg);
 }
-console.log(`wrote ${Object.keys(states).length} sprites to ${OUT}`);
+console.log(`wrote ${Object.keys(STATES).length} sprites to ${OUT}`);
