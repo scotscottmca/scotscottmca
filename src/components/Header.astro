@@ -1,12 +1,25 @@
 ---
-import { SITE, NAV } from '../config';
+import { NAV } from '../config';
+import Icon from './Icon.astro';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const current = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
 
 <header class="site-header">
   <div class="container">
-    <a class="brand" href="/"><span class="led" data-fleet-led data-tone="down"></span> {SITE.title}</a>
+    <a class="wordmark" href="/" aria-label="ScotScottMcA, home"
+      ><span class="tilde" aria-hidden="true">~/</span>scotscottmca<span class="caret" aria-hidden="true"></span></a
+    >
     <nav class="nav" aria-label="Primary">
-      {NAV.map((item) => <a href={item.href}>{item.label}</a>)}
+      {
+        NAV.map((item) => (
+          <a href={item.href} aria-current={current(item.href) ? 'page' : undefined}>
+            <Icon name={item.icon} />
+            {item.label.toLowerCase()}
+          </a>
+        ))
+      }
     </nav>
   </div>
 </header>

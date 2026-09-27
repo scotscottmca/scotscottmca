@@ -42,7 +42,7 @@ function Search-JsonForErrorCodes {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$false, Position=0)]
-        [string]$UrlToJsonFile = "https://raw.githubusercontent.com/smcallister594/scotscottmca/main/assets/ErrorCodes/errorCodes.json",
+        [string]$UrlToJsonFile = "https://raw.githubusercontent.com/scotscottmca/scotscottmca/main/assets/ErrorCodes/errorCodes.json",
         
         [Parameter(Mandatory=$true, Position=1)]
         [ValidateSet('HexCode', 'SignedIntCode', 'UnsignedIntCode')]
@@ -3674,4 +3674,4 @@ Credits: [Anoop Nair](https://www.anoopcnair.com/sccm-troubleshooting-intune-err
 
 -----
 
-Want to see something else added? <a href="https://github.com/smcallister594/scotscottmca/issues/new">Open an issue.</a>
+Want to see something else added? <a href="https://github.com/scotscottmca/scotscottmca/issues/new">Open an issue.</a>

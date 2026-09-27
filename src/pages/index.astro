@@ -4,27 +4,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import LiveStateTile from '../components/LiveStateTile.astro';
-import { SITE, SOCIAL } from '../config';
-import { HEADLINE_FIGURES, FIGURES_PERIOD, ROLE } from '../data/cv';
-import { formatDate } from '../utils';
+import Icon from '../components/Icon.astro';
+import { SITE, SOCIAL, POSTS_ARCHIVED_BEFORE } from '../config';
+import { ROLE } from '../data/cv';
 
 const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
   (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
 );
-const releases = await getCollection('releases', ({ data }) => !data.draft);
-const latestRelease = [...releases].sort(
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
-)[0];
+);
+// Newest release per app only, so one busy app can't fill the log.
+const releases = [...(await getCollection('releases', ({ data }) => !data.draft))]
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .filter((r, i, all) => all.findIndex((x) => x.data.product === r.data.product) === i);
 
-const telemetry = [
-  {
-    label: 'Toolbox',
-    value: 'C#/.NET, TypeScript/React, Azure & Terraform, PowerShell — plus a growing pile of AI/agent tooling',
-  },
-  { label: 'Fuel', value: 'Black coffee and weird beers' },
-  { label: 'Off the clock', value: 'Dachshunds, video games, and doomscrolling AI slop' },
-];
+// The activity log: every dated thing the site knows about, newest first.
+// Nothing here is typed by hand, so it can't claim more than happened.
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const activity = [
+  ...releases.map((r) => ({
+    date: r.data.date,
+    kind: 'release',
+    title: `${r.data.product} ${r.data.version}`,
+    href: `/releases/${r.id.split('/')[0]}/`,
+  })),
+  ...projects
+    .filter((p) => p.data.date)
+    .map((p) => ({ date: p.data.date!, kind: 'project', title: p.data.title, href: `/projects/${p.id}/` })),
+  ...posts
+    .filter((p) => p.data.date >= POSTS_ARCHIVED_BEFORE)
+    .map((p) => ({ date: p.data.date, kind: 'post', title: p.data.title, href: `/posts/${p.id}/` })),
+]
+  .sort((a, b) => b.date.getTime() - a.date.getTime())
+  .slice(0, 7);
+
+// Projects that publish to npm get their latest release read live in the
+// browser, the same way their project page does.
+const npm = projects
+  .filter((p) => p.data.npmPackage)
+  .map((p) => ({ pkg: p.data.npmPackage!, title: p.data.title, href: `/projects/${p.id}/` }));
 
 const jsonLd = {
   '@graph': [
@@ -49,99 +68,186 @@ const jsonLd = {
 
 <BaseLayout title={`${SITE.author} — ${ROLE.title}`} jsonLd={jsonLd}>
   <Header />
-  <main>
-    <div class="container container-wide">
-      <!-- Three columns: who, what right now, and the readouts. Projects run
-           the full width beneath them. -->
-      <div class="ledger">
-        <section class="who">
-          <h1 class="who-name">{SITE.author}</h1>
-          <p class="who-role">Software Developer <span aria-hidden="true">//</span> AI Janitor</p>
-          <dl class="who-facts">
-            <div>
-              <dt>Base</dt>
-              <dd>{ROLE.location}</dd>
-            </div>
-            <div>
-              <dt>Post</dt>
-              <dd>{ROLE.org}</dd>
-            </div>
-          </dl>
-
-          <a class="who-figures" href="/cv">
-            <span class="figures-row">
-              {
-                HEADLINE_FIGURES.map((figure) => (
-                  <span class="figure">
-                    <span class="figure-value">{figure.value}</span>
-                    <span class="figure-unit">{figure.unit}</span>
-                  </span>
-                ))
-              }
-              <span class="tag figures-period">{FIGURES_PERIOD}</span>
-            </span>
-            <span class="who-figures-drill">Full CV</span>
-          </a>
-
-          <SocialLinks />
-        </section>
-
-        <LiveStateTile />
-
-        <section class="telemetry">
-          <h2 class="ledger-heading">Telemetry</h2>
-          <dl>
-            {
-              telemetry.map((t) => (
-                <div class="telemetry-row">
-                  <dt>
-                    <span class="dot" />
-                    {t.label}
-                  </dt>
-                  <dd>{t.value}</dd>
-                </div>
-              ))
-            }
-          </dl>
-        </section>
-
-        <section class="work-panel">
-          <div class="work-bar">
-            <h2 class="ledger-heading">Personal projects</h2>
-            {
-              latestRelease && (
-                <p class="work-latest">
-                  Latest release{' '}
-                  <a href={`/releases/${latestRelease.id.split('/')[0]}/`}>
-                    {latestRelease.data.product} {latestRelease.data.version}
-                  </a>
-                  <span class="work-latest-date">
-                    <time datetime={latestRelease.data.date.toISOString()}>
-                      {formatDate(latestRelease.data.date)}
-                    </time>
-                  </span>
-                </p>
-              )
-            }
+  <main class="home">
+    <div class="container">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 class="hero-title" id="hero-title">{SITE.author}</h1>
+          <p class="hero-role">
+            {ROLE.title} at {ROLE.org} <span class="slash" aria-hidden="true">/</span> AI janitor
+          </p>
+          <p class="lede">
+            Easily nerd-sniped. The side projects are the evidence.<br />
+            Based in {ROLE.location}.
+          </p>
+          <div class="hero-actions">
+            <a class="btn" href="/cv">Read the CV <Icon name="arrow-right" /></a>
+            <SocialLinks />
           </div>
-          <ol class="work">
+        </div>
+
+        <figure class="log panel" aria-labelledby="log-title">
+          <figcaption class="panel-bar">
+            <span id="log-title"
+              ><span class="ps">PS C:\scotscottmca&gt;</span> Get-Content .\activity.log -Tail {activity.length}</span
+            >
+          </figcaption>
+          <ol class="log-lines" data-log>
             {
-              projects.map((project) => (
+              activity.map((a) => (
                 <li>
-                  <a href={`/projects/${project.id}/`}>
-                    <span class="work-head">
-                      <span class="work-name">{project.data.title}</span>
-                      <span class={`status status-${project.data.status}`}>{project.data.status}</span>
-                    </span>
-                    <span class="work-summary">{project.data.summary}</span>
+                  <a href={a.href}>
+                    <time datetime={a.date.toISOString()}>{iso(a.date)}</time>
+                    <span class={`kind kind-${a.kind}`}>{a.kind}</span>
+                    <span class="log-title">{a.title}</span>
                   </a>
                 </li>
               ))
             }
           </ol>
-        </section>
-      </div>
+        </figure>
+      </section>
     </div>
   </main>
   <Footer />
 </BaseLayout>
+
+<script define:vars={{ npm }}>
+  // Slot each npm package's latest version into the log by date. Rows are
+  // cloned from a server-rendered one so they keep its styling; a failed read
+  // just leaves the log as it was built.
+  const log = document.querySelector('[data-log]');
+  const size = log.children.length;
+  npm.forEach(async ({ pkg, title, href }) => {
+    try {
+      const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(pkg)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const version = data['dist-tags']?.latest;
+      const at = version && data.time?.[version];
+      if (!at || !log.firstElementChild) return;
+      const date = new Date(at);
+      const row = log.firstElementChild.cloneNode(true);
+      row.querySelector('a').href = href;
+      const time = row.querySelector('time');
+      time.dateTime = date.toISOString();
+      time.textContent = date.toISOString().slice(0, 10);
+      const kind = row.querySelector('.kind');
+      kind.className = kind.className.replace(/kind-\S+/, 'kind-release');
+      kind.textContent = 'release';
+      row.querySelector('.log-title').textContent = `${title} ${version}`;
+      const later = [...log.children].find((li) => new Date(li.querySelector('time').dateTime) < date);
+      log.insertBefore(row, later ?? null);
+      while (log.children.length > size) log.lastElementChild.remove();
+    } catch {}
+  });
+</script>
+
+<style>
+  /* Home is one screen: the hero sits in the middle of whatever space the
+     header and footer leave, and the footer stays on screen. */
+  .home {
+    display: grid;
+    align-items: center;
+  }
+  :global(.home + .site-footer) {
+    margin-top: 40px;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 56px;
+    align-items: center;
+    padding: 24px 0;
+  }
+  .hero-title {
+    margin: 0;
+    font-size: clamp(44px, 7vw, 76px);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+  .hero-role {
+    margin: 16px 0 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--violet-text);
+  }
+  .slash {
+    color: var(--faint);
+    margin: 0 4px;
+  }
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+  }
+
+  /* The log: real, dated entries, set like `git log --oneline`. */
+  .log {
+    margin: 0;
+    overflow: hidden;
+    box-shadow: 0 32px 64px -32px color-mix(in srgb, var(--indigo) 70%, transparent);
+  }
+  .ps {
+    color: var(--violet-text);
+  }
+  .log-lines {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .log-lines a {
+    display: grid;
+    grid-template-columns: auto 64px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 16px;
+    transition: background 150ms var(--ease);
+  }
+  .log-lines a:hover {
+    background: color-mix(in srgb, var(--navy) 80%, transparent);
+  }
+  .log-lines time {
+    color: var(--faint);
+  }
+  .log-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .log-lines a:hover .log-title {
+    color: var(--cyan);
+  }
+  .kind {
+    color: var(--muted);
+  }
+  .kind-release {
+    color: var(--cyan);
+  }
+  .kind-project {
+    color: var(--violet-text);
+  }
+
+  @media (max-width: 960px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .hero {
+      gap: 48px;
+    }
+  }
+  @media (max-width: 560px) {
+    .log-lines a {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0 12px;
+    }
+    .log-title {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

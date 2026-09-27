@@ -1,17 +1,45 @@
 ---
 import { SOCIAL } from '../config';
-
-import { ICON_PATHS as icons } from '../data/icons';
+import Icon from './Icon.astro';
 ---
 
-<div class="social">
+<ul class="social">
   {
     SOCIAL.map((s) => (
-      <a href={s.url} target="_blank" rel="noopener noreferrer" title={s.name} aria-label={s.name}>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d={icons[s.icon]} />
-        </svg>
-      </a>
+      <li>
+        <a href={s.url} target="_blank" rel="me noopener noreferrer" aria-label={s.name} title={s.name}>
+          <Icon name={s.icon} />
+        </a>
+      </li>
     ))
   }
-</div>
+</ul>
+
+<style>
+  .social {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 4px;
+  }
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    transition:
+      color 180ms var(--ease),
+      background 180ms var(--ease);
+  }
+  .social a:hover {
+    color: var(--cyan);
+    background: color-mix(in srgb, var(--navy) 70%, transparent);
+  }
+  .social :global(.i) {
+    width: 20px;
+    height: 20px;
+  }
+</style>

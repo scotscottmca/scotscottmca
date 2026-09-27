@@ -4,9 +4,10 @@
 // agent, a skill or the installer, so the registry — not the last site build —
 // is the only honest source for "what version is out right now".
 //
-// Follows the live block's rules: the LED ships unlit, a real reading lights it,
-// and a failed read is a named state ("No signal") rather than a spinner or a
-// guess.
+// The lamp ships unlit and only a real reading lights it; a failed read is a
+// named state ("No signal") rather than a spinner or a guess.
+
+import Icon from './Icon.astro';
 
 interface Props {
   /** npm package name, e.g. "@scotscottmca/away-team". */
@@ -17,39 +18,27 @@ const { pkg } = Astro.props;
 const npmUrl = `https://www.npmjs.com/package/${pkg}`;
 ---
 
-<section class="release-state" data-release data-package={pkg}>
-  <div class="statusstrip">
-    <span class="led" data-tone="down" data-release-led></span>
-    <span class="title">Release state · npm</span>
-    <span class="meta" data-release-meta>{pkg}</span>
+<section class="release-state panel" data-release data-package={pkg} data-tone="down">
+  <div class="panel-bar">
+    <span class="release-head"><span class="lamp" data-release-led data-tone="down"></span>npm view</span>
+    <span data-release-meta>{pkg}</span>
   </div>
 
-  <div aria-live="polite">
+  <div class="release-body" aria-live="polite">
     {/* Figures stay hidden until a reading arrives: no placeholder digits. */}
-    <span class="figures-row release-figures" hidden data-release-figures>
-      <span class="figure">
-        <span class="figure-value" data-release-version></span>
-        <span class="figure-unit">Latest</span>
-      </span>
-      <span class="figure">
-        <span class="figure-value" data-release-age></span>
-        <span class="figure-unit">Since publish</span>
-      </span>
-      <span class="figure">
-        <span class="figure-value" data-release-count></span>
-        <span class="figure-unit">Versions</span>
-      </span>
-    </span>
+    <dl class="release-figures" hidden data-release-figures>
+      <div><dt>latest</dt><dd data-release-version></dd></div>
+      <div><dt>since publish</dt><dd data-release-age></dd></div>
+      <div><dt>versions</dt><dd data-release-count></dd></div>
+    </dl>
 
     <p class="release-note" data-release-note>Reading the registry…</p>
 
     {/* The last few versions, newest first. Collapses when there is nothing. */}
     <ol class="release-ladder" hidden data-release-ladder></ol>
-  </div>
 
-  <a class="release-drill" href={npmUrl} target="_blank" rel="noopener noreferrer">
-    Package on npm
-  </a>
+    <a class="arrow-link" href={npmUrl} target="_blank" rel="noopener noreferrer">package on npm <Icon name="arrow-up-right" /></a>
+  </div>
 </section>
 
 <script>
@@ -154,3 +143,73 @@ const npmUrl = `https://www.npmjs.com/package/${pkg}`;
     read();
   }
 </script>
+
+<style>
+  .release-state {
+    margin-top: 56px;
+    max-width: 70ch;
+  }
+  .release-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lamp {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--faint);
+  }
+  .lamp[data-tone='ok'] {
+    background: var(--cyan);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 18%, transparent);
+  }
+  .release-body {
+    padding: 20px;
+  }
+  .release-figures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 16px;
+  }
+  .release-figures[hidden] {
+    display: none;
+  }
+  .release-figures dt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .release-figures dd {
+    margin: 4px 0 0;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+  }
+  .release-note {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .release-ladder {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .release-ladder :global(li) {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .release-ladder :global(.release-date) {
+    color: var(--muted);
+  }
+</style>

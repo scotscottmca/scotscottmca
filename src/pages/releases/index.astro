@@ -3,51 +3,69 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import Icon from '../../components/Icon.astro';
 import { formatDate } from '../../utils';
 
 const releases = await getCollection('releases', ({ data }) => !data.draft);
 
-// Group releases by app slug (the first path segment of the entry id, e.g.
-// "giftamer" for src/content/releases/giftamer/giftamer-1.0.1.md).
-const apps = new Map<
-  string,
-  { slug: string; product: string; count: number; latest: Date }
->();
+// Group releases by app slug (the first path segment of the entry id).
+const apps = new Map<string, { slug: string; product: string; count: number; latest: Date; version: string }>();
 for (const r of releases) {
   const slug = r.id.split('/')[0];
   const existing = apps.get(slug);
-  if (existing) {
-    existing.count += 1;
-    if (r.data.date > existing.latest) existing.latest = r.data.date;
-  } else {
-    apps.set(slug, { slug, product: r.data.product, count: 1, latest: r.data.date });
+  if (!existing) {
+    apps.set(slug, { slug, product: r.data.product, count: 1, latest: r.data.date, version: r.data.version });
+    continue;
+  }
+  existing.count += 1;
+  if (r.data.date > existing.latest) {
+    existing.latest = r.data.date;
+    existing.version = r.data.version;
   }
 }
-const appList = [...apps.values()].sort(
-  (a, b) => b.latest.getTime() - a.latest.getTime()
-);
+// Apps that ship to npm: listed from the project, their latest version filled
+// in live from the registry by the script below.
+const npm = (await getCollection('projects', ({ data }) => !data.draft && !!data.npmPackage))
+  .filter((p) => !apps.has(p.id))
+  .map((p) => ({ slug: p.id, product: p.data.title, pkg: p.data.npmPackage!, latest: p.data.date ?? new Date(0) }));
+
+// npm apps lead: their real latest date is only known in the browser, and they
+// ship far more often than anything with written notes.
+const appList = [
+  ...npm.map((a) => ({ ...a, count: 0, version: '' })),
+  ...[...apps.values()]
+    .sort((a, b) => b.latest.getTime() - a.latest.getTime())
+    .map((a) => ({ ...a, pkg: undefined as string | undefined })),
+];
 ---
 
 <BaseLayout title="Releases" description="Release notes for ScotScottMcA projects.">
   <Header />
-  <main>
+  <main class="page">
     <div class="container">
-      <div class="statusstrip">
-        <span class="led"></span>
-        <span class="title">Release log · Releases</span>
-        <span class="meta">{appList.length} apps</span>
-      </div>
-      <ul class="post-list">
+      <header class="page-head">
+        <h1 class="page-title">Releases</h1>
+        <p class="lede">Release notes for everything that ships from here.</p>
+      </header>
+      <ul class="rows">
         {
           appList.map((a) => (
             <li>
-              <a href={`/releases/${a.slug}/`}>
-                <strong>{a.product}</strong>
+              <a class="row" href={`/releases/${a.slug}/`}>
+                <h2 class="row-title">{a.product}</h2>
+                {a.pkg ? (
+                  <p class="mono muted num" data-npm={a.pkg}>
+                    npm · {a.pkg}
+                  </p>
+                ) : (
+                  <p class="mono muted num">
+                    v{a.version} · {formatDate(a.latest)} · {a.count} release{a.count === 1 ? '' : 's'}
+                  </p>
+                )}
+                <span class="row-end">
+                  <Icon name="arrow-right" />
+                </span>
               </a>
-              <span style="color:var(--dim)">
-                {' '}- {a.count} release{a.count === 1 ? '' : 's'}, latest{' '}
-                {formatDate(a.latest)}
-              </span>
             </li>
           ))
         }
@@ -56,3 +74,21 @@ const appList = [...apps.values()].sort(
   </main>
   <Footer />
 </BaseLayout>
+
+<script>
+  // Fill in each npm app's latest version and count; on failure the row keeps
+  // its package name.
+  document.querySelectorAll<HTMLElement>('[data-npm]').forEach(async (el) => {
+    try {
+      const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(el.dataset.npm!)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const latest = data['dist-tags']?.latest;
+      const at = latest && data.time?.[latest];
+      if (!at) return;
+      const count = Object.keys(data.versions ?? {}).length;
+      const date = new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      el.textContent = `v${latest} · ${date} · ${count} release${count === 1 ? '' : 's'} · npm`;
+    } catch {}
+  });
+</script>

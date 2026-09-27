@@ -29,16 +29,21 @@ export const SITE = {
 };
 
 export const SOCIAL = [
-  { name: 'GitHub', url: 'https://github.com/smcallister594', icon: 'github' },
+  { name: 'GitHub', url: 'https://github.com/scotscottmca', icon: 'github' },
   { name: 'LinkedIn', url: 'https://www.linkedin.com/in/scottmca', icon: 'linkedin' },
   { name: 'Twitter', url: 'https://twitter.com/ScotScottMcA', icon: 'twitter' },
-  { name: 'Reddit', url: 'https://www.reddit.com/user/Scott-PatchMyPC', icon: 'reddit' },
-];
+  // Lucide has no Reddit mark; the label carries the name.
+  { name: 'Reddit', url: 'https://www.reddit.com/user/Scott-PatchMyPC', icon: 'message-circle' },
+] as const;
 
+// The wordmark is the way home, so Home is not repeated here.
 export const NAV = [
-  { label: 'Home', href: '/' },
-  { label: 'Posts', href: '/posts' },
-  { label: 'Projects', href: '/projects' },
-  { label: 'Status', href: '/status' },
-  { label: 'CV', href: '/cv' },
-];
+  { label: 'Posts', href: '/posts', icon: 'file-text' },
+  { label: 'Projects', href: '/projects', icon: 'folder-code' },
+  { label: 'Status', href: '/status', icon: 'heart-pulse' },
+  { label: 'CV', href: '/cv', icon: 'id-card' },
+] as const;
+
+// Posts dated before this are the archive: listed under "Archive" on /posts
+// and kept out of the home page's activity log.
+export const POSTS_ARCHIVED_BEFORE = new Date('2026-09-28');

@@ -196,7 +196,7 @@ A project is a **short "about" page that links out to the project itself**
 ---
 title: My Tool
 summary: One-line description shown on the projects list.
-url: https://github.com/smcallister594/my-tool
+url: https://github.com/scotscottmca/my-tool
 linkLabel: View on GitHub       # optional — button text
 date: 2024-02-10                 # optional — used for ordering
 status: active                   # active | maintained | archived | complete
@@ -237,7 +237,7 @@ publishes.
 ---
 title: Intune Log Collector
 summary: A script that pulls IME logs from a device and zips them for support.
-url: https://github.com/smcallister594/intune-log-collector
+url: https://github.com/scotscottmca/intune-log-collector
 linkLabel: View on GitHub
 date: 2024-02-10
 status: active

@@ -2,29 +2,52 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
 ---
 
 <BaseLayout title="Not found">
   <Header />
-  <main>
-    <div class="container" style="text-align:center;padding:3rem 0">
-      <p class="gradient-text" style="font-family:var(--font-display); font-weight:700; font-size:3.2rem; margin:0; letter-spacing:0.02em">
-        404
-      </p>
-      <p style="color:var(--dim)">Signal lost — that page doesn't respond.</p>
-
-      <div class="emote-panel" style="margin:1.5rem 0">
-        <img
-          src="/images/emotes/internet-explorer.png"
-          alt="Pixel-art illustration of Scott hoisting the Internet Explorer logo overhead next to a recycling bin"
-          width="72"
-          height="72"
-        />
-        <span class="emote-caption">Archiving: Internet Explorer.exe</span>
+  <main class="page">
+    <div class="container lost">
+      <div>
+        <p class="code mono">HTTP/1.1 404 Not Found</p>
+        <h1 class="page-title">This page has been decommissioned.</h1>
+        <p class="lede">Or it never existed. Either way, it isn't answering.</p>
+        <p class="cta"><a class="btn" href="/"><Icon name="arrow-left" />Back home</a></p>
       </div>
-
-      <p><a href="/">← Back to Mission Control</a></p>
+      <img
+        class="pixel"
+        src="/images/emotes/internet-explorer.png"
+        alt="Pixel-art Scott hoisting the Internet Explorer logo overhead next to a recycling bin"
+        width="240"
+        height="240"
+      />
     </div>
   </main>
   <Footer />
 </BaseLayout>
+
+<style>
+  .lost {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 56px;
+    align-items: center;
+    padding-top: 40px;
+  }
+  .code {
+    margin: 0 0 16px;
+    color: var(--cyan);
+  }
+  .cta {
+    margin: 32px 0 0;
+  }
+  @media (max-width: 720px) {
+    .lost {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lost img {
+      width: 160px;
+    }
+  }
+</style>

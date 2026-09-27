@@ -28,7 +28,7 @@ const ga = SITE.googleAnalyticsId;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark" class="cc--darkmode">
+<html lang="en" class="cc--darkmode">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -36,6 +36,7 @@ const ga = SITE.googleAnalyticsId;
     <meta name="description" content={description} />
     <meta name="keywords" content={SITE.keywords.join(', ')} />
     <meta name="author" content={SITE.author} />
+    <meta name="theme-color" content="#050506" />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
@@ -50,7 +51,7 @@ const ga = SITE.googleAnalyticsId;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap"
     />
 
     <!-- Open Graph / Twitter -->

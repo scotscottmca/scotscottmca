@@ -37,7 +37,7 @@ function Search-JsonForErrorCodes {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$false, Position=0)]
-        [string]$UrlToJsonFile = "https://raw.githubusercontent.com/smcallister594/scotscottmca/main/content/ErrorCodes/errorCodes.json",
+        [string]$UrlToJsonFile = "https://raw.githubusercontent.com/scotscottmca/scotscottmca/main/assets/ErrorCodes/errorCodes.json",
         
         [Parameter(Mandatory=$true, Position=1)]
         [ValidateSet('HexCode', 'SignedIntCode', 'UnsignedIntCode')]

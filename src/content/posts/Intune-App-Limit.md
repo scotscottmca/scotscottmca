@@ -113,7 +113,7 @@ foreach ($Xy in $Job_Xy) {
 }
 ```
 
-This script, coupled with a [JSON file](https://github.com/smcallister594/scotscottmca/blob/main/assets/files/DummyApps.json) containing the app information, let me quickly publish as many apps as Graph would let me before being rate limited
+This script, coupled with a [JSON file](https://github.com/scotscottmca/scotscottmca/blob/main/assets/files/DummyApps.json) containing the app information, let me quickly publish as many apps as Graph would let me before being rate limited
 
 Over the course of that afternoon I let this script run it's course until I hit the same error message again, 
 

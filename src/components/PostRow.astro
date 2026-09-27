@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { formatDate } from '../utils';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+---
+
+<li>
+  <a class="row" href={`/posts/${post.id}/`}>
+    <time class="mono muted" datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+    <h3 class="row-title">{post.data.title}</h3>
+    <ul class="tags">
+      {post.data.tags.slice(0, 4).map((t) => <li>{t}</li>)}
+    </ul>
+    <span class="row-end">
+      <Icon name="arrow-right" />
+    </span>
+  </a>
+</li>
