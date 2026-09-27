@@ -1,7 +1,7 @@
 ---
 title: Search-JsonForErrorCodes
 summary: A small PowerShell function that looks up ConfigMgr and Intune error codes from a maintained JSON list.
-url: https://github.com/smcallister594/scotscottmca/blob/main/assets/ErrorCodes/Search-JsonForErrorCodes.ps1
+url: https://github.com/scotscottmca/scotscottmca/blob/main/assets/ErrorCodes/Search-JsonForErrorCodes.ps1
 linkLabel: View on GitHub
 date: 2023-03-13
 status: complete

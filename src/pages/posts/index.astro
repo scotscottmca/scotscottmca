@@ -3,50 +3,145 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import PostCard from '../../components/PostCard.astro';
+import PostRow from '../../components/PostRow.astro';
+import { tagCounts } from '../../utils';
+import { POSTS_ARCHIVED_BEFORE as ARCHIVED_BEFORE } from '../../config';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
+const topics = tagCounts(posts).slice(0, 8);
 
-// Tags, most-used first — the honest shape of what gets written about here.
-const counts = new Map<string, number>();
-for (const post of posts) {
-  for (const tag of post.data.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+// Everything written up to the redesign is the archive; anything newer is
+// listed above it as the latest writing.
+const latest = posts.filter((p) => p.data.date >= ARCHIVED_BEFORE);
+const archive = posts.filter((p) => p.data.date < ARCHIVED_BEFORE);
+const span = `${archive.at(-1)?.data.date.getFullYear()}–${archive[0]?.data.date.getFullYear()}`;
+
+// The archive, grouped by year, newest first.
+const years = new Map<number, typeof posts>();
+for (const post of archive) {
+  const y = post.data.date.getFullYear();
+  years.set(y, [...(years.get(y) ?? []), post]);
 }
-const topics = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-const span = {
-  from: posts.at(-1)?.data.date.getFullYear(),
-  to: posts[0]?.data.date.getFullYear(),
-};
 ---
 
 <BaseLayout title="Posts" description="Technical writing on WSUS, ConfigMgr, Intune, PowerShell and the Microsoft Graph.">
   <Header />
-  <main>
+  <main class="page">
     <div class="container">
-      <div class="statusstrip">
-        <span class="led"></span>
-        <span class="title">Transmission log · Posts</span>
-        <span class="meta">{posts.length} posts · {span.from}–{span.to}</span>
-      </div>
+      <header class="page-head">
+        <h1 class="page-title">Writing</h1>
+        <p class="lede">
+          Notes from Windows endpoint management: WSUS, ConfigMgr, Intune, PowerShell and the Microsoft Graph. Mostly
+          the bits the docs skip.
+        </p>
+        <ul class="topics" aria-label="Topics">
+          {
+            topics.map(([tag, count]) => (
+              <li>
+                <span>{tag}</span>
+                <span class="num">{count}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </header>
 
-      <ul class="topic-index">
-        {
-          topics.map(([tag, count]) => (
-            <li>
-              <span class="topic-tag">{tag}</span>
-              <span class="topic-count">{count}</span>
-            </li>
-          ))
-        }
-      </ul>
+      {
+        latest.length > 0 && (
+          <section class="group" aria-labelledby="latest-title">
+            <div class="sec-head">
+              <h2 id="latest-title">Latest</h2>
+              <span class="mono muted">{latest.length} {latest.length === 1 ? 'post' : 'posts'}</span>
+            </div>
+            <ul class="rows">
+              {latest.map((post) => (
+                <PostRow post={post} />
+              ))}
+            </ul>
+          </section>
+        )
+      }
 
-      <ul class="post-list">
-        {posts.map((post) => <PostCard post={post} />)}
-      </ul>
+      {
+        archive.length > 0 && (
+          <section class="group" aria-labelledby="archive-title">
+            <div class="archive-head">
+              <h2 id="archive-title">Archive</h2>
+              <span class="mono muted">{archive.length} posts · {span}</span>
+            </div>
+            {[...years.entries()].map(([year, list]) => (
+              <section class="year" aria-labelledby={`y${year}`}>
+                <div class="sec-head">
+                  <h3 id={`y${year}`} class="year-title num">{year}</h3>
+                  <span class="mono muted">{list.length} {list.length === 1 ? 'post' : 'posts'}</span>
+                </div>
+                <ul class="rows">
+                  {list.map((post) => (
+                    <PostRow post={post} />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </section>
+        )
+      }
     </div>
   </main>
   <Footer />
 </BaseLayout>
+
+<style>
+  .topics {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .topics li {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .topics span {
+    padding: 4px 10px;
+  }
+  .topics span:last-child {
+    background: var(--navy);
+    color: var(--cyan);
+    border-left: 1px solid var(--line);
+  }
+  .group + .group {
+    margin-top: 96px;
+  }
+  .archive-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+  .archive-head h2 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .year + .year {
+    margin-top: 56px;
+  }
+  .year-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--violet-text);
+  }
+</style>

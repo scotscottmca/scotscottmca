@@ -3,33 +3,52 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import ProjectCard from '../../components/ProjectCard.astro';
+import Icon from '../../components/Icon.astro';
 
 function rank(p: { data: { featured: boolean; date?: Date } }) {
   return (p.data.featured ? 1e13 : 0) + (p.data.date ? p.data.date.getTime() : 0);
 }
 
-const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
-  (a, b) => rank(b) - rank(a)
-);
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort((a, b) => rank(b) - rank(a));
+const active = projects.filter((p) => p.data.status === 'active').length;
 ---
 
 <BaseLayout title="Projects" description="Projects I'm working on or have worked on.">
   <Header />
-  <main>
+  <main class="page">
     <div class="container">
-      <div class="statusstrip">
-        <span class="led"></span>
-        <span class="title">Payload manifest · Projects</span>
-        <span class="meta">{projects.length} deployed</span>
-      </div>
+      <header class="page-head">
+        <h1 class="page-title">Projects</h1>
+        <p class="lede">
+          Things I've built and shipped: tools, experiments and the odd parody. Every one links out to the real thing.
+        </p>
+        <p class="mono muted counts">{projects.length} shipped · {active} active</p>
+      </header>
+
       {
         projects.length === 0 ? (
-          <p style="color:var(--dim);margin-top:1rem">Nothing here yet — check back soon.</p>
+          <p class="lede">Nothing here yet. Check back soon.</p>
         ) : (
-          <ul class="project-grid">
+          <ul class="grid">
             {projects.map((project) => (
-              <ProjectCard project={project} />
+              <li>
+                <a class="card panel" href={`/projects/${project.id}/`}>
+                  <span class="card-top">
+                    <span class={`state state-${project.data.status}`}>{project.data.status}</span>
+                    {project.data.date && <span class="mono muted">{project.data.date.getFullYear()}</span>}
+                  </span>
+                  <h2 class="card-title">{project.data.title}</h2>
+                  <p class="card-sum">{project.data.summary}</p>
+                  <ul class="tags">
+                    {project.data.tags.slice(0, 4).map((t) => (
+                      <li>{t}</li>
+                    ))}
+                  </ul>
+                  <span class="card-go">
+                    <Icon name="arrow-right" />
+                  </span>
+                </a>
+              </li>
             ))}
           </ul>
         )
@@ -38,3 +57,69 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft)).so
   </main>
   <Footer />
 </BaseLayout>
+
+<style>
+  .counts {
+    margin: 24px 0 0;
+  }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    padding: 24px;
+    transition:
+      border-color 200ms var(--ease),
+      background 200ms var(--ease);
+  }
+  .card:hover {
+    border-color: color-mix(in srgb, var(--cyan) 60%, var(--line));
+    background: color-mix(in srgb, var(--navy) 80%, var(--ink));
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-title {
+    margin: 8px 0 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+  .card-sum {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    flex: 1;
+  }
+  .card-go {
+    position: absolute;
+    right: 24px;
+    bottom: 20px;
+    color: var(--faint);
+    transition: color 200ms var(--ease);
+  }
+  .card:hover .card-go {
+    color: var(--cyan);
+  }
+  .card .tags {
+    padding-right: 40px;
+  }
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

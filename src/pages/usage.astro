@@ -12,8 +12,8 @@ import { SITE } from '../config';
 
 <BaseLayout title="Usage" description="How much Claude and GitHub Scott has been using lately." noindex>
   <Header />
-  <main>
-    <div class="container container-wide usage" data-usage data-tone="reading">
+  <main class="page">
+    <div class="container usage" data-usage data-tone="reading">
       <section class="figures">
         <h2 class="ledger-heading figures-heading">
           <span class="led" data-led data-tone="down"></span>
@@ -253,6 +253,45 @@ import { SITE } from '../config';
 <!-- Global, namespaced under .usage: the rows and bars are built at runtime and
      would miss Astro's scoped-style attribute. -->
 <style is:global>
+  /* This page's own readouts, in the house type. */
+  .usage .ledger-heading {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .usage .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+  .usage .led[data-tone='down'] {
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--faint);
+  }
+  .usage .tile-meta {
+    margin-left: auto;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .usage .figure-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .usage .figure-unit {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
   .usage {
     display: grid;
     gap: 1.6rem;
@@ -262,12 +301,12 @@ import { SITE } from '../config';
      table past a phone's viewport. */
   .usage > * { min-width: 0; }
   .usage .panel {
-    background: var(--panel);
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 1.25rem 1.35rem;
   }
-  .usage .led[data-tone='idle'] { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .usage .led[data-tone='idle'] { background: var(--cyan);  }
   /* Unboxed, but inset to the panels' own content edge so the columns line up. */
   .usage .figures { padding: 0 1.35rem; }
   .usage .figures-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
@@ -275,7 +314,7 @@ import { SITE } from '../config';
   /* Window switcher: the pressed one wears the amber. */
   .usage .ranges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
   .usage .range {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -283,13 +322,13 @@ import { SITE } from '../config';
     padding: 0.4rem 0.75rem;
     border-radius: var(--radius);
     border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--dim);
+    background: var(--surface);
+    color: var(--muted);
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 200ms var(--ease);
   }
-  .usage .range:hover { color: var(--text); border-color: var(--amber); }
-  .usage .range[aria-pressed='true'] { border-color: var(--amber); color: var(--amber); }
+  .usage .range:hover { color: var(--text); border-color: var(--cyan); }
+  .usage .range[aria-pressed='true'] { border-color: var(--cyan); color: var(--cyan); }
 
   /* One row of nine on a desktop; three per row on a phone. */
   .usage .figure-grid {
@@ -299,7 +338,7 @@ import { SITE } from '../config';
     margin: 1.1rem 0 0;
   }
   .usage .figure dd { margin: 0; }
-  .usage .figure-live { color: var(--green); }
+  .usage .figure-live { color: var(--cyan); }
   @media (max-width: 960px) {
     .usage .figure-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
@@ -320,7 +359,7 @@ import { SITE } from '../config';
     grid-template-rows: auto minmax(0, 1fr) auto;
     text-align: center;
     font-size: 0.72rem;
-    color: var(--dim);
+    color: var(--muted);
   }
   .usage .bars[data-dense] li { font-size: 0.62rem; }
   .usage .bar-value {
@@ -335,11 +374,11 @@ import { SITE } from '../config';
     height: var(--h);
     width: min(100%, 2.4rem);
     justify-self: center;
-    background: var(--amber);
+    background: var(--cyan);
     border-radius: 4px 4px 0 0;
   }
   .usage .bar-label {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     padding-top: 0.4rem;
@@ -351,7 +390,7 @@ import { SITE } from '../config';
   .usage table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
   .usage th, .usage td { text-align: right; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
   .usage th:first-child, .usage td:first-child { text-align: left; }
-  .usage th { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
+  .usage th { font-family: var(--font-sans); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
   .usage tr:last-child td { border-bottom: 0; }
 
   .usage .merged { margin: 0.6rem 0 0; }
@@ -374,20 +413,20 @@ import { SITE } from '../config';
     flex: none;
     width: 0.4rem;
     height: 0.4rem;
-    border-right: 1px solid var(--dim);
-    border-bottom: 1px solid var(--dim);
+    border-right: 1px solid var(--muted);
+    border-bottom: 1px solid var(--muted);
     transform: rotate(-45deg);
-    transition: var(--transition);
+    transition: all 200ms var(--ease);
   }
   .usage .merged-group[open] summary::before { transform: rotate(45deg); }
-  .usage .merged-group summary:hover { color: var(--cyan); }
-  .usage .merged-group summary:hover::before { border-color: var(--cyan); }
+  .usage .merged-group summary:hover { color: var(--text); }
+  .usage .merged-group summary:hover::before { border-color: var(--text); }
   .usage .merged-group summary .merged-meta { margin-left: auto; }
   .usage .merged-list { list-style: none; margin: 0 0 0.5rem; padding: 0 0 0 1rem; }
   .usage .merged-list li { display: grid; gap: 0.2rem; padding: 0.55rem 0; border-top: 1px solid var(--line); font-size: 0.88rem; }
-  .usage .merged-meta { color: var(--dim); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+  .usage .merged-meta { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
 
-  .usage .fineprint { margin: 0; font-size: 0.78rem; line-height: 1.6; color: var(--dim); }
+  .usage .fineprint { margin: 0; font-size: 0.78rem; line-height: 1.6; color: var(--muted); }
 
   @media (max-width: 640px) {
     .usage .bars { gap: 0.35rem; height: 9rem; }

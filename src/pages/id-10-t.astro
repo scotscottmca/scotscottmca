@@ -24,19 +24,14 @@ const eliminated = [
   description="A root cause analysis of error ID-10-T: symptoms, affected configurations, reproduction, elimination and the root cause."
 >
   <Header />
-  <main>
+  <main class="page">
     <div class="container rca">
       <article>
-        <header class="article-header">
+        <header class="article-head">
+          <p class="ticket mono">INC-ID10T · opened <time datetime="2026-09-22">22 Sep 2026</time> · severity: persistent · <span class="rca-state"><span class="rca-lamp"></span>root cause identified</span></p>
           <h1>Error ID-10-T: a root cause analysis</h1>
-          <div class="post-meta">
-            <span>Scott McAllister</span>
-            <time datetime="2026-09-22">22 Sep 2026</time>
-            <span>Severity: persistent</span>
-            <span class="rca-state"><span class="led" style="--led-period:1.2s"></span>Root cause identified</span>
-          </div>
+          <p class="lede">Filed by Scott McAllister, who has seen this one before.</p>
         </header>
-
         <div class="prose">
           <p class="rca-lede">
             ID-10-T is the most frequently reported fault in end-user computing and the least frequently fixed.
@@ -153,6 +148,11 @@ const eliminated = [
       </article>
 
       <section class="rca-reveal" aria-labelledby="reveal-heading" data-reveal>
+        <p class="psod-face" aria-hidden="true">:(</p>
+        <p class="psod-lead">
+          Your session ran into a problem it couldn't handle, and we've found the faulty component.
+          <span class="psod-progress"><span data-progress>0</span>% complete</span>
+        </p>
         <p class="rca-decode" aria-hidden="true">
           <span>I</span><span>D</span><span class="rca-dash">-</span><span class="rca-flip" data-to="I">1</span><span class="rca-flip" data-to="O">0</span><span class="rca-dash">-</span><span>T</span>
         </p>
@@ -166,14 +166,18 @@ const eliminated = [
           <div><dt>Resolution</dt><dd>Closed, won’t fix. Working as designed.</dd></div>
           <div><dt>Time spent reading about yourself</dt><dd data-dwell>Not measured</dd></div>
         </dl>
-        <div class="emote-panel">
+        <div class="psod-foot">
           <img
+            class="pixel"
             src="/images/emotes/self.png"
             alt="Pixel-art illustration of Scott holding a tiny version of himself overhead next to a recycling bin"
-            width="60"
-            height="60"
+            width="72"
+            height="72"
           />
-          <span class="emote-caption">Archiving: operator.exe</span>
+          <p>
+            Stop code: <b>ID_10_T</b><br />
+            What failed: <b>operator.exe</b>
+          </p>
         </div>
       </section>
     </div>
@@ -215,6 +219,16 @@ const eliminated = [
     const s = Math.round((performance.now() - start) / 1000);
     dwell.textContent = s < 60 ? `${s} second${s === 1 ? '' : 's'}` : `${Math.floor(s / 60)} min ${s % 60} s`;
     reveal.classList.add('is-decoded');
+    // The progress counter every blue screen has, counted up for real.
+    const progress = reveal.querySelector('[data-progress]') as HTMLElement;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let pct = reduce ? 100 : 0;
+    progress.textContent = String(pct);
+    const tick = setInterval(() => {
+      pct = Math.min(100, pct + Math.ceil(Math.random() * 9));
+      progress.textContent = String(pct);
+      if (pct >= 100) clearInterval(tick);
+    }, 140);
     reveal.querySelectorAll<HTMLElement>('.rca-flip').forEach((el) => {
       setTimeout(() => (el.textContent = el.dataset.to!), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450);
     });
@@ -222,78 +236,121 @@ const eliminated = [
 </script>
 
 <style>
+  /* One centred column, wide enough for the five-cell spec sheet to sit on a
+     single line. */
+  .rca {
+    max-width: calc(880px + 2 * var(--gutter));
+  }
+  .rca :global(.prose),
+  .rca .article-head {
+    max-width: none;
+  }
+  .ticket {
+    margin: 0 0 20px;
+    color: var(--muted);
+  }
   .rca-state {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    color: var(--green);
+    gap: 6px;
+    color: var(--cyan);
+  }
+  .rca-lamp {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: rca-blink 1.2s steps(2) infinite;
+  }
+  @keyframes rca-blink {
+    50% {
+      opacity: 0.2;
+    }
   }
   .rca-lede {
-    font-size: 1.05rem;
-    color: var(--text);
+    font-size: 20px;
+    line-height: 1.55;
   }
-  .table-wrap {
-    overflow-x: auto;
-  }
+
+  /* "Affected configurations": a spec sheet of the visitor's own machine. */
   .rca-config {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-    margin: 1.25rem 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin: 32px 0;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    background: var(--panel);
+    background: color-mix(in srgb, var(--navy) 55%, var(--ink));
+    overflow: hidden;
   }
   .rca-config div {
-    padding: 0.8rem 1.1rem;
+    padding: 16px 20px;
     border-right: 1px solid var(--line);
   }
   .rca-config div:last-child {
     border-right: 0;
   }
   .rca-config dt {
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
   }
   .rca-config dd {
-    margin: 0.2rem 0 0;
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
-  .rca-config-verdict dd {
-    color: var(--red);
-    font-family: var(--font-display);
-    font-weight: 700;
+  .rca-config-verdict {
+    background: var(--violet);
   }
+  .rca-config-verdict dt {
+    color: #e6d6ff;
+  }
+  .rca-config-verdict dd {
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+  }
+
   .rca-trace {
-    background: var(--panel);
-    font-size: 0.8rem;
+    font-size: 12px;
     white-space: pre;
   }
-  .rca-trace .t { color: var(--dim); }
-  .rca-trace .i { color: var(--cyan); }
-  .rca-trace .w { color: var(--amber); }
-  .rca-trace .e { color: var(--red); font-weight: 700; }
+  .rca-trace .t {
+    color: var(--faint);
+  }
+  .rca-trace .i {
+    color: var(--muted);
+  }
+  .rca-trace .w {
+    color: var(--violet-text);
+  }
+  .rca-trace .e {
+    color: var(--cyan);
+    font-weight: 700;
+  }
+
   .rca-matrix .rca-comp {
-    font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 650;
     white-space: nowrap;
   }
   .rca-matrix .rca-out {
     white-space: nowrap;
-    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
   }
   .rca-matrix tbody tr:not(.rca-remaining) .rca-comp {
     text-decoration: line-through;
-    text-decoration-color: var(--dim);
-    color: var(--dim);
+    text-decoration-color: var(--violet-text);
+    text-decoration-thickness: 2px;
+    color: var(--faint);
   }
   .rca-remaining td {
-    background: var(--panel-2);
+    background: color-mix(in srgb, var(--indigo) 22%, transparent);
   }
   .rca-remaining .rca-out {
-    color: var(--red);
+    color: var(--cyan);
     font-weight: 700;
   }
   .rca-redact {
@@ -306,21 +363,41 @@ const eliminated = [
     user-select: none;
   }
 
-  /* The reveal. Everything above is the report; this is the finding. */
+  /* The reveal: a purple screen of death. Everything above is the report;
+     this is the crash. */
   .rca-reveal {
-    margin: 6rem 0 3rem;
-    padding-top: 3rem;
-    border-top: 1px solid var(--line);
+    margin: 96px calc(-1 * var(--gutter)) 0;
+    padding: 64px var(--gutter);
+    background: linear-gradient(160deg, var(--violet), var(--indigo) 70%);
+    border-radius: 20px;
+    color: #fff;
+    box-shadow: 0 40px 80px -40px color-mix(in srgb, var(--violet) 80%, transparent);
+  }
+  .psod-face {
+    margin: 0 0 24px;
+    font-size: clamp(80px, 14vw, 140px);
+    font-weight: 300;
+    line-height: 1;
+  }
+  .psod-lead {
+    margin: 0 0 40px;
+    max-width: 44ch;
+    font-size: 22px;
+    line-height: 1.45;
+  }
+  .psod-progress {
+    display: block;
+    margin-top: 16px;
+    font-variant-numeric: tabular-nums;
   }
   .rca-decode {
     display: flex;
     gap: 0.35em;
-    margin: 0 0 2.5rem;
-    font-family: var(--font-display);
+    margin: 0 0 24px;
+    font-family: var(--font-mono);
     font-weight: 700;
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    letter-spacing: 0.05em;
-    color: var(--dim);
+    font-size: 28px;
+    color: color-mix(in srgb, #fff 55%, transparent);
   }
   .rca-decode span {
     display: inline-block;
@@ -328,54 +405,93 @@ const eliminated = [
     text-align: center;
   }
   .rca-flip {
-    transition: color 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      color 600ms var(--ease),
+      translate 600ms var(--ease);
   }
   .is-decoded .rca-flip {
-    color: var(--amber);
+    color: var(--cyan);
+    translate: 0 -6px;
   }
   .is-decoded .rca-dash {
     opacity: 0.3;
   }
   .rca-hi {
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 9vw, 5.4rem);
+    margin: 0 0 40px;
+    font-size: clamp(48px, 10vw, 96px);
     font-weight: 700;
-    line-height: 0.98;
-    letter-spacing: -0.02em;
-    margin: 0 0 2.5rem;
-    color: var(--text);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
     text-wrap: balance;
   }
   .rca-you {
-    color: var(--amber);
+    color: var(--cyan);
   }
   .rca-nowrap {
     white-space: nowrap;
   }
   .rca-close {
-    margin: 0 0 2rem;
-    max-width: 34rem;
+    margin: 0 0 40px;
+    max-width: 560px;
   }
   .rca-close div {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid var(--line);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid color-mix(in srgb, #fff 22%, transparent);
   }
   .rca-close dt {
-    font-family: var(--font-display);
-    font-size: 0.74rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #e6d6ff;
   }
   .rca-close dd {
     margin: 0;
     text-align: right;
+    font-weight: 650;
     font-variant-numeric: tabular-nums;
   }
+  .psod-foot {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .psod-foot img {
+    width: 72px;
+    height: 72px;
+    background: #fff;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  .psod-foot p {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: #e6d6ff;
+  }
+  .psod-foot b {
+    color: #fff;
+  }
+  @media (max-width: 720px) {
+    .rca-config {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .rca-config div {
+      border-bottom: 1px solid var(--line);
+    }
+    .rca-config div:nth-child(2n) {
+      border-right: 0;
+    }
+    .rca-config-verdict {
+      grid-column: 1 / -1;
+      border-bottom: 0 !important;
+    }
+  }
   @media (max-width: 560px) {
+    .rca-config {
+      grid-template-columns: minmax(0, 1fr);
+    }
     .rca-config div {
       border-right: 0;
       border-bottom: 1px solid var(--line);
@@ -385,13 +501,25 @@ const eliminated = [
     }
     .rca-close div {
       flex-direction: column;
-      gap: 0.1rem;
+      gap: 0;
     }
     .rca-close dd {
       text-align: left;
     }
+    .rca-lede,
+    .psod-lead {
+      font-size: 18px;
+    }
+    .rca-reveal {
+      border-radius: 0;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
-    .rca-flip { transition: none; }
+    .rca-flip {
+      transition: none;
+    }
+    .rca-lamp {
+      animation: none;
+    }
   }
 </style>

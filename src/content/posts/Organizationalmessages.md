@@ -106,7 +106,7 @@ The Getting Started app is slightly different to the Taskbar and Notification ar
 > The app automatically opens during the first seven days after a device is enrolled. Message stay visible for 30 days.
 
 
-<!-- ![image](https://github.com/smcallister594/scotscottmca/blob/main/assets/images/Organizationalmessages/GetStartedApp.png?raw=true) -->
+<!-- ![image](https://github.com/scotscottmca/scotscottmca/blob/main/assets/images/Organizationalmessages/GetStartedApp.png?raw=true) -->
 ![Getting Started App](../../assets/images/Organizationalmessages/GetStartedApp_1.png)
 
 #### Messages

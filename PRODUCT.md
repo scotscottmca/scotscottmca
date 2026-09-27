@@ -113,7 +113,7 @@ make them read as deliberate, not unfinished.
   (`public/images/status/scott-{awake,asleep,walking,working-out,active}.svg`),
   drawn by `scripts/status-sprites.mjs` in the emote set's own palette so the
   two Scotts are the same person.
-- Socials: GitHub `smcallister594`, LinkedIn `/in/scottmca`, X `@ScotScottMcA`,
+- Socials: GitHub `scotscottmca`, LinkedIn `/in/scottmca`, X `@ScotScottMcA`,
   Reddit `Scott-PatchMyPC`.
 - Licence CC BY-NC 4.0. Google Analytics ID `G-2DLW833T23` must be preserved.
 - **Tone splits by surface, by the user's decision:** home, posts and projects

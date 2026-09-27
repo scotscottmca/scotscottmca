@@ -136,4 +136,4 @@ There will be part 2 of this, showing you how to do the same thing but using Int
 
 -----
 
-Want to see something else added? <a href="https://github.com/smcallister594/scotscottmca/issues/new">Open an issue.</a>
+Want to see something else added? <a href="https://github.com/scotscottmca/scotscottmca/issues/new">Open an issue.</a>

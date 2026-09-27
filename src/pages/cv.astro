@@ -3,77 +3,67 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
 import { SITE } from '../config';
 import { ROLE, PROJECTS, SKILLS, CONTACT } from '../data/cv';
-import { ICON_PATHS } from '../data/icons';
+import { spell } from '../utils';
 
 // This page drops the voice the rest of the site carries: it is read by people
 // assessing, and it should cost them as little time as possible.
-
-// Counts come from the collections, so they cannot go stale on the next post.
-// Spelled out, because this page reads as prose rather than as instrumentation.
-const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
-  'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
-  'seventeen', 'eighteen', 'nineteen', 'twenty'];
-const spell = (n: number) => WORDS[n] ?? String(n);
-
 const postCount = spell((await getCollection('posts', ({ data }) => !data.draft)).length);
-const projectCount = spell((await getCollection('projects', ({ data }) => !data.draft)).length);
+const projectCount = spell((await getCollection('projects', ({ data }) => !data.draft)).length).toLowerCase();
 ---
 
 <BaseLayout title="CV" description={`Curriculum vitae for ${SITE.author}, ${ROLE.title} at ${ROLE.org}.`}>
   <Header />
-  <main>
+  <main class="page">
     <div class="container">
       <article class="cv">
-        <header class="cv-head">
-          <div class="cv-head-main">
-            <h1>{SITE.author}</h1>
-            <p class="cv-role">{ROLE.title}, {ROLE.org}</p>
-            <p class="cv-place">{ROLE.location}</p>
+        <header class="page-head cv-head">
+          <div>
+            <h1 class="page-title">{SITE.author}</h1>
+            <p class="lede">{ROLE.title}, {ROLE.org} · {ROLE.location}</p>
           </div>
-          <button type="button" class="cv-print" data-print>Print / save as PDF</button>
+          <div class="cv-actions">
+            <button type="button" class="btn btn-ghost" data-print><Icon name="download" />Save as PDF</button>
+          </div>
         </header>
 
         <section class="cv-section" aria-labelledby="cv-experience">
           <h2 id="cv-experience">Experience</h2>
-
-          <div class="cv-role-head">
-            <h3>{ROLE.title}</h3>
-            <p class="cv-org">{ROLE.org}</p>
-            <p class="cv-dates">{ROLE.start} — Present</p>
+          <div>
+            <div class="cv-role">
+              <h3>{ROLE.title} · {ROLE.org}</h3>
+              <p class="mono muted num">{ROLE.start} — present</p>
+            </div>
+            <p class="muted cv-note">Selected work, {ROLE.listed}.</p>
+            <ol class="cv-projects">
+              {
+                PROJECTS.map((project) => (
+                  <li class="cv-project">
+                    <div class="cv-project-head">
+                      <h4>{project.name}</h4>
+                      <p class="mono muted">
+                        {project.context}
+                        {project.period && <span> · {project.period}</span>}
+                      </p>
+                    </div>
+                    <p>{project.summary}</p>
+                    <ul class="cv-bullets">
+                      {project.bullets.map((bullet) => (
+                        <li>{bullet}</li>
+                      ))}
+                    </ul>
+                    <ul class="tags">
+                      {project.tags.map((tag) => (
+                        <li>{tag}</li>
+                      ))}
+                    </ul>
+                  </li>
+                ))
+              }
+            </ol>
           </div>
-
-          <p class="cv-role-note">Selected work, {ROLE.listed}.</p>
-
-          <ol class="cv-projects">
-            {
-              PROJECTS.map((project) => (
-                <li class="cv-project">
-                  <div class="cv-project-head">
-                    <h4>{project.name}</h4>
-                    <p class="cv-project-context">
-                      {project.context}
-                      {project.period && <span> · {project.period}</span>}
-                    </p>
-                  </div>
-                  <p class="cv-project-summary">{project.summary}</p>
-                  <ul class="cv-bullets">
-                    {project.bullets.map((bullet) => (
-                      <li>{bullet}</li>
-                    ))}
-                  </ul>
-                  <ul class="tags">
-                    {project.tags.map((tag) => (
-                      <li>
-                        <span class="tag">{tag}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))
-            }
-          </ol>
         </section>
 
         <section class="cv-section" aria-labelledby="cv-skills">
@@ -81,9 +71,9 @@ const projectCount = spell((await getCollection('projects', ({ data }) => !data.
           <dl class="cv-skills">
             {
               SKILLS.map((skill) => (
-                <div class="cv-skill-row">
+                <div>
                   <dt>{skill.group}</dt>
-                  <dd>{skill.items.join(' · ')}</dd>
+                  <dd class="muted">{skill.items.join(' · ')}</dd>
                 </div>
               ))
             }
@@ -92,38 +82,25 @@ const projectCount = spell((await getCollection('projects', ({ data }) => !data.
 
         <section class="cv-section" aria-labelledby="cv-writing">
           <h2 id="cv-writing">Writing &amp; projects</h2>
-          <p>
-            {postCount.charAt(0).toUpperCase() + postCount.slice(1)} technical posts on WSUS, ConfigMgr, Intune, PowerShell and
-            the Microsoft Graph, and {projectCount} shipped projects including a
-            published Edge extension. <a href="/posts">Read the posts</a> or
-            <a href="/projects">browse the projects</a>.
+          <p class="cv-text">
+            {postCount} technical posts on WSUS, ConfigMgr, Intune, PowerShell and the Microsoft Graph, and {projectCount}
+            shipped projects including a published Edge extension. <a class="text-link" href="/posts">Read the posts</a> or
+            <a class="text-link" href="/projects">browse the projects</a>.
           </p>
         </section>
 
         <section class="cv-section cv-section-contact" aria-labelledby="cv-contact">
           <h2 id="cv-contact">Contact</h2>
-          <p class="cv-availability">
-            Not currently looking for work. If you want to ask about something on
-            this page, LinkedIn is the surest way to reach me.
-          </p>
-          <ul class="cv-links">
-            <li>
-              <a href={CONTACT.linkedin} rel="me noopener noreferrer" target="_blank">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d={ICON_PATHS.linkedin} />
-                </svg>
-                LinkedIn
-              </a>
-            </li>
-            <li>
-              <a href={CONTACT.github} rel="me noopener noreferrer" target="_blank">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d={ICON_PATHS.github} />
-                </svg>
-                GitHub
-              </a>
-            </li>
-          </ul>
+          <div>
+            <p class="cv-text">
+              Not currently looking for work. If you want to ask about something on this page, LinkedIn is the surest way
+              to reach me.
+            </p>
+            <p class="cv-links">
+              <a class="btn btn-ghost" href={CONTACT.linkedin} rel="me noopener noreferrer" target="_blank"><Icon name="linkedin" />LinkedIn</a>
+              <a class="btn btn-ghost" href={CONTACT.github} rel="me noopener noreferrer" target="_blank"><Icon name="github" />GitHub</a>
+            </p>
+          </div>
         </section>
       </article>
     </div>
@@ -134,3 +111,124 @@ const projectCount = spell((await getCollection('projects', ({ data }) => !data.
 <script>
   document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
 </script>
+
+<style>
+  .cv-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .cv-section {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cv-section > h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--violet-text);
+  }
+  .cv-role {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .cv-role h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .cv-role p,
+  .cv-note {
+    margin: 4px 0 0;
+  }
+  .cv-projects {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    max-width: 760px;
+  }
+  .cv-project {
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cv-project-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 16px;
+    flex-wrap: wrap;
+  }
+  .cv-project h4 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 650;
+  }
+  .cv-project-head p {
+    margin: 0;
+  }
+  .cv-project > p {
+    margin: 12px 0;
+  }
+  .cv-bullets {
+    margin: 0 0 16px;
+    padding-left: 20px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .cv-bullets li {
+    margin-bottom: 6px;
+  }
+  .cv-bullets li::marker {
+    color: var(--violet-text);
+  }
+  .cv-skills {
+    margin: 0;
+    max-width: 760px;
+  }
+  .cv-skills div {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 4px 24px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .cv-skills div:first-child {
+    padding-top: 0;
+  }
+  .cv-skills dt {
+    font-weight: 650;
+  }
+  .cv-skills dd {
+    margin: 0;
+  }
+  .cv-text {
+    margin: 0;
+    max-width: 62ch;
+  }
+  .cv-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0 0;
+  }
+  @media (max-width: 860px) {
+    .cv-section,
+    .cv-skills div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .cv-skills div {
+      gap: 4px;
+    }
+  }
+</style>

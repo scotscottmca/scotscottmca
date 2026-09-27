@@ -6,22 +6,22 @@ const range = year > SITE.since ? `${SITE.since}–${year}` : `${SITE.since}`;
 
 <footer class="site-footer">
   <div class="container">
-    <span>
-      <img
-        class="site-mascot"
-        src="/images/emotes/self.png"
-        alt="Scott's pixel-art mascot, holding a tiny version of himself overhead next to a recycling bin"
-        width="26"
-        height="26"
-        style="margin-right:0.4rem"
-      />
-      © {range} {SITE.author} ·
-      <a href={SITE.license.url} target="_blank" rel="license noopener noreferrer">
-        {SITE.license.label}
-      </a>
-      · <button type="button" class="link-button" data-cc="show-preferencesModal">Cookie preferences</button>
-      · <a href="/id-10-t">ID-10-T</a>
-    </span>
-    <span>SIGNAL LOCK: SCOTSCOTTMCA.COM</span>
+    <img
+      class="foot-mascot"
+      src="/images/emotes/self.png"
+      alt="Scott's pixel-art mascot, holding a tiny version of himself overhead next to a recycling bin"
+      width="48"
+      height="48"
+    />
+    <div class="foot-lines">
+      <p>© {range} {SITE.author} · <a href={SITE.license.url} target="_blank" rel="license noopener noreferrer">{SITE.license.label}</a></p>
+      <p>Built with Astro, served from Azure Static Web Apps.</p>
+    </div>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="/rss.xml">rss</a>
+      <a href="/releases">releases</a>
+      <button type="button" class="link-button" data-cc="show-preferencesModal">cookies</button>
+      <a href="/id-10-t">id-10-t</a>
+    </nav>
   </div>
 </footer>

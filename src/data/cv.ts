@@ -113,5 +113,5 @@ export const FIGURES_PERIOD = '2026';
 
 export const CONTACT = {
   linkedin: 'https://www.linkedin.com/in/scottmca',
-  github: 'https://github.com/smcallister594',
+  github: 'https://github.com/scotscottmca',
 };

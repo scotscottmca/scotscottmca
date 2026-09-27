@@ -20,31 +20,36 @@ PowerShell.
 - **Content:** Markdown in `src/content/posts/`, loaded via a content
   collection (`src/content.config.ts`, glob loader + zod schema).
 - **Styling:** hand-written CSS in `src/styles/global.css`. No CSS framework.
-- **Code highlighting:** Shiki dual theme (`github-light` / `github-dark`),
-  switched via CSS on `data-theme`.
+- **Code highlighting:** Shiki dual theme; the site renders the `github-dark`
+  variables only.
 - **Analytics:** Google Analytics `G-2DLW833T23` (in `src/config.ts`, injected
   by `src/layouts/BaseLayout.astro`) using **Google Consent Mode v2** — analytics
   storage is denied until the visitor opts in via the cookie banner.
 - **Cookie consent:** [vanilla-cookieconsent](https://github.com/orestbida/cookieconsent)
   in `src/components/CookieConsent.astro`. Accepting the "analytics" category
   flips GA consent to granted. Re-open via the footer "Cookie preferences" link
-  (`data-cc="show-preferencesModal"`). Follows the theme via the `cc--darkmode`
-  class toggled alongside `data-theme`.
+  (`data-cc="show-preferencesModal"`). Themed through its `--cc-*`
+  variables at the end of `global.css`.
 - **Heading permalinks:** `rehype-autolink-headings` (after `rehypeHeadingIds`)
   adds a hover chain icon to content headings; clicking copies the section link.
 - **Extras:** RSS (`src/pages/rss.xml.js`) and sitemap (`@astrojs/sitemap`).
 
-## Theming
+## Design system
 
-Three themes, selectable in the header via `ThemeToggle.astro`:
+"Obsidian Glow": one committed dark theme, recorded in `DESIGN.md`. An obsidian
+`#050506` ground with a fixed violet glow, navy `#0a1a2f` panels, violet
+`#6a0dad` / `#3a0ca3` as the brand (fills only; text uses the lifted
+`#b794ff`), and cyan `#00d4ff` for anything live or interactive. Hanken Grotesk
+for reading, JetBrains Mono for dates, counts, versions, paths and code. Tokens
+live at the top of `src/styles/global.css`. The status page is deliberately
+nerdier (all mono, raw API response) and the ID-10-T page deliberately playful
+(its reveal is a "purple screen of death").
 
-- `dark` — **default**, GitHub Copilot-inspired vibrant accent on charcoal.
-- `light` — bright surface, same accent family.
-- `mono` — monochrome (greyscale, chroma removed).
-
-Implemented with CSS custom properties keyed off `html[data-theme="…"]`. The
-choice persists in `localStorage` and is applied before paint by an inline
-script in `BaseLayout.astro` (avoids flash of wrong theme).
+Icons are [Lucide Animated](https://lucide-animated.com) (MIT). The library ships
+React + Motion components, which this site doesn't use, so `Icon.astro` carries
+the Lucide paths and `global.css` ("Animated icons") ports each animation to
+CSS. To add one, copy its paths from `https://lucide-animated.com/r/<name>.json`
+into `Icon.astro` and port its variants as keyframes.
 
 ## Repository layout
 
@@ -55,9 +60,9 @@ script in `BaseLayout.astro` (avoids flash of wrong theme).
 | `src/content/projects/` | Projects (Markdown): each has a write-up + outbound link. |
 | `src/content.config.ts` | Content collection schema/loader. |
 | `src/layouts/BaseLayout.astro` | HTML shell: head, meta/OG, GA, theme init. |
-| `src/components/` | Header, Footer, ThemeToggle, SocialLinks, PostCard, ReleaseStateTile. |
+| `src/components/` | Header, Footer, Icon (animated icons), SocialLinks, ReleaseStateTile, CookieConsent. |
 | `src/pages/` | Routes: `index`, `posts/`, `posts/[...slug]`, `projects/`, `projects/[...slug]`, `404`, `rss.xml`. |
-| `src/styles/global.css` | All styling + the three theme palettes. |
+| `src/styles/global.css` | Tokens, shared type roles and components, animated icons, print CV. |
 | `public/` | Static assets served at site root (`images/`, favicons, `CNAME`, `staticwebapp.config.json`). |
 | `assets/` | Retained only for files linked by external GitHub raw URLs (`files/DummyApps.json`, `ErrorCodes/`). Not part of the build. |
 | `scripts/migrate.mjs` | One-shot Hugo→Astro migration script (kept for reference). |

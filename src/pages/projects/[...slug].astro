@@ -4,6 +4,7 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import Icon from '../../components/Icon.astro';
 import ReleaseStateTile from '../../components/ReleaseStateTile.astro';
 
 export async function getStaticPaths() {
@@ -19,28 +20,38 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, url, linkLabel, status, tags, image, npmPackage } = project.data;
+const { title, summary, url, linkLabel, status, tags, image, npmPackage, date } = project.data;
 const { Content } = await render(project);
 ---
 
 <BaseLayout title={title} description={summary} image={image} article={true}>
   <Header />
-  <main>
+  <main class="page">
     <div class="container">
+      <p class="back"><a class="arrow-link" href="/projects"><Icon name="arrow-left" />projects</a></p>
       <article>
-        <header class="article-header">
-          <p style="margin:0"><a href="/projects">← All projects</a></p>
-          <h1>{title}</h1>
-          <div class="post-meta">
-            <span class={`status status-${status}`}>{status}</span>
+        <header class="article-head">
+          <div class="article-meta top">
+            <span class={`state state-${status}`}>{status}</span>
+            {date && <span>{date.getFullYear()}</span>}
           </div>
+          <h1>{title}</h1>
+          <p class="lede">{summary}</p>
+          {
+            url && (
+              <p class="cta">
+                <a class="btn" href={url} target="_blank" rel="noopener noreferrer">
+                  {linkLabel}
+                  <Icon name="arrow-up-right" />
+                </a>
+              </p>
+            )
+          }
           {
             tags.length > 0 && (
-              <ul class="tags" style="margin-top:0.75rem">
+              <ul class="tags">
                 {tags.map((t) => (
-                  <li>
-                    <span class="tag">{t}</span>
-                  </li>
+                  <li>{t}</li>
                 ))}
               </ul>
             )
@@ -50,27 +61,22 @@ const { Content } = await render(project);
           <Content />
         </div>
         {npmPackage && <ReleaseStateTile pkg={npmPackage} />}
-        {
-          url && (
-            <p style="margin-top:2rem">
-              <a class="project-link" href={url} target="_blank" rel="noopener noreferrer">
-                {linkLabel} →
-              </a>
-            </p>
-          )
-        }
-
-        <div class="emote-panel" style="margin-top:1.5rem">
-          <img
-            src="/images/emotes/printer.png"
-            alt="Illustration of Scott holding an old fax machine overhead"
-            width="60"
-            height="60"
-          />
-          <span class="emote-caption">Mission complete</span>
-        </div>
       </article>
+
+      <div class="signoff">
+        <img src="/images/emotes/printer.png" alt="Pixel-art Scott holding an old fax machine overhead" width="56" height="56" />
+        <span>exit 0</span>
+      </div>
     </div>
   </main>
   <Footer />
 </BaseLayout>
+
+<style>
+  .top {
+    margin: 0 0 20px;
+  }
+  .cta {
+    margin: 32px 0 24px;
+  }
+</style>
