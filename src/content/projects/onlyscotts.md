@@ -5,7 +5,7 @@ url: https://onlyscotts.com
 linkLabel: Visit
 date: 2026-02-23
 status: active
-featured: true
+featured: false
 tags:
   - Azure Static Web Apps
   - Azure Functions
