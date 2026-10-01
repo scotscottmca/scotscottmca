@@ -14,6 +14,8 @@ It's been a hot minute since I've written anything, but we back. Maybe? We'll se
 
 Let's cook.
 
+![Energise](/images/beaming-down-an-away-team/beaming-down.gif)
+
 **Burning tokens like they owe me money? Not anymore. Well, less.**
 
 ## Captain's log
