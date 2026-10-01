@@ -10,6 +10,10 @@ tags:
 draft: false
 ---
 
+It's been a hot minute since I've written anything, but we back. Maybe? We'll see. Everything's AI just now, so here's an *obligatory* AI post. What's the deal? Agents, models, tokens, effort and Star Trek.
+
+Let's cook.
+
 **Burning tokens like they owe me money? Not anymore. Well, less.**
 
 ## Captain's log
