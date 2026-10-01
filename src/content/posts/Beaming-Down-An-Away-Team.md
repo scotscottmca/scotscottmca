@@ -7,7 +7,7 @@ tags:
   - GitHub Copilot
   - AI
   - Agents
-draft: true
+draft: false
 ---
 
 **Burning tokens like they owe me money? Not anymore. Well, less.**
