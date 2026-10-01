@@ -14,7 +14,7 @@ It's been a hot minute since I've written anything, but we back. Maybe? We'll se
 
 Let's cook.
 
-![Energise](https://tenor.com/ZSsY.gif)
+<iframe src="https://tenor.com/embed/12325030" title="Energise" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 **Burning tokens like they owe me money? Not anymore. Well, less.**
 
