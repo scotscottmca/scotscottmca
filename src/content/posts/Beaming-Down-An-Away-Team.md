@@ -14,7 +14,7 @@ It's been a hot minute since I've written anything, but we back. Maybe? We'll se
 
 Let's cook.
 
-![Energise](https://tenor.com/view/star-trek-teleport-transporter-room-travel-jornada-nas-estrelas-gif-12325030.gif)
+![Energise](https://tenor.com/ZSsY.gif)
 
 **Burning tokens like they owe me money? Not anymore. Well, less.**
 
