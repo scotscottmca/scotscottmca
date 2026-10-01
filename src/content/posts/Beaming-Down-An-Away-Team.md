@@ -16,9 +16,9 @@ Let's cook.
 
 <iframe src="https://tenor.com/embed/12325030" title="Energise" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
-**Burning tokens like they owe me money? Not anymore. Well, less.**
-
 ## Captain's log
+
+**Stardate: ~80750.7. I've been burning tokens like Quark running a holosuite during a Ferengi business convention.**
 
 For a while now I've been trying to be a bit more mindful about how many tokens I burn through. Every bug, no matter how wee, was getting the biggest, smartest and hungriest model thrown at it, reading half the repo, reasoning about all of it and then writing me an essay about what it found.
 
