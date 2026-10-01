@@ -1,6 +1,6 @@
 ---
 title: away-team
-summary: A crew of AI coding agents for fixing bugs - an orchestrator beams down a mapper, an investigator, a basher and a PR writer, on GitHub Copilot and Claude Code alike.
+summary: A crew of AI coding agents for fixing bugs - an orchestrator beams down a mapper, an investigator, a basher, a PR writer and a reviewer, on GitHub Copilot and Claude Code alike.
 url: https://github.com/scotscottmca/away-team
 linkLabel: View on GitHub
 date: 2026-09-17
@@ -21,8 +21,8 @@ tags:
 **away-team** is a crew of AI coding agents for fixing bugs. Pick the
 orchestrator, describe the bug, and it beams down specialists: one maps the
 codebase, one finds the root cause, one bashes the bug, one writes the pull
-request. It installs once and works in every repo, on GitHub Copilot and Claude
-Code alike.
+request, one answers the review on it. It installs once and works in every repo,
+on GitHub Copilot and Claude Code alike.
 
 ## The idea
 
@@ -31,15 +31,17 @@ the expensive way to fix a bug. Most of the tokens go on re-reading code the
 model saw last session, on reasoning with a model that costs five times what the
 task needs, and on carrying an ever-growing transcript from step to step.
 
-away-team splits the job into four narrow roles, each with only the tools and
+away-team splits the job into five narrow roles, each with only the tools and
 context its step needs, and each running on the cheapest model tier that does
 that step well. Reading a repo is cheap-tier work. Finding a root cause is the
 one place the strong tier earns its price. Everything between steps is a short
-fixed report, not a conversation.
+fixed report, not a conversation, and the orchestrator never retypes one: you
+see four lines, and the full text only if you ask.
 
 ## What it does
 
-- Routes a request to the right specialist: map, investigate, fix or open a PR
+- Routes a request to the right specialist: map, investigate, fix, open a PR or
+  answer its review, and points feature work at the default agent instead
 - Writes a persistent `CODEMAP.md` per repo so agents stop re-reading the
   codebase every session
 - Root-causes with a read-only investigator that reproduces first, tests one
@@ -48,19 +50,27 @@ fixed report, not a conversation.
   shares, and no drive-by refactors
 - Opens PRs the way a technical writer would: a TL;DR body under 25 lines, the
   full breakdown as review comments
+- Answers review threads: small, local fixes get a commit and a reply, larger
+  ones get a proposal and stay the author's call
+- Gives every agent a context budget: search before reading, windows not files,
+  one test not the suite, capped command output
 - Stops and asks before any edit that touches auth, crypto, billing or
   migrations, and before every push
+- Ends a run with a Blocked report (what it tried, what it changed, what it
+  needs) whenever a specialist cannot finish, instead of guessing or acting on
+  its own
 - Installs ponytail and caveman alongside, both at ultra by default, to shrink
   what the agents build and say
 
 ## How it works
 
 Every agent is a markdown file with a small frontmatter block: its tools, its
-model tier, and a prompt of under sixty lines. The orchestrator has no edit or
-execute tools at all, so it cannot do the work itself; it can only classify,
-delegate and relay. Subagents are stateless on both platforms, so each handoff
-carries the user's request, what has been learnt so far, the specialist's scope,
-and the report format to return.
+model tier, and a prompt of under ninety lines. The orchestrator has no edit
+tools at all, and its Bash is read-only, enforced by the same hook as the
+investigator's, so it cannot do the work itself; it can only classify, delegate
+and relay. Subagents are stateless on both platforms, so each handoff carries
+the user's request, what has been learnt so far, the specialist's scope, and the
+report format to return.
 
 | Piece | Role |
 |-------|------|
@@ -69,6 +79,7 @@ and the report format to return.
 | investigator | Read-only. Reproduces, localises via git blame, verifies one hypothesis at a time, returns a Diagnosis with file and line evidence |
 | basher | Takes a Diagnosis, writes the regression test, applies the minimal root-cause fix, runs the suite, commits |
 | pr-writer | Turns the branch into a PR: conventional-commit title, TL;DR body, inline review comments via the GitHub API |
+| reviewer | Works through the open review threads: fixes the small ones with a commit each, proposes on the larger ones, replies on every thread |
 | codemap skill | The template and rules for the code map |
 | pr-format skill | The house PR format and the `gh` commands that post it |
 | installer | Renders the agents per platform and installs the companion plugins |
@@ -81,10 +92,12 @@ platform has.
 | Tier | Used by | Copilot | Claude Code |
 |------|---------|---------|-------------|
 | cheap | mapper | GPT-5.6 Luna | haiku |
-| balanced | orchestrator, basher, pr-writer | Claude Sonnet 5 | sonnet |
+| balanced | orchestrator, basher, pr-writer, reviewer | Claude Sonnet 5 | sonnet |
 | strong | investigator | Claude Opus 5 | opus |
 
-The mapping is one table in the installer. Claude's aliases resolve to the newest
+The mapping is an ordered priority list per tier in the installer: the first
+row that names the platform wins, so a plan-only model is added by prepending a
+row rather than overwriting the default. Claude's aliases resolve to the newest
 model of each tier on their own; the Copilot column is the cheapest model on the
 per-token price list that does the job.
 
