@@ -180,3 +180,6 @@ Notes:
 - Preserve the Google Analytics id and socials in `src/config.ts`.
 - Verify with `npm run build` before finishing.
 - Pushing to `main` publishes the live site — treat it as production.
+- Don't reference Claude (or any AI tool) in pull requests: no "Generated with"
+  footers, session links or Co-Authored-By trailers in PR titles, bodies or the
+  commits they carry.
