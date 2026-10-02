@@ -1,6 +1,7 @@
 ---
 title: Beaming Down An Away Team
 date: 2026-10-01
+lastModified: 2026-10-02
 author: Scott McAllister
 tags:
   - Claude Code
@@ -36,38 +37,40 @@ The thing I built is [away-team](https://github.com/scotscottmca/away-team), an 
 
 Instead of one agent doing absolutely everything, an orchestrator sits in the captain's chair and beams down a crew of specialists, each with one job:
 
-- **Mapper** maps the repo once into `docs/CODEMAP.md`, so nobody has to re-read the whole thing every session
+- **Mapper** maps the repo into `docs/CODEMAP.md`, so nobody has to re-read the whole thing every session. It refreshes the map once it's more than 50 commits behind, and doesn't bother at all on repos with fewer than about 30 source files
 - **Investigator** is read-only. It digs into the bug and comes back with the root cause
-- **Basher** takes the investigator's findings, writes a failing test, then the smallest fix that makes it pass
+- **Basher** takes the investigator's findings, writes a failing test, then the smallest fix that makes it pass. It also picks up small changes that are fully described up front, where there's nothing to diagnose
 - **PR-writer** writes up the fix and raises the pull request
-- **Reviewer** picks up review comments on your PR, fixes the small stuff and proposes on the rest
+- **Reviewer** picks up review comments on your PR, fixes the small stuff and proposes on the rest. It sits outside the bug-fix flow (mapper → investigator → basher → PR-writer), so there's no diagnosis involved
 - **Away-Team** is the orchestrator itself, deciding who goes and passing findings between them
 
-It runs on both GitHub Copilot and Claude Code (CLI and desktop app) from the same source. Same crew, same reports, it just gets rendered differently for each one.
+It runs on both GitHub Copilot and Claude Code (CLI and desktop app) from the same source. Same crew, same reports, it just gets rendered differently for each one. In the Claude desktop app, calling it with `/away-team` also enforces the orchestrator's tool limits from the very first turn.
 
 ![away-team ready to go in the Claude desktop app](/images/beaming-down-an-away-team/agent-list.png)
 
 ![away-team in the GitHub Copilot agent picker](/images/beaming-down-an-away-team/agent-list-copilot.webp)
 
-Each agent declares a tier rather than a specific model, and the installer works out the best model for that tier on whatever platform you're on. The mapper gets the cheap tier because it reads the most and thinks the least. The investigator gets the strong tier, because root cause is the one place the big model actually earns its keep. Everything else (orchestrator, basher, PR-writer, reviewer) sits in the middle, since the investigator has already done the hard thinking by the time they get involved.
+Each agent declares a tier (cheap, balanced or strong) rather than a specific model, and the installer maps each tier to a model per platform. Right now that's a table of named models I keep up to date by hand, so whether it's the *best* model is up for debate. The mapper gets the cheap tier because it reads the most and thinks the least. The investigator gets the strong tier, because root cause is the one place the big model actually earns its keep. Everything else (orchestrator, basher, PR-writer, reviewer) sits in the middle. The basher and PR-writer only get involved once the investigator has done the hard thinking, the orchestrator runs first and mostly just routes, and the reviewer works off review comments rather than a diagnosis.
 
-The bit I like most is that I don't pick anything. I don't choose the agent, I don't choose the model and I don't fiddle with effort levels, I just describe the bug and the orchestrator sorts out the rest.
+The bit I like most is that I don't pick anything. I don't choose the agent, I don't choose the model and I don't touch effort levels either. Those are set per agent in the frontmatter (and Copilot drops them entirely 🫠). I just describe the bug and the orchestrator sorts out the rest.
 
 ## How a bug actually gets fixed
 
-The best example is a bug the crew found in away-team itself ([#24](https://github.com/scotscottmca/away-team/issues/24)).
+The best example is a bug in away-team itself ([#35](https://github.com/scotscottmca/away-team/issues/35)).
 
-The installer runs the companion plugin installs (`claude plugin …`, `copilot plugin …`) through `spawnSync` with no timeout. So if one of those hung on a dodgy network, the installer just sat there with a frozen spinner. Forever. No output, no error, nothing.
+I was running it in a web session and the whole thing just stalled. The captain reported back:
 
-Here's how that went:
+```
+Bash is denied to me, so I cannot run git status
+```
 
-1. The investigator beamed down and reproduced it by swapping in a fake `claude` that just ran `sleep 600`. The installer blocked straight past a two-minute limit, so it was well and truly cooked
-2. It came back with a Diagnosis (more on that below) listing every `spawnSync` with no `timeout`, no `killSignal` and no `input`, and where each one lived
-3. The orchestrator checked that Diagnosis against its gates
-4. The basher routed every `spawnSync` through one `run()` helper with a 120 second timeout and a kill signal, treated a timed-out child as failed, then confirmed the fix against the same fake `claude`
-5. The PR-writer raised it ([#28](https://github.com/scotscottmca/away-team/pull/28))
+And that was that. No commit, no PR, just a crew standing about on the bridge.
 
-The crew found it, fixed it and verified it all on its own. All I did was review the PR and hit merge.
+Turns out the orchestrator never declared `execute` in its tools. The allowlists block anything that isn't listed, so the captain had no shell at all. It couldn't even run `git status`.
+
+The fix was really simple: add `execute` 🤷. It's guarded by the same read-only hooks as the investigator, so the captain can look but not touch, and I made the guard's `--agent` flag repeatable so one hook covers both agents. I ran the tests before and after the fix to make sure it actually did the business ([#38](https://github.com/scotscottmca/away-team/pull/38)).
+
+Merged? YEET.
 
 Every handoff between agents is a small fixed report rather than a full transcript, which is a big part of keeping the tokens down. This is the shape of the investigator's Diagnosis:
 
@@ -84,7 +87,7 @@ Every handoff between agents is a small fixed report rather than a full transcri
 **Risk:** auth / crypto / billing / data paths touched, or "none"
 ```
 
-If an agent gets stuck it doesn't improvise, it returns a `## Blocked` report saying what it tried and what it needs, and it won't have changed anything.
+If an agent gets stuck it doesn't improvise, it returns a `## Blocked` report saying what it tried, what it touched and what it needs. The "what it touched" bit is there because a stuck agent can leave things half done. A basher that hits its turn cap can leave a fix half applied (the orchestrator warns you about that), and a mapper that gets cut off writes a partial codemap on purpose. The only hard promise is the PR-writer's: if it's blocked, nothing has left your machine.
 
 ### The gates are a feature
 
@@ -110,17 +113,21 @@ So the tiers still help, but scoping each agent down to just what it needs is wh
 
 ## Things that broke along the way
 
-It took a whole host of trial and error to get the orchestrator handling the coordination on its own. Three of the most memorable:
+It took a whole host of trial and error to get the orchestrator handling the coordination on its own. A few of the most memorable:
 
 ### Copilot ignoring the search tools
 
 The Copilot docs say `search` is the alias for the grep and glob tools. So I gave my agents `["read", "search", "execute"]` and called it a day.
 
-I only noticed something was off when I asked the crew to dig through GitHub issues and ADO work items, and it kept falling over because search was unavailable. Brilliant. They'd come up with `view` and `bash` and no search tool at all, and were quietly grepping through bash instead.
+I only noticed something was off when I had the crew list the tools it actually had. `view` and `bash`, and no search tool at all. Brilliant. So every grep and glob over the code was quietly going through bash instead.
 
 Turns out Copilot just ignores tool names it doesn't recognise. No error, no warning, nothing. Coward.
 
 The fix was to write all three, `"search", "grep", "glob"`, and let it pick out the ones it knows.
+
+### MCP servers that granted nothing
+
+Around the same time, the crew kept falling over whenever I asked it to dig through GitHub issues or ADO work items. That one was a spelling problem. Listing an MCP server by its bare name in `tools:` grants nothing at all. You need `<server>/*` to actually get its tools. Another silent one.
 
 ### Plugin installs breaking
 
@@ -156,7 +163,7 @@ I haven't run a proper side-by-side yet, but on the bugs I've tested it on, away
 
 There are two ways to install it.
 
-The npx route runs the installer, detects Copilot and/or Claude Code, and installs the agents, skills, and the optional ponytail and caveman companions:
+The npx route runs the installer, detects Copilot and/or Claude Code, and installs the agents and skills. On a global install it also adds the optional ponytail and caveman companions, a per-project install skips them:
 
 ```bash
 npx @scotscottmca/away-team
@@ -178,7 +185,7 @@ There's more detail on the [project page](/projects/away-team/) and in the [repo
 
 ## What's next?
 
-Right now each agent's tier is fixed. Next up is letting the orchestrator pick the right model for each task on the fly, so a simple investigation doesn't get the strong model just because it's the investigator.
+Right now each agent's tier is fixed. Next up is letting the orchestrator pick the right model for each task on the fly, so a simple investigation doesn't get the strong model just because it's the investigator. The hand-maintained model table should really work itself out too.
 
 ## Summary
 
