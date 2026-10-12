@@ -38,6 +38,16 @@ import { SITE } from '../config';
         </dl>
       </section>
 
+      <section class="panel" data-cycles hidden>
+        <h2 class="ledger-heading">Billing cycles</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cycle</th><th>Sessions</th><th>PRs merged</th><th>Tokens</th><th>Spend</th><th>Turns</th><th>Hours</th><th>Commits</th></tr></thead>
+            <tbody data-cycle-rows></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="panel" data-days hidden>
         <h2 class="ledger-heading">Tokens per day</h2>
         <ol class="bars" data-bars></ol>
@@ -62,6 +72,7 @@ import { SITE } from '../config';
         Claude figures come from the Claude Code transcripts on each machine I work on, added together, so they cover only what ran locally.
         Spend is the API list price for those tokens; I'm on a subscription, so it's what it <em>would</em> cost.
         The billing cycle runs from the renewal day of the month to today.
+        Past cycles are saved once they close, so they outlast the transcripts they came from; the history only goes back as far as that saving has been running.
         GitHub figures are PRs and commits authored by me, across every repo. Republished every 15 minutes by each machine that's awake.
       </p>
     </div>
@@ -71,6 +82,7 @@ import { SITE } from '../config';
 
 <script>
   import { SITE } from '../config';
+  import backfill from '../data/usage-backfill.json';
 
   const root = document.querySelector('[data-usage]') as HTMLElement;
   const q = (sel: string) => root.querySelector(sel) as HTMLElement;
@@ -96,6 +108,22 @@ import { SITE } from '../config';
   // read it as the 7-day one it is rather than showing nothing.
   const windowsOf = (data: any) =>
     data.windows ?? { '7d': { label: 'Last 7 days', days: data.windowDays ?? 7, claude: data.claude, github: data.github } };
+
+  // A feed cycle (window or history entry) flattened to the backfill's shape.
+  const cycleRow = (w: any) => {
+    const t = w.claude.totals;
+    return {
+      since: w.since,
+      to: w.to,
+      sessions: w.claude.sessions,
+      prs: w.github?.mergedCount,
+      tokens: (t.input || 0) + (t.output || 0) + (t.cacheWrite || 0) + (t.cacheRead || 0),
+      spend: t.cost || 0,
+      turns: t.messages || 0,
+      hours: w.claude.hoursActive,
+      commits: w.github?.commits,
+    };
+  };
 
   function paint() {
     const data = latest;
@@ -153,6 +181,55 @@ import { SITE } from '../config';
       })
     );
     q('[data-days]').hidden = false;
+
+    // This cycle so far, then each closed one, newest first. A cycle with nothing
+    // in it (from before the history was kept) is left out.
+    // Hand-entered rows (src/data/usage-backfill.json) replace the feed's for
+    // the same cycle.
+    const today = new Date().toISOString().slice(0, 10);
+    const byCycle = new Map<string, any>();
+    if (windows.cycle) byCycle.set(windows.cycle.since, { ...cycleRow({ ...windows.cycle, to: today }), now: true });
+    for (const h of data.history ?? []) byCycle.set(h.since, cycleRow(h));
+    for (const b of backfill as any[]) byCycle.set(b.since, b);
+    const cycles = [...byCycle.values()]
+      .filter((r) => r.now || r.sessions || r.prs || r.commits)
+      .sort((a, b) => b.since.localeCompare(a.since));
+    const thisYear = new Date().getUTCFullYear();
+    const show = (v: any, fmt: (n: number) => string | number = (n) => n) => (typeof v === 'number' ? String(fmt(v)) : '–');
+    q('[data-cycle-rows]').replaceChildren(
+      ...cycles.map((r: any) => {
+        const tr = document.createElement('tr');
+        const name = document.createElement('td');
+        const month = document.createElement('span');
+        month.className = 'cycle-month';
+        month.textContent = utc(r.since).toLocaleDateString('en-GB', {
+          month: 'long',
+          year: utc(r.since).getUTCFullYear() === thisYear ? undefined : 'numeric',
+          timeZone: 'UTC',
+        });
+        if (r.now) month.dataset.now = '';
+        const span = document.createElement('span');
+        span.className = 'cycle-range';
+        span.textContent = `${dmy(r.since)} – ${dmy(r.to)}`;
+        name.append(month, span);
+        tr.append(name);
+        for (const cell of [
+          show(r.sessions),
+          show(r.prs),
+          show(r.tokens, compact),
+          show(r.spend, money),
+          show(r.turns, compact),
+          show(r.hours, Math.round),
+          show(r.commits),
+        ]) {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.append(td);
+        }
+        return tr;
+      })
+    );
+    q('[data-cycles]').hidden = cycles.length === 0;
 
     const models = Object.entries(c.models).sort((a: any, b: any) => b[1].cost - a[1].cost);
     q('[data-model-rows]').replaceChildren(
@@ -392,6 +469,12 @@ import { SITE } from '../config';
   .usage th:first-child, .usage td:first-child { text-align: left; }
   .usage th { font-family: var(--font-sans); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
   .usage tr:last-child td { border-bottom: 0; }
+
+  /* Month on top, its exact dates under it; the open cycle wears the cyan. */
+  .usage .cycle-month { display: block; }
+  .usage .cycle-month[data-now] { color: var(--cyan); }
+  .usage .cycle-month[data-now]::after { content: ' · now'; color: var(--muted); }
+  .usage .cycle-range { display: block; color: var(--faint); font-size: 0.72rem; white-space: nowrap; }
 
   .usage .merged { margin: 0.6rem 0 0; }
   .usage .merged-group { border-bottom: 1px solid var(--line); }
