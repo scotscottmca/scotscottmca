@@ -33,9 +33,24 @@ import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 
 const HOME = homedir();
-// First label only: the rest is whatever the current network calls us
-// (.local, .fritz.box), and a name that moves would double-count the device.
-const DEVICE = (process.env.USAGE_DEVICE || hostname().split('.')[0] || 'unknown').replace(/[^a-zA-Z0-9-]+/g, '-');
+// A name that moves double-counts the device: the gist keeps both files and the
+// merge sums them. A Mac's hostname comes from whatever network it is on (it
+// published as both `mac` and `PMPC-L4KGJYT4J9`), so the first name this
+// machine gets is saved to ~/.claude/usage-device and reused from then on.
+// USAGE_DEVICE still wins when set.
+const DEVICE_FILE = join(HOME, '.claude', 'usage-device');
+const DEVICE = (() => {
+  const clean = (s) => s.trim().replace(/[^a-zA-Z0-9-]+/g, '-');
+  if (process.env.USAGE_DEVICE) return clean(process.env.USAGE_DEVICE);
+  try {
+    const saved = clean(readFileSync(DEVICE_FILE, 'utf8'));
+    if (saved) return saved;
+  } catch { /* first run on this machine */ }
+  // First label only: the rest is the network's suffix (.local, .fritz.box).
+  const name = clean(hostname().split('.')[0] || 'unknown');
+  try { writeFileSync(DEVICE_FILE, name + '\n'); } catch { /* read-only home: fall back to the hostname each run */ }
+  return name;
+})();
 const NOW = Date.now();
 const DAY = 86400000;
 const GITHUB_USER = 'scotscottmca';
