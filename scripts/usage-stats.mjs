@@ -275,6 +275,50 @@ function merge(parts, own) {
   return { updated: new Date(NOW).toISOString(), devices, cycle: own.cycle, live: alive, github: own.github, windows, history };
 }
 
+// A feed cycle flattened to the shape of src/data/usage-backfill.json.
+const cycleRow = (w) => {
+  const t = w.claude.totals;
+  return {
+    since: w.since, to: w.to, sessions: w.claude.sessions, prs: w.github?.mergedCount,
+    tokens: (t.input || 0) + (t.output || 0) + (t.cacheWrite || 0) + (t.cacheRead || 0),
+    spend: t.cost || 0, turns: t.messages || 0, hours: w.claude.hoursActive, commits: w.github?.commits,
+  };
+};
+
+// The billing cycles as a Markdown table, for a human reading the gist. Same
+// rules as the page: hand-entered rows replace the feed's, empty cycles drop out.
+function markdown(merged, backfill) {
+  const rows = new Map();
+  const open = merged.windows.cycle;
+  if (open) rows.set(open.since, { ...cycleRow({ ...open, to: day(NOW) }), now: true });
+  for (const h of merged.history) rows.set(h.since, cycleRow(h));
+  for (const b of backfill) rows.set(b.since, b);
+  const n = (v, fmt = String) => (typeof v === 'number' ? fmt(v) : '–');
+  const int = (v) => Math.round(v).toLocaleString('en-GB');
+  const lines = [...rows.values()]
+    .filter((r) => r.now || r.sessions || r.prs || r.commits)
+    .sort((a, b) => b.since.localeCompare(a.since))
+    .map((r) => {
+      const month = new Date(r.since + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+      return `| ${month}${r.now ? ' (so far)' : ''} | ${r.since} – ${r.to} | ${n(r.sessions, int)} | ${n(r.prs, int)} | ${n(r.tokens, int)} | ${n(r.spend, (v) => `$${v.toFixed(2)}`)} | ${n(r.turns, int)} | ${n(r.hours, int)} | ${n(r.commits, int)} |`;
+    });
+  return [
+    '# Usage by billing cycle',
+    '',
+    `Updated ${merged.updated} from ${merged.devices.join(', ') || 'no devices'}. Spend is API list price.`,
+    '',
+    '| Cycle | Dates | Sessions | PRs merged | Tokens | Spend | Turns | Hours | Commits |',
+    '|---|---|--:|--:|--:|--:|--:|--:|--:|',
+    ...lines,
+    '',
+  ].join('\n');
+}
+
+// Missing or unreadable when the script runs outside a checkout; then there is no backfill.
+const readBackfill = () => {
+  try { return JSON.parse(readFileSync(new URL('../src/data/usage-backfill.json', import.meta.url), 'utf8')); } catch { return []; }
+};
+
 if (process.argv.includes('--selftest')) {
   const at = (msAgo) => new Date(NOW - msAgo).toISOString();
   const win = () => ({
@@ -314,6 +358,9 @@ if (process.argv.includes('--selftest')) {
   assert.equal(m.history[0].claude.sessions, 10); // the silent device's frozen cycle still counts
   assert.equal(m.history[0].claude.totals.cost, 6);
   assert.equal(m.history[0].github.mergedCount, 5); // first device wins for GitHub
+  const md = markdown(m, [{ since: '2026-08-10', to: '2026-09-09', prs: 2 }, { since: '2026-09-10', to: '2026-10-09', sessions: 99 }]);
+  assert.match(md, /\| September 2026 \| 2026-09-10 – 2026-10-09 \| 99 \| – \|/); // backfill replaces the feed's row
+  assert.match(md, /\| August 2026 \| 2026-08-10 – 2026-09-09 \| – \| 2 \|/);
   // The cycle window is anchored on the renewal day, not a rolling 30.
   assert.equal(day(cycleStart(Date.parse('2026-03-14T09:00:00Z'))), `2026-03-${String(CYCLE_DAY).padStart(2, '0')}`);
   assert.equal(day(cycleStart(Date.parse(`2026-03-0${Math.max(1, CYCLE_DAY - 1)}T09:00:00Z`))), CYCLE_DAY === 1 ? '2026-03-01' : `2026-02-${String(CYCLE_DAY).padStart(2, '0')}`);
@@ -374,7 +421,8 @@ if (PUBLISH) {
   const merged = merge([data, ...others], data);
   put(gistFiles, mine, json);
   put(gistFiles, 'usage.json', JSON.stringify(merged, null, 1));
-  console.log(`published ${mine} and merged usage.json (${merged.devices.join(', ')}) to gist ${GIST_ID}`);
+  put(gistFiles, 'usage.md', markdown(merged, readBackfill()));
+  console.log(`published ${mine}, merged usage.json and usage.md (${merged.devices.join(', ')}) to gist ${GIST_ID}`);
 } else {
   console.log(json);
 }

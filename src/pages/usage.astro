@@ -82,6 +82,7 @@ import { SITE } from '../config';
 
 <script>
   import { SITE } from '../config';
+  import backfill from '../data/usage-backfill.json';
 
   const root = document.querySelector('[data-usage]') as HTMLElement;
   const q = (sel: string) => root.querySelector(sel) as HTMLElement;
@@ -107,6 +108,22 @@ import { SITE } from '../config';
   // read it as the 7-day one it is rather than showing nothing.
   const windowsOf = (data: any) =>
     data.windows ?? { '7d': { label: 'Last 7 days', days: data.windowDays ?? 7, claude: data.claude, github: data.github } };
+
+  // A feed cycle (window or history entry) flattened to the backfill's shape.
+  const cycleRow = (w: any) => {
+    const t = w.claude.totals;
+    return {
+      since: w.since,
+      to: w.to,
+      sessions: w.claude.sessions,
+      prs: w.github?.mergedCount,
+      tokens: (t.input || 0) + (t.output || 0) + (t.cacheWrite || 0) + (t.cacheRead || 0),
+      spend: t.cost || 0,
+      turns: t.messages || 0,
+      hours: w.claude.hoursActive,
+      commits: w.github?.commits,
+    };
+  };
 
   function paint() {
     const data = latest;
@@ -167,15 +184,20 @@ import { SITE } from '../config';
 
     // This cycle so far, then each closed one, newest first. A cycle with nothing
     // in it (from before the history was kept) is left out.
+    // Hand-entered rows (src/data/usage-backfill.json) replace the feed's for
+    // the same cycle.
     const today = new Date().toISOString().slice(0, 10);
-    const cycles = [
-      ...(windows.cycle ? [{ since: windows.cycle.since, to: today, now: true, claude: windows.cycle.claude, github: windows.cycle.github }] : []),
-      ...(data.history ?? []),
-    ].filter((r: any) => r.now || r.claude.sessions || r.github?.mergedCount || r.github?.commits);
+    const byCycle = new Map<string, any>();
+    if (windows.cycle) byCycle.set(windows.cycle.since, { ...cycleRow({ ...windows.cycle, to: today }), now: true });
+    for (const h of data.history ?? []) byCycle.set(h.since, cycleRow(h));
+    for (const b of backfill as any[]) byCycle.set(b.since, b);
+    const cycles = [...byCycle.values()]
+      .filter((r) => r.now || r.sessions || r.prs || r.commits)
+      .sort((a, b) => b.since.localeCompare(a.since));
     const thisYear = new Date().getUTCFullYear();
+    const show = (v: any, fmt: (n: number) => string | number = (n) => n) => (typeof v === 'number' ? String(fmt(v)) : '–');
     q('[data-cycle-rows]').replaceChildren(
       ...cycles.map((r: any) => {
-        const t = r.claude.totals;
         const tr = document.createElement('tr');
         const name = document.createElement('td');
         const month = document.createElement('span');
@@ -192,16 +214,16 @@ import { SITE } from '../config';
         name.append(month, span);
         tr.append(name);
         for (const cell of [
-          r.claude.sessions,
-          r.github?.mergedCount ?? '–',
-          compact((t.input || 0) + (t.output || 0) + (t.cacheWrite || 0) + (t.cacheRead || 0)),
-          money(t.cost || 0),
-          compact(t.messages || 0),
-          Math.round(r.claude.hoursActive),
-          r.github?.commits ?? '–',
+          show(r.sessions),
+          show(r.prs),
+          show(r.tokens, compact),
+          show(r.spend, money),
+          show(r.turns, compact),
+          show(r.hours, Math.round),
+          show(r.commits),
         ]) {
           const td = document.createElement('td');
-          td.textContent = String(cell);
+          td.textContent = cell;
           tr.append(td);
         }
         return tr;
