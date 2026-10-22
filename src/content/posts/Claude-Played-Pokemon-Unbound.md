@@ -128,31 +128,22 @@ def is_redirect(hint):
 
 ### The run so far
 
-| | |
-|---|---|
-| Badges | 3 of 8 |
-| Steps | 32,036 |
-| Chunks | 515 |
-| Catches | 41 <!-- VERIFY: spectator says 68 caught total, 50 this run --> |
-| Whiteouts | 113 |
-| Play time | 190h 39m |
-| Output tokens | 6,788,846 |
-| Cost | $118.16 of a $150 budget |
+| | | | |
+|---|---|---|---|
+| Badges | 3 of 8 | Play time | 190h 39m |
+| Steps | 32,036 | Whiteouts | 113 |
+| Chunks | 515 | Output tokens | 6,788,846 |
+| Catches | 41 <!-- VERIFY: spectator says 68 caught total, 50 this run --> | Cost | $118.16 of a $150 budget |
 
 And where the button presses went:
 
-| Tool | Calls |
-|---|---|
-| `press_buttons` | 9,831 |
-| `get_state` | 8,734 |
-| `walk_to` | 7,820 |
-| `advance_dialog` | 5,141 |
-| `fight` | 4,510 |
-| `wiki_search` | 1,899 |
-| `travel_to` | 1,538 |
-| `get_screenshot` | 1,355 |
-| `switch_to` | 1,310 |
-| `run_away` | 481 |
+| Tool | Calls | Tool | Calls |
+|---|---|---|---|
+| `press_buttons` | 9,831 | `wiki_search` | 1,899 |
+| `get_state` | 8,734 | `travel_to` | 1,538 |
+| `walk_to` | 7,820 | `get_screenshot` | 1,355 |
+| `advance_dialog` | 5,141 | `switch_to` | 1,310 |
+| `fight` | 4,510 | `run_away` | 481 |
 
 The harness reviewers on top of that were cheap: 667 Haiku watcher calls for about 60p and 331 Sonnet verifier calls for about $6.40.
 
