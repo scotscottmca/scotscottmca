@@ -40,7 +40,7 @@ The one rule I set Claude: everything changes in flight. Fixes hot-reload into t
 
 ### The player
 
-The player is Haiku 5.5, in-game name Claude. That was the plan from the first commit, even though Claude's own research doc said Fable or Opus. Haiku's cheap and fast, and I wanted the clever stuff on call rather than on every turn. So Sonnet verifies, a strategist handles the routine "I'm stuck" escalations, Fable is the expert and only gets one call per gym, and Opus refines the memory between chunks. A Haiku watcher reads over the agent's shoulder every 10 actions and a Sonnet verifier every 40, and neither can block play. They just leave notes. <!-- VERIFY: the spectator's router shows the strategist on Opus 5.5 (x234), the report says Sonnet. Which? -->
+The player is Haiku 5.5, in-game name Claude. That was the plan from the first commit, even though Claude's own research doc said Fable or Opus. Haiku's cheap and fast, and I wanted the clever stuff on call rather than on every turn. So Sonnet verifies, a strategist handles the routine "I'm stuck" escalations (Opus for the first five days, then Sonnet once I saw the bill), Fable is the expert and is meant to get one call per gym, and Opus refines the memory between chunks. A Haiku watcher reads over the agent's shoulder every 10 actions and a Sonnet verifier every 40, and neither can block play. They just leave notes.
 
 Oh, and the rival's called Copilot. Obviously.
 
@@ -110,7 +110,7 @@ Blizzard City's gym leader. The agent sent the same six Pokémon into the same f
 
 Attempt 41 did it. No expert call, just two strategist calls, the second one literally titled "Alice battle plan: 41st attempt", and a team shuffle through Quarry, Frost, Frostbite and Glacie before Ferro's Metal Claw and Flicker's Charge Beam against her flyers finished it. Badge three. Thirteen minutes, start to finish, after however many hours of the other 40.
 
-The expert is capped at one Fable call per gym, so one bit of big brain advice and then it's on its own. For a gym that needs a team change rather than a better move order, that cap's too tight.
+The expert is supposed to be capped at one Fable call per gym. It wasn't. Nine expert calls in the run, five of them on Alice, and it still lost 40 times. So the cap didn't hold, and even with five goes of the big brain model it couldn't tell Haiku to swap the team. I haven't worked out why the deny rule failed, and I'm not going to, see "What's next".
 
 ### Frost Mountain
 
@@ -133,7 +133,7 @@ def is_redirect(hint):
 | Badges | 3 of 8 | Play time | 190h 39m |
 | Steps | 32,036 | Whiteouts | 113 |
 | Chunks | 515 | Output tokens | 6,788,846 |
-| Catches | 41 <!-- VERIFY: spectator says 68 caught total, 50 this run --> | Cost | $118.16 of a $150 budget |
+| Catches | 55 | Cost | $118.16 of a $150 budget |
 
 And where the button presses went:
 
@@ -180,9 +180,20 @@ It's a single page on port 8765 that tails the run's transcripts and logs, and p
 - Trainer and party. Location, badges, money, Pokédex, play time, cost, output tokens, and a card per party member with HP, stats, held item and EXP to go.
 - The memory map. Every file in the agent's memory folder as a graph: files, maps, species, nicknames, NPCs, missions, and the links between them. 12 files, 423 nodes, 848 links by the end. Watching that grow over two weeks was weirdly satisfying.
 - Learned something new. A feed of every line the agent or the refiner adds to its memory, so you can see it work things out. "fight() on a 0-PP move silently does nothing: check PP." Yes mate.
-- The model router. Which model is doing what, and how often. By the end: Haiku watcher x846, Sonnet verifier x221, strategist x234, refiner x64, Fable expert x5. <!-- VERIFY: expert x5 against "one call per gym" with 3 badges -->
+- The model router. Which model is doing what, and how often, with the estimated run cost beside it. By the end: Haiku watcher x846, Sonnet verifier x221, strategist x234, refiner x64, Fable expert x5.
 
-It can replay a finished run at 20x too, and it has a mock mode with a scripted fake run for testing the page without an emulator. Claude built that for itself so it could check its own UI. Fair play.
+The page can't touch the game. The only bridge client it has is this:
+
+```python
+class ReadOnlyProbe:
+    """The only bridge client the UI has: reads, nothing that steps, presses, loads or saves."""
+    ALLOWED = {"read8", "read16", "read32", "range"}
+    read8, read16, read32, range = Probe.read8, Probe.read16, Probe.read32, Probe.range
+```
+
+Hover a stat pill and you get its EVs out of 510. When a stat or its EVs go up between two polls the pill flashes green for three seconds, so you can see a win land on the party. Members are matched by nickname and species, so reordering the party doesn't set it off. Little things.
+
+It can replay a finished run at 20x too, and it has a mock mode with a scripted fake run (battles, a catch, every router handoff, a badge) for testing the page without an emulator. Claude built that for itself so it could check its own UI, along with 16 offline tests for the server. Fair play.
 
 ## Things that fell over
 
@@ -213,7 +224,7 @@ Expert run parked at three badges and $118.
 
 ## What's next?
 
-Nothing. Experiment over, fun was had, repo's archived. There's a list of things I'd fix if I ran it again (raw `KeyError`s leaking to the agent, the expert cap, the save screen, the walkthrough gate) and I'm not going to.
+Nothing. Experiment over, fun was had, repo's archived. There's a list of things I'd fix if I ran it again (raw `KeyError`s leaking to the agent, the expert cap that didn't cap, the save screen, the walkthrough gate) and I'm not going to.
 
 ## Summary
 
