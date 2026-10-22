@@ -42,6 +42,8 @@ The one rule I set Claude: everything changes in flight. Fixes hot-reload into t
 
 The player is Haiku 5.5, in-game name Claude. That was the plan from the first commit, even though Claude's own research doc said Fable or Opus. Haiku's cheap and fast, and I wanted the clever stuff on call rather than on every turn. So Sonnet verifies, a strategist handles the routine "I'm stuck" escalations (Opus for the first five days, then Sonnet once I saw the bill), Fable is the expert and is meant to get one call per gym, and Opus refines the memory between chunks. A Haiku watcher reads over the agent's shoulder every 10 actions and a Sonnet verifier every 40, and neither can block play. They just leave notes.
 
+The escalation is a ladder, not a free-for-all. The player asks the strategist when it's unsure (where next, what a hint means, team or move choices, a close battle, a puzzle), or when the harness tells it to after a watchdog keeps firing on the same map. The expert only comes in after two failed goes at the same thing, a trainer or a puzzle, and only after the strategist's already had a go. And before anything irreversible, forgetting a move, releasing a Pokémon, giving up, the player has to hand its plan to the verifier and wait. Game actions get blocked a few steps later if it hasn't.
+
 Oh, and the rival's called Copilot. Obviously.
 
 ## Run one: Vanilla
@@ -110,7 +112,7 @@ Blizzard City's gym leader. The agent sent the same six Pokémon into the same f
 
 Attempt 41 did it. No expert call, just two strategist calls, the second one literally titled "Alice battle plan: 41st attempt", and a team shuffle through Quarry, Frost, Frostbite and Glacie before Ferro's Metal Claw and Flicker's Charge Beam against her flyers finished it. Badge three. Thirteen minutes, start to finish, after however many hours of the other 40.
 
-The expert is supposed to be capped at one Fable call per gym. It wasn't. Nine expert calls in the run, five of them on Alice, and it still lost 40 times. So the cap didn't hold, and even with five goes of the big brain model it couldn't tell Haiku to swap the team. I haven't worked out why the deny rule failed, and I'm not going to, see "What's next".
+The expert is supposed to be capped at one Fable call per gym. It wasn't. Nine expert calls in the run, five of them on Alice, and it still lost 40 times. The cap counts expert calls per badge count (the nearest thing the harness has to "gym") and checks once at the start of each chunk, so two calls inside one chunk sail straight through. Probably what happened, not confirmed, not going to be. Even with five goes of the big brain model it couldn't tell Haiku to swap the team.
 
 ### Frost Mountain
 
