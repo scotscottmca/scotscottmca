@@ -2,6 +2,7 @@
 title: Claude learned to play Pokémon Unbound, but Alice taught it humility
 description: I had Claude build itself a harness to play Pokémon Unbound, then let it loose. Haiku on the controller, bigger models on call. Two runs, seven badges, 3,000 steps stuck on a mountain, and one gym leader who absolutely battered it.
 date: 2026-10-22
+lastModified: 2026-10-22
 author: Scott McAllister
 tags:
   - AI
@@ -11,7 +12,7 @@ tags:
 draft: false
 ---
 
-Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who I now have beef with.
+Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who Claude now has beef with.
 
 Let's cook.
 
@@ -256,7 +257,7 @@ It can replay a finished run at 20x too, and it has a mock mode with a scripted 
 
 The agent kept noting a "garbled key item" in its bag and never worked out what it was. The bag listing had names like `??w?tyGoggle`. Unbound stores long item names as a ROM pointer in the first four bytes of the entry, and the decoder was reading the pointer as text. 33 items affected. The mystery key item was the Dowsing Machine, which it had been carrying about unused the whole time.
 
-### The monitor that cried wolf
+### The monitor that cried Mightyena
 
 Every time the monitor started it said "runner NOT running". The runner was running. PowerShell 5.1 returns nothing for `.Count` on a single object unless you wrap the pipeline in `@(...)`. One process, empty count, false alarm, every single restart. That's handy.
 
