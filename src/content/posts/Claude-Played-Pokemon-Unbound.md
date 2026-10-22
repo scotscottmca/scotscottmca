@@ -257,7 +257,7 @@ It can replay a finished run at 20x too, and it has a mock mode with a scripted 
 
 The agent kept noting a "garbled key item" in its bag and never worked out what it was. The bag listing had names like `??w?tyGoggle`. Unbound stores long item names as a ROM pointer in the first four bytes of the entry, and the decoder was reading the pointer as text. 33 items affected. The mystery key item was the Dowsing Machine, which it had been carrying about unused the whole time.
 
-### The monitor that cried wolf
+### The monitor that cried Mightyena
 
 Every time the monitor started it said "runner NOT running". The runner was running. PowerShell 5.1 returns nothing for `.Count` on a single object unless you wrap the pipeline in `@(...)`. One process, empty count, false alarm, every single restart. That's handy.
 
