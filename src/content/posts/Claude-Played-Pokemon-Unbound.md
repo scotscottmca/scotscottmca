@@ -15,7 +15,8 @@ Two posts in a month? What's happening? This one's less "I built a tool you migh
 
 Let's cook.
 
-![TODO: reaction gif, trainer walking out of Pallet Town / "I choose you"](/images/claude-played-pokemon-unbound/intro.gif)
+<!-- gif: https://tenor.com/sOsn.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-sOsn" title="intro" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 ## I choose you
 
@@ -62,14 +63,15 @@ Four badges. Dresco, Crater Town, Blizzard City, Fallshore City. 6,477 actions o
 
 | | | |
 |:---:|:---:|:---:|
-| ![Ion the Metang](/images/claude-played-pokemon-unbound/metang.png) | ![Brawn the Hariyama](/images/claude-played-pokemon-unbound/hariyama.png) | ![Bulwark the Hariyama](/images/claude-played-pokemon-unbound/hariyama.png) |
+| ![Ion the Metang](https://img.pokemondb.net/sprites/x-y/normal/metang.png) | ![Brawn the Hariyama](https://img.pokemondb.net/sprites/x-y/normal/hariyama.png) | ![Bulwark the Hariyama](https://img.pokemondb.net/sprites/x-y/normal/hariyama.png) |
 | Ion, Metang, Lv 43 | Brawn, Hariyama, Lv 40 | Bulwark, Hariyama, Lv 37 |
-| ![Batty the Crobat](/images/claude-played-pokemon-unbound/crobat.png) | ![Pip the Watchog](/images/claude-played-pokemon-unbound/watchog.png) | ![Splash the Samurott](/images/claude-played-pokemon-unbound/samurott.png) |
+| ![Batty the Crobat](https://img.pokemondb.net/sprites/x-y/normal/crobat.png) | ![Pip the Watchog](https://img.pokemondb.net/sprites/x-y/normal/watchog.png) | ![Splash the Samurott](https://img.pokemondb.net/sprites/x-y/normal/samurott.png) |
 | Batty, Crobat, Lv 39 | Pip, Watchog, Lv 38 | Splash, Samurott, Lv 37 |
 
 Two Hariyama. Bold.
 
-![TODO: reaction gif, "we did it" / badge get](/images/claude-played-pokemon-unbound/badge.gif)
+<!-- gif: https://tenor.com/v0gQK3KE7Si.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-v0gQK3KE7Si" title="badge" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 ### Whited out (the runner, not the Pokémon)
 
@@ -79,11 +81,13 @@ Fair enough. Except the runner didn't know what "stopping" meant. It started the
 
 I wasn't watching. The monitor stayed quiet because there were no errors, no watchdogs and no new steps, which is exactly the shape of "nothing's wrong". I noticed when the step count hadn't moved in half an hour. Then I looked at the console and it said $2,903 spent.
 
-![TODO: reaction gif, choking on drink / wide eyes](/images/claude-played-pokemon-unbound/cost.gif)
+<!-- gif: https://tenor.com/ppANadrPevO.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-ppANadrPevO" title="cost" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 Turns out a resumed `claude -p` session reports its running total, not the chunk's own cost, and the runner was adding the whole total up again every chunk. So chunk 389 says $9.62, chunk 390 says $9.63, the runner adds $9.62 plus $9.63, which is $19.25, times 390 chunks, carry the one, minus the square root of a Lapras... Whatever, numbers.
 
-![TODO: reaction gif, confused maths lady](/images/claude-played-pokemon-unbound/maths.gif)
+<!-- gif: https://tenor.com/ylky.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-ylky" title="maths" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 Chunk 390 cost a penny. The whole run to that point was $35.60, and the stop-loop itself about $3.
 
@@ -118,7 +122,8 @@ The gym leader that taught Claude humility.
 
 Claude sent the same six Pokémon into the fray 40 times. White out, heal, repeat. It was quite entertaining to watch, but it exposed a bug. The agent was reporting that it was blocked, "Blizzard gym blocked (Alice, 40 losses, $150)" sat right there in its memory, but rather than change anything, it just kept retrying.
 
-![TODO: reaction gif, getting flattened / "I'm fine"](/images/claude-played-pokemon-unbound/alice.gif)
+<!-- gif: https://tenor.com/bHz3g.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-bHz3g" title="alice" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 Attempt 41 did it. No expert call, just two strategist calls, the second one literally titled "Alice battle plan: 41st attempt", and a team shuffle through Quarry, Frost, Frostbite and Glacie before Ferro's Metal Claw and Flicker's Charge Beam against her flyers finished it. Badge three. Thirteen minutes, start to finish, after however many hours of the other 40.
 
@@ -246,10 +251,11 @@ Repo's [here](https://github.com/scotscottmca/ClaudeUnbound) if you want a swatc
 
 Thanks for reading!
 
-![TODO: reaction gif, trainer saluting / Pokémon fainting](/images/claude-played-pokemon-unbound/outro.gif)
+<!-- gif: https://tenor.com/b1L6c.gif -->
+<iframe src="https://tenor.com/embed/TODO-POST-ID-b1L6c" title="outro" style="width: 100%; aspect-ratio: 4 / 3; border: 0;" loading="lazy" allowfullscreen></iframe>
 
 <!-- SHOTS:
-1. spectator.webp: the full spectator screenshot you sent (save it to public/images/claude-played-pokemon-unbound/)
-2. Six Pokémon sprites for the Vanilla team grid: metang, hariyama, crobat, watchog, samurott (png, public/images/claude-played-pokemon-unbound/)
+1. Six Tenor iframes need their numeric post id (open the short link, copy the number at the end of the view URL, or Share > Embed)
+2. Sprites hotlink pokemondb for now; drop the five PNGs into public/images/claude-played-pokemon-unbound/ if you'd rather host them
 3. Optional: console showing "$2903 spent" if it's in a log
 -->
