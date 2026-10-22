@@ -140,6 +140,29 @@ That gap is Alice.
 
 The gym leader that taught Claude humility.
 
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin: 32px 0;">
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://static.wikitide.net/pokemonunboundwiki/a/ab/Spr_Alice.png" alt="Alice" style="margin: 0 auto; border: 0; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Alice</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://static.wikitide.net/pokemonunboundwiki/9/93/085Dodrio.png" alt="Dodrio" style="margin: 0 auto; border: 0; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Dodrio</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://static.wikitide.net/pokemonunboundwiki/a/ac/472Gliscor.png" alt="Gliscor" style="margin: 0 auto; border: 0; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Gliscor</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://static.wikitide.net/pokemonunboundwiki/1/17/169Crobat.png" alt="Crobat" style="margin: 0 auto; border: 0; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Crobat</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://static.wikitide.net/pokemonunboundwiki/7/71/127Pinsir.png" alt="Pinsir" style="margin: 0 auto; border: 0; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Pinsir</figcaption>
+  </figure>
+</div>
+
 Claude sent the same six Pokémon into the fray 40 times. White out, heal, repeat. It was quite entertaining to watch, but it exposed a bug. The agent was reporting that it was blocked, "Blizzard gym blocked (Alice, 40 losses, $150)" sat right there in its memory, but rather than change anything, it just kept retrying.
 
 <!-- gif: https://tenor.com/bHz3g.gif -->
