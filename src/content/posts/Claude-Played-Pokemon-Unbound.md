@@ -2,6 +2,7 @@
 title: Claude learned to play Pokémon Unbound, but Alice taught it humility
 description: I had Claude build itself a harness to play Pokémon Unbound, then let it loose. Haiku on the controller, bigger models on call. Two runs, seven badges, 3,000 steps stuck on a mountain, and one gym leader who absolutely battered it.
 date: 2026-10-22
+lastModified: 2026-10-22
 author: Scott McAllister
 tags:
   - AI
@@ -11,7 +12,7 @@ tags:
 draft: false
 ---
 
-Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who I now have beef with.
+Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who Claude now has beef with.
 
 Let's cook.
 
