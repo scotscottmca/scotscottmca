@@ -11,25 +11,33 @@ tags:
 draft: true
 ---
 
-Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I made Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who I now have beef with.
+Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who I now have beef with.
 
 Let's cook.
 
 ![TODO: reaction gif, trainer walking out of Pallet Town / "I choose you"](/images/claude-played-pokemon-unbound/intro.gif)
 
-## Choose your starter
+## I choose you
 
-**Did you know a romhack the model has never seen in training makes a decent benchmark? Well you do now, and so does my credit card.**
+**Did you know a romhack a model has never been trained on makes a fun benchmark? Well now you and my token limits do!**
 
-Why did I do this? Just because. Why not? Pokémon Unbound is a ridiculously good romhack, Anthropic had already shown Claude finishing FireRed, and I wanted to see how far it could get on something that isn't in the training data. Unbound's region, Borrius, is nowhere in there. The semantic routing, memory mapping and cost analysis were interesting too, but they were the side quest. Mostly I just wanted to watch.
+Why did I do it? Why not. Boredom, curiosity, amusement, does it matter? Pokémon Unbound is a ridiculously well made romhack, I'd seen videos of Claude finishing FireRed (which Unbound is based on) and I wanted to see how far Claude could get on something totally new to it.
 
-One thing to get straight before we go any further: I didn't build this. Claude did. The research, the requirements, the phased plan, the RAM reverse engineering, the tools, the agent, the spectator page, and then it played the game as well. I gave it basic guidance and the odd hint when it was stuck. That was the actual experiment, could Claude do something fun end to end, and the Pokémon was the excuse.
+The model router, memory mapping and cost analysis were of interest too, but they were a side quest.
 
-Its own research up front reckoned 6 to 10 weeks to a first full attempt, if a human was doing it. The build took two days. I may or may not have slept.
+I really just wanted to watch Claude struggle.
+
+Let's get this straight up front. I didn't build this, Claude did. I gave it the requirements, the documentation on Unbound and some basic guidelines, and it did the research, the phased implementation plan, the RAM reverse engineering, the tools, the agent, the spectator page, and then played the game as well.
+
+I did have to give it little hints here and there when it got stuck, but only a few times!
+
+The experiment: could Claude do something fun, end to end? Pokémon was a great excuse.
+
+Its own research reckoned 6 to 10 weeks to a first full attempt, if a human was doing it. It took two days.
 
 ## The setup
 
-The design is thin on purpose. A verified state layer and deterministic tools, and the model does the thinking.
+Claude kept the design thin on purpose. A verified state layer and deterministic tools, and the model does the thinking.
 
 - mGBA runs the ROM. A Lua script serves a line protocol on port 8888. One client drives the emulator at a time, full stop.
 - A Python bridge reads RAM into state JSON (party, position, map, dialog, battle), builds a collision grid off the live map, pulls species, move and item names out of the ROM, does the pathfinding, and exposes it all as MCP tools. Every RAM address has its evidence written down, because about half of what was assumed from vanilla FireRed turned out wrong on Unbound.
@@ -106,7 +114,9 @@ That gap is Alice.
 
 ### Alice
 
-Blizzard City's gym leader. The agent sent the same six Pokémon into the same fight, lost, healed, walked back and did it again. 40 times. I found out while checking why it wasn't calling the walkthrough and read its own note in memory: "Blizzard gym blocked (Alice, 40 losses, $150)". It had logged the problem perfectly and then kept doing it anyway.
+The gym leader that taught Claude humility.
+
+Claude sent the same six Pokémon into the fray 40 times. White out, heal, repeat. It was quite entertaining to watch, but it exposed a bug. The agent was reporting that it was blocked, "Blizzard gym blocked (Alice, 40 losses, $150)" sat right there in its memory, but rather than change anything, it just kept retrying.
 
 ![TODO: reaction gif, getting flattened / "I'm fine"](/images/claude-played-pokemon-unbound/alice.gif)
 
@@ -230,7 +240,7 @@ Nothing. Experiment over, fun was had, repo's archived. There's a list of things
 
 ## Summary
 
-Claude built itself a harness in two days and then Haiku played Pokémon Unbound with it. Four badges on Vanilla for $50, three on Expert for $118, 32,000 steps without the emulator restarting once. It also lost to the same woman 40 times and spent hours walking into a boulder, so.
+Claude built itself a harness in two days and then played Pokémon Unbound with it. Four badges on Vanilla for $50, three on Expert for $118, 32,000 steps without the emulator restarting once. It also lost to the same woman 40 times and spent hours walking into a boulder. I got what I came for.
 
 Repo's [here](https://github.com/scotscottmca/ClaudeUnbound) if you want a swatch.
 
