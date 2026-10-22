@@ -8,7 +8,7 @@ tags:
   - Claude Code
   - Agents
   - Pokémon
-draft: true
+draft: false
 ---
 
 Two posts in a month? What's happening? This one's less "I built a tool you might use" and more "I let Claude play a GBA romhack for two weeks and watched it suffer". A harness, two runs, a cost bill, a few things that fell over, and a gym leader called Alice who I now have beef with.
