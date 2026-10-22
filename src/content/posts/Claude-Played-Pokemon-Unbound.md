@@ -61,12 +61,32 @@ Vanilla difficulty, fresh save, go.
 
 Four badges. Dresco, Crater Town, Blizzard City, Fallshore City. 6,477 actions over about 25 hours, 38 catches, every one nicknamed, and about $50 of API-equivalent spend. The final team:
 
-| | | |
-|:---:|:---:|:---:|
-| ![Ion the Metang](https://img.pokemondb.net/sprites/x-y/normal/metang.png) | ![Brawn the Hariyama](https://img.pokemondb.net/sprites/x-y/normal/hariyama.png) | ![Bulwark the Hariyama](https://img.pokemondb.net/sprites/x-y/normal/hariyama.png) |
-| Ion, Metang, Lv 43 | Brawn, Hariyama, Lv 40 | Bulwark, Hariyama, Lv 37 |
-| ![Batty the Crobat](https://img.pokemondb.net/sprites/x-y/normal/crobat.png) | ![Pip the Watchog](https://img.pokemondb.net/sprites/x-y/normal/watchog.png) | ![Splash the Samurott](https://img.pokemondb.net/sprites/x-y/normal/samurott.png) |
-| Batty, Crobat, Lv 39 | Pip, Watchog, Lv 38 | Splash, Samurott, Lv 37 |
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0;">
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/metang.png" alt="Ion the Metang" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Ion<br>Metang Lv 43</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/hariyama.png" alt="Brawn the Hariyama" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Brawn<br>Hariyama Lv 40</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/hariyama.png" alt="Bulwark the Hariyama" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Bulwark<br>Hariyama Lv 37</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/crobat.png" alt="Batty the Crobat" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Batty<br>Crobat Lv 39</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/watchog.png" alt="Pip the Watchog" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Pip<br>Watchog Lv 38</figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center;">
+    <img src="https://img.pokemondb.net/sprites/x-y/normal/samurott.png" alt="Splash the Samurott" style="margin: 0 auto; border: 0; width: 96px; height: 96px; image-rendering: pixelated;">
+    <figcaption style="margin-top: 4px;">Splash<br>Samurott Lv 37</figcaption>
+  </figure>
+</div>
 
 Two Hariyama. Bold.
 
