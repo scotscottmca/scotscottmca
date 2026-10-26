@@ -270,6 +270,19 @@ time,
   width: 48px;
   height: 48px;
   image-rendering: pixelated;
+  transform-origin: bottom center;
+}
+/* The hoist: five held poses, no tweening, so it reads as pixel frames. */
+@keyframes hoist {
+  0%, 80%, 100% { translate: 0 0; scale: 1 1; }
+  30% { translate: 0 2px; scale: 1.05 0.93; }
+  45% { translate: 0 -3px; scale: 0.97 1.05; }
+  60% { translate: 0 -2px; scale: 1 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .foot-mascot {
+    animation: hoist 2.4s step-end infinite;
+  }
 }
 .foot-lines p {
   margin: 0;
