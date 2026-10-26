@@ -1,112 +1,235 @@
 ---
-import fs from 'node:fs';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-// Unlisted: no nav link, noindex, out of the sitemap. The five status
-// blueprints drawing themselves with anime.js: every stroke is run by
-// svg.createDrawable on one timeline, and a createDraggable knob scrubs it.
-
-// Tone and period per state, as in scripts/status-sprites.mjs. Each sprite's
-// own <style> is stripped (five copies would fight over the same class names)
-// and replaced by the scoped rules below, driven by --tone and --period.
-const states = [
-  { key: 'asleep', word: 'Asleep', tone: '#b794ff', period: '4.8s' },
-  { key: 'awake', word: 'Awake', tone: '#00d4ff', period: '2.4s' },
-  { key: 'walking', word: 'Out walking', tone: '#00d4ff', period: '1.4s' },
-  { key: 'working-out', word: 'Working out', tone: '#00d4ff', period: '0.9s' },
-  { key: 'active', word: 'Up and active', tone: '#00d4ff', period: '1.6s' },
-].map((s) => ({
-  ...s,
-  svg: fs
-    .readFileSync(new URL(`../../public/images/status/scott-${s.key}.svg`, import.meta.url), 'utf8')
-    .replace(/<!--[\s\S]*?-->/, '')
-    .replace(/<style>[\s\S]*?<\/style>/, '')
-    .replace(' width="240" height="240"', ''),
-}));
+// Unlisted: no nav link, noindex, out of the sitemap. Mock-ups of the
+// wordmark rendering in, each one a different idea of "technology". All
+// anime.js; each card loops on its own and has a replay.
+const mocks = [
+  { key: 'decode', how: 'scrambleText · shades charset · resolves left to right' },
+  { key: 'prompt', how: 'typed at a terminal · block caret · steps easing' },
+  { key: 'raster', how: 'canvas · scanned in cell by cell · pixelated' },
+  { key: 'crt', how: 'colour fringes settle · scanline sweep · steps jitter' },
+  { key: 'link', how: 'splitText · glyphs link in from scatter · steps easing' },
+  { key: 'trace', how: 'packets ride circuit traces · createMotionPath · parts light up' },
+];
 ---
 
-<BaseLayout title="Lab" description="The status blueprints drawing themselves." noindex>
+<BaseLayout title="Lab" description="Mock-ups of the wordmark rendering in." noindex>
   <Header />
   <main class="page">
     <div class="container lab">
       <header class="lab-head">
         <p class="lab-kicker">lab / anime.js 4.5</p>
-        <h1 class="page-title">The blueprints draw themselves</h1>
-        <p class="lede">All five status sprites, every stroke run by <code>svg.createDrawable</code> on one timeline. Drag the knob to scrub it. Reduced motion shows them finished.</p>
+        <h1 class="page-title">Six ways in</h1>
+        <p class="lede">The wordmark rendering in. Each card is one idea; they loop, or hit replay.</p>
       </header>
 
-      <div class="scrub" data-scrub>
-        <div class="scrub-track" data-track><button type="button" class="scrub-knob" data-knob aria-label="Scrub the drawing"></button></div>
-        <div class="scrub-meta">
-          <button type="button" class="scrub-btn" data-toggle>pause</button>
-          <span class="scrub-time" data-time>0.00s</span>
-        </div>
-      </div>
-
-      <ul class="bps">
-        {states.map((s) => (
-          <li class="bp-card" style={`--tone: ${s.tone}; --period: ${s.period}`}>
-            <div class="bp" data-bp set:html={s.svg} />
-            <p class="bp-label"><span class="bp-key">{s.key}</span>{s.word}</p>
-          </li>
+      <div class="mocks">
+        {mocks.map((m, i) => (
+          <figure class="mock" data-mock={m.key}>
+            <div class="stage" data-stage>
+              {m.key === 'decode' && <p class="wm"><span class="tilde">~/</span><span data-text>ScotScottMcA</span></p>}
+              {m.key === 'prompt' && <p class="wm"><span class="tilde">~/</span><span data-text></span><span class="caret" data-caret></span></p>}
+              {m.key === 'raster' && <canvas class="raster" data-canvas aria-label="ScotScottMcA"></canvas>}
+              {m.key === 'crt' && (
+                <p class="wm crt" data-crt>
+                  <span class="ghost ghost-c" aria-hidden="true" data-ghost-c>~/ScotScottMcA</span>
+                  <span class="ghost ghost-v" aria-hidden="true" data-ghost-v>~/ScotScottMcA</span>
+                  <span class="face"><span class="tilde">~/</span>ScotScottMcA</span>
+                  <span class="scanline" aria-hidden="true" data-scanline></span>
+                </p>
+              )}
+              {m.key === 'link' && (
+                <>
+                  <p class="wm"><span class="tilde">~/</span><span data-text>ScotScottMcA</span></p>
+                  <p class="status" data-status aria-hidden="true">linking 0/12 objects</p>
+                </>
+              )}
+              {m.key === 'trace' && (
+                <svg class="traces" viewBox="0 0 360 120" role="img" aria-label="ScotScottMcA">
+                  <g class="wire" fill="none">
+                    <path data-trace d="M-4 112 H 40 V 84 H 58" />
+                    <path data-trace d="M-4 10 H 96 V 60 Q 96 84 118 84 H 132" />
+                    <path data-trace d="M364 112 H 300 V 84 H 258" />
+                  </g>
+                  <g class="pads">
+                    <circle cx="58" cy="84" r="2.5" /><circle cx="132" cy="84" r="2.5" /><circle cx="258" cy="84" r="2.5" />
+                  </g>
+                  <g class="word">
+                    <text class="tilde-svg" x="22" y="64">~/</text>
+                    <text data-part x="60" y="64">Scot</text>
+                    <text data-part x="134" y="64">Scott</text>
+                    <text data-part x="224" y="64">McA</text>
+                  </g>
+                  <g class="packets">
+                    <circle data-pkt r="3" /><circle data-pkt r="3" /><circle data-pkt r="3" />
+                  </g>
+                </svg>
+              )}
+            </div>
+            <figcaption>
+              <span class="mock-n">{String(i + 1).padStart(2, '0')}</span>
+              <span class="mock-key">{m.key}</span>
+              <span class="mock-how">{m.how}</span>
+              <button type="button" class="replay" data-replay>replay</button>
+            </figcaption>
+          </figure>
         ))}
-      </ul>
+      </div>
     </div>
   </main>
   <Footer />
 </BaseLayout>
 
 <script>
-  import { createTimeline, createDraggable, stagger, svg } from 'animejs';
+  import { animate, createTimeline, stagger, steps, svg, utils } from 'animejs';
+  import { splitText, scrambleText } from 'animejs/text';
 
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const $ = (sel: string, root: ParentNode = document) => root.querySelector(sel) as HTMLElement;
-    const sprites = Array.from(document.querySelectorAll('[data-bp]'));
-    const sync: { fn?: (t: any) => void } = {};
-    const tl = createTimeline({ loop: true, loopDelay: 2000, defaults: { ease: 'inOutQuad' }, onUpdate: (t) => sync.fn?.(t) });
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const WORD = 'ScotScottMcA';
+  const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const loop = { loop: true, loopDelay: 2600 };
+  const card = (key: string) => document.querySelector(`[data-mock="${key}"]`) as HTMLElement;
+  const $ = (sel: string, root: ParentNode) => root.querySelector(sel) as HTMLElement;
+  const players: Record<string, { restart: () => any; seek: (t: number) => any; pause: () => any; duration: number }> = {};
 
-    // Each sprite starts 450ms after the one before; within a sprite the strokes
-    // draw first, then the fills, dots and callouts in that order.
-    sprites.forEach((el, i) => {
-      const at = i * 450;
-      tl.add(svg.createDrawable(el.querySelectorAll('path, rect, line')), { draw: ['0 0', '0 1'], duration: 900, delay: stagger(70) }, at)
-        .add(el.querySelectorAll('.s'), { fillOpacity: [0, 0.06], duration: 600 }, at + 1500)
-        .add(el.querySelectorAll('circle, ellipse'), { scale: [0, 1], opacity: [0, 1], duration: 280, delay: stagger(60) }, at + 1800)
-        .add(el.querySelectorAll('text'), { opacity: [0, 1], y: [4, 0], duration: 320, delay: stagger(50) }, at + 2000);
+  // 01 · decode: random glyphs resolve into the word, left to right.
+  {
+    const el = $('[data-text]', card('decode'));
+    players.decode = animate(el, {
+      innerHTML: scrambleText({ chars: 'shades', from: 'left', revealRate: 24, settleDuration: 500, revealDelay: 300 }),
+      ...loop,
     });
+  }
 
-    // The knob seeks the timeline while dragged and follows it while it plays.
-    const root = $('[data-scrub]');
-    const knob = $('[data-knob]', root);
-    const time = $('[data-time]', root);
-    const toggle = $('[data-toggle]', root);
-    let dragging = false;
-    const drag = createDraggable(knob, {
-      container: $('[data-track]', root),
-      containerPadding: 3,
-      y: false,
-      maxVelocity: 0,
-      onGrab: () => {
-        dragging = true;
-        tl.pause();
-        toggle.textContent = 'play';
-      },
-      // seek(), not the iterationCurrentTime setter: that one ignores loopDelay and lands late on later loops.
-      onDrag: (d: any) => tl.seek(d.progressX * tl.iterationDuration),
-      onRelease: () => {
-        dragging = false;
-      },
+  // 02 · prompt: typed one glyph at a time, the caret riding the end.
+  {
+    const root = card('prompt');
+    const el = $('[data-text]', root);
+    const n = { v: 0 };
+    players.prompt = animate(n, {
+      v: WORD.length,
+      ease: steps(WORD.length),
+      duration: WORD.length * 95,
+      delay: 500,
+      onUpdate: () => (el.textContent = WORD.slice(0, Math.round(n.v))),
+      ...loop,
     });
-    toggle.addEventListener('click', () => {
-      tl.paused ? tl.play() : tl.pause();
-      toggle.textContent = tl.paused ? 'play' : 'pause';
-    });
-    sync.fn = (t) => {
-      if (!dragging) drag.progressX = t.iterationProgress;
-      time.textContent = (t.iterationCurrentTime / 1000).toFixed(2) + 's';
+  }
+
+  // 03 · raster: the word rendered to a tiny canvas, then painted on cell by
+  // cell in scan order with a cyan beam at the head. Pixels stay pixels.
+  {
+    const canvas = $('[data-canvas]', card('raster')) as HTMLCanvasElement;
+    const off = document.createElement('canvas');
+    const octx = off.getContext('2d')!;
+    const font = `700 13px ${css('--font-mono')}`;
+    octx.font = font;
+    const tilde = '~/';
+    const tw = octx.measureText(tilde).width;
+    const W = Math.ceil(octx.measureText(tilde + WORD).width) + 2;
+    const H = 16;
+    off.width = W;
+    off.height = H;
+    octx.font = font;
+    octx.textBaseline = 'top';
+    octx.fillStyle = '#fff';
+    octx.fillText(tilde + WORD, 1, 1);
+    const a = octx.getImageData(0, 0, W, H).data;
+    const cells: [number, number][] = [];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (a[(y * W + x) * 4 + 3] > 120) cells.push([x, y]);
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.width = `-epx`;
+    const ctx = canvas.getContext('2d')!;
+    const paint = (upto: number) => {
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < Math.min(upto, cells.length); i++) {
+        const [x, y] = cells[i];
+        ctx.fillStyle = i > upto - 14 ? css('--cyan') : x < tw ? css('--violet-text') : css('--text');
+        ctx.fillRect(x, y, 1, 1);
+      }
     };
+    const n = { v: 0 };
+    players.raster = animate(n, {
+      v: cells.length + 14,
+      ease: 'linear',
+      duration: 2200,
+      delay: 300,
+      onUpdate: () => paint(Math.round(n.v)),
+      ...loop,
+    });
+    paint(0);
+  }
+
+  // 04 · crt: cyan and violet fringes jitter either side of the face, a
+  // scanline sweeps once, then everything snaps into register.
+  {
+    const root = card('crt');
+    const jitter = (s: number) => [
+      { to: 14 * s, duration: 90 },
+      { to: -9 * s, duration: 70 },
+      { to: 6 * s, duration: 110 },
+      { to: -3 * s, duration: 80 },
+      { to: 1 * s, duration: 120 },
+      { to: 0, duration: 60 },
+    ];
+    players.crt = createTimeline({ defaults: { ease: steps(1, true) }, ...loop })
+      .add($('[data-ghost-c]', root), { x: jitter(1), opacity: [{ to: 0.9, duration: 400 }, { to: 0, duration: 140 }] }, 0)
+      .add($('[data-ghost-v]', root), { x: jitter(-1), opacity: [{ to: 0.9, duration: 400 }, { to: 0, duration: 140 }] }, 0)
+      .add($('.face', root), { opacity: [{ to: 0.35, duration: 60 }, { to: 1, duration: 60 }, { to: 0.6, duration: 80 }, { to: 1, duration: 60 }], skewX: [{ to: -6, duration: 90 }, { to: 3, duration: 110 }, { to: 0, duration: 60 }] }, 0)
+      .add($('[data-scanline]', root), { y: [-12, 72], opacity: [{ to: 0.8, duration: 20 }, { to: 0, duration: 400 }], ease: 'linear', duration: 520 }, 40);
+  }
+
+  // 05 · link: the glyphs arrive from scatter in a random order, in chunky
+  // steps, while a status line counts them in.
+  {
+    const root = card('link');
+    const { chars } = splitText($('[data-text]', root), { chars: true });
+    const status = $('[data-status]', root);
+    const count = { v: 0 };
+    players.link = createTimeline({ ...loop })
+      .add(chars, {
+        x: [() => utils.random(-90, 90), 0],
+        y: [() => utils.random(-48, 48), 0],
+        rotate: [() => utils.random(-50, 50), 0],
+        opacity: [0, 1],
+        ease: steps(7),
+        duration: 760,
+        delay: stagger(65, { from: 'random', start: 200 }),
+      }, 0)
+      .add(count, {
+        v: chars.length,
+        ease: 'linear',
+        duration: 760 + 65 * chars.length,
+        onUpdate: () => (status.textContent = count.v >= chars.length - 0.01 ? 'linked 12/12 objects · ok' : `linking ${Math.floor(count.v)}/12 objects`),
+      }, 200);
+  }
+
+  // 06 · trace: three packets ride the traces to their pads; each part of
+  // the word lights when its packet lands.
+  {
+    const root = card('trace');
+    const traces = Array.from(root.querySelectorAll('[data-trace]')) as SVGPathElement[];
+    const pkts = Array.from(root.querySelectorAll('[data-pkt]')) as SVGCircleElement[];
+    const parts = Array.from(root.querySelectorAll('[data-part]')) as SVGTextElement[];
+    const order = [1, 0, 2];
+    const tl = createTimeline({ ...loop });
+    order.forEach((i, k) => {
+      const at = 200 + k * 520;
+      const path = svg.createMotionPath(traces[i]);
+      tl.add(pkts[i], { translateX: path.translateX, translateY: path.translateY, opacity: [{ to: 1, duration: 40 }, { to: 1, duration: 760 }, { to: 0, duration: 120 }], ease: 'inOutSine', duration: 920 }, at)
+        .add(parts[i], { opacity: [0, 1], translateY: [3, 0], duration: 160, ease: steps(2) }, at + 860);
+    });
+    players.trace = tl;
+  }
+
+  // Replay buttons; under reduced motion, everything sits at its final frame.
+  for (const [key, p] of Object.entries(players)) {
+    $('[data-replay]', card(key)).addEventListener('click', () => p.restart());
+    if (still) p.pause().seek(p.duration);
   }
 </script>
 
@@ -115,7 +238,7 @@ const states = [
     max-width: 760px;
   }
   .lab-head {
-    margin-bottom: 32px;
+    margin-bottom: 40px;
   }
   .lab-kicker {
     margin: 0 0 8px;
@@ -123,55 +246,47 @@ const states = [
     font-size: 13px;
     color: var(--cyan);
   }
-  .lede code {
-    font-family: var(--font-mono);
-    font-size: 0.9em;
-    color: var(--text);
+  .mocks {
+    display: grid;
+    gap: 28px;
   }
-
-  /* The scrubber: a track, a knob, play/pause and the clock. */
-  .scrub {
-    margin-bottom: 32px;
-    font-family: var(--font-mono);
-    font-size: 13px;
+  .mock {
+    margin: 0;
   }
-  .scrub-track {
+  .stage {
     position: relative;
-    height: 28px;
+    height: 150px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    background: var(--surface);
+    background:
+      linear-gradient(color-mix(in srgb, var(--cyan) 6%, transparent) 1px, transparent 1px) 0 0 / 100% 25px,
+      linear-gradient(90deg, color-mix(in srgb, var(--cyan) 6%, transparent) 1px, transparent 1px) 0 0 / 25px 100%,
+      var(--ink);
   }
-  .scrub-track::before {
-    content: '';
-    position: absolute;
-    inset: 13px 8px;
-    background: var(--line-hi);
-  }
-  .scrub-knob {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    border: 1px solid var(--cyan);
-    border-radius: 4px;
-    background: var(--ink);
-    cursor: grab;
-    touch-action: none;
-  }
-  .scrub-knob:active {
-    cursor: grabbing;
-    background: var(--cyan);
-  }
-  .scrub-meta {
+  figcaption {
     display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 13px;
     color: var(--muted);
   }
-  .scrub-btn {
+  .mock-n {
+    color: var(--violet-text);
+  }
+  .mock-key {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .mock-how {
+    flex: 1;
+    min-width: 0;
+  }
+  .replay {
     padding: 0;
     border: 0;
     background: none;
@@ -180,172 +295,125 @@ const states = [
     cursor: pointer;
   }
 
-  /* The five blueprints on gridded insets, as on /status. */
-  .bps {
-    list-style: none;
+  /* The wordmark, big. Mono 700 like the header's, with the violet tilde. */
+  .wm {
     margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-  }
-  .bp-card {
-    margin: 0;
-  }
-  .bp {
-    aspect-ratio: 1;
-    padding: 12px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background:
-      linear-gradient(color-mix(in srgb, var(--tone) 10%, transparent) 1px, transparent 1px) 0 0 / 100% 10%,
-      linear-gradient(90deg, color-mix(in srgb, var(--tone) 10%, transparent) 1px, transparent 1px) 0 0 / 10% 100%,
-      var(--ink);
-  }
-  .bp :global(svg) {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  .bp-label {
-    margin: 8px 0 0;
+    display: inline-flex;
+    align-items: center;
     font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--muted);
+    font-size: clamp(26px, 5.5vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: pre;
   }
-  .bp-key {
-    color: var(--tone);
-    margin-right: 10px;
+  .tilde {
+    color: var(--violet-text);
+    margin-right: 0.3em;
+  }
+  .caret {
+    width: 0.5em;
+    height: 1.05em;
+    margin-left: 0.12em;
+    background: var(--cyan);
+    animation: caret 1.06s steps(1) infinite;
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
   }
 
-  /* The sprites' own stylesheet, scoped and parameterised. Fills, dots and
-     callouts start hidden: anime only writes a tween's value once the
-     playhead reaches it, so until then the CSS value shows. */
-  .bp :global(.s) {
-    fill: var(--tone);
-    fill-opacity: 0;
-    stroke: var(--tone);
-    stroke-width: 0.8;
-    stroke-linejoin: round;
+  /* 03 */
+  .raster {
+    image-rendering: pixelated;
+    max-width: 92%;
+    height: auto;
   }
-  .bp :global(.line),
-  .bp :global(.p) {
-    fill: none;
-    stroke: var(--tone);
-    stroke-width: 0.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+
+  /* 04 */
+  .crt {
+    position: relative;
   }
-  .bp :global(.dot) {
-    fill: var(--tone);
+  .crt .ghost {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    mix-blend-mode: screen;
+    pointer-events: none;
   }
-  .bp :global(.dim) {
-    opacity: 0.7;
+  .crt .ghost-c {
+    color: var(--cyan);
   }
-  .bp :global(text) {
+  .crt .ghost-v {
+    color: var(--violet-text);
+  }
+  .crt .face {
+    display: inline-flex;
+    align-items: center;
+  }
+  .crt .scanline {
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 05 */
+  [data-mock='link'] .stage {
+    grid-template-rows: 1fr auto;
+    place-items: center;
+    padding-bottom: 10px;
+  }
+  .status {
+    margin: 0;
     font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  /* 06 */
+  .traces {
+    width: min(100%, 420px);
+    height: auto;
+    display: block;
+  }
+  .traces .wire path {
+    stroke: var(--line-hi);
+    stroke-width: 1.2;
+  }
+  .traces .pads circle {
+    fill: var(--ink);
+    stroke: var(--line-hi);
+    stroke-width: 1;
+  }
+  .traces text {
+    font-family: var(--font-mono);
+    font-size: 30px;
     font-weight: 700;
+    letter-spacing: -0.02em;
+    fill: var(--text);
+  }
+  .traces .tilde-svg {
+    fill: var(--violet-text);
+  }
+  .traces [data-part] {
     opacity: 0;
   }
-  .bp :global(.note line),
-  .bp :global(.guide) {
-    stroke: var(--faint);
-    stroke-width: 0.4;
-    fill: none;
-  }
-  .bp :global(.guide) {
-    stroke-dasharray: 1.5 1.5;
-  }
-  .bp :global(.note text) {
-    font-size: 5.2px;
-    font-weight: 400;
-    fill: var(--muted);
-  }
-  .bp :global(circle),
-  .bp :global(ellipse) {
-    transform-box: fill-box;
-    transform-origin: center;
+  .traces [data-pkt] {
+    fill: var(--cyan);
     opacity: 0;
-  }
-  .bp :global(.fig) {
-    animation: bob var(--period) ease-in-out infinite;
-  }
-  .bp :global(.z) {
-    animation: rise var(--period) ease-out infinite;
-  }
-  .bp :global(.z2) {
-    animation-delay: calc(var(--period) / 2);
-  }
-  .bp :global(.steam) {
-    animation: steam var(--period) ease-in-out infinite;
-  }
-  .bp :global(.reps) {
-    animation: reps var(--period) ease-in-out infinite;
-  }
-  .bp :global(.trot) {
-    animation: reps calc(var(--period) * 2) ease-in-out infinite;
-  }
-  .bp :global(.beat) {
-    animation: beat var(--period) ease-in-out infinite;
-  }
-  @keyframes bob {
-    50% {
-      transform: translateY(-1.5px);
-    }
-  }
-  @keyframes rise {
-    0% {
-      opacity: 0;
-      transform: translate(0, 4px);
-    }
-    30% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-      transform: translate(3px, -6px);
-    }
-  }
-  @keyframes steam {
-    0%,
-    100% {
-      opacity: 0.2;
-      transform: translateY(1px);
-    }
-    50% {
-      opacity: 1;
-      transform: translateY(-2px);
-    }
-  }
-  @keyframes reps {
-    50% {
-      transform: translateY(-7px);
-    }
-  }
-  @keyframes beat {
-    0%,
-    60%,
-    100% {
-      transform: scale(1);
-    }
-    20% {
-      transform: scale(1.18);
-    }
   }
   @media (prefers-reduced-motion: reduce) {
-    .bp :global(*) {
-      animation: none !important;
+    .caret {
+      animation: none;
     }
-    .bp :global(.s) {
-      fill-opacity: 0.06;
-    }
-    .bp :global(text),
-    .bp :global(circle),
-    .bp :global(ellipse) {
+    .traces [data-part] {
       opacity: 1;
-    }
-    .scrub {
-      display: none;
     }
   }
 </style>
