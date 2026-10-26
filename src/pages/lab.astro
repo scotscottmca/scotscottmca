@@ -4,133 +4,89 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-// Unlisted: no nav link, noindex, out of the sitemap. Three anime.js
-// experiments, each something CSS keyframes can't do on their own: a stroke
-// draw-in with a draggable scrubber, a labelled timeline over layered pixel
-// art, and a diagram synced to scroll position.
+// Unlisted: no nav link, noindex, out of the sitemap. The five status
+// blueprints drawing themselves with anime.js: every stroke is run by
+// svg.createDrawable on one timeline, and a createDraggable knob scrubs it.
 
-// The active status sprite, inlined so its paths are in the DOM for
-// createDrawable. Its own size attributes go so CSS can size it.
-const sprite = fs
-  .readFileSync(new URL('../../public/images/status/scott-active.svg', import.meta.url), 'utf8')
-  .replace(/<!--[\s\S]*?-->/, '')
-  .replace(' width="240" height="240"', '');
-
-const stages = [
-  ['Microsoft Update', 'Catalog sync. WSUS pulls the metadata it is subscribed to.'],
-  ['WSUS', 'The SUP sync runs on the site server and reads the WSUS database.'],
-  ['ConfigMgr SUP', 'Updates land in the console. A deployment targets a collection.'],
-  ['Management Point', 'The policy is published. Clients find it on their next poll.'],
-  ['Client', 'Scan, evaluate, download from the DP, install, report back.'],
-];
+// Tone and period per state, as in scripts/status-sprites.mjs. Each sprite's
+// own <style> is stripped (five copies would fight over the same class names)
+// and replaced by the scoped rules below, driven by --tone and --period.
+const states = [
+  { key: 'asleep', word: 'Asleep', tone: '#b794ff', period: '4.8s' },
+  { key: 'awake', word: 'Awake', tone: '#00d4ff', period: '2.4s' },
+  { key: 'walking', word: 'Out walking', tone: '#00d4ff', period: '1.4s' },
+  { key: 'working-out', word: 'Working out', tone: '#00d4ff', period: '0.9s' },
+  { key: 'active', word: 'Up and active', tone: '#00d4ff', period: '1.6s' },
+].map((s) => ({
+  ...s,
+  svg: fs
+    .readFileSync(new URL(`../../public/images/status/scott-${s.key}.svg`, import.meta.url), 'utf8')
+    .replace(/<!--[\s\S]*?-->/, '')
+    .replace(/<style>[\s\S]*?<\/style>/, '')
+    .replace(' width="240" height="240"', ''),
+}));
 ---
 
-<BaseLayout title="Lab" description="Three anime.js experiments on the site's own artwork." noindex>
+<BaseLayout title="Lab" description="The status blueprints drawing themselves." noindex>
   <Header />
   <main class="page">
     <div class="container lab">
       <header class="lab-head">
         <p class="lab-kicker">lab / anime.js 4.5</p>
-        <h1 class="page-title">Three things CSS can't do</h1>
-        <p class="lede">Each one uses an asset the site already has. Reduced motion shows the still frame.</p>
+        <h1 class="page-title">The blueprints draw themselves</h1>
+        <p class="lede">All five status sprites, every stroke run by <code>svg.createDrawable</code> on one timeline. Drag the knob to scrub it. Reduced motion shows them finished.</p>
       </header>
 
-      <section class="exp" id="blueprint">
-        <h2 class="exp-title"><span class="exp-n">01</span> The blueprint draws itself</h2>
-        <p class="exp-note"><code>svg.createDrawable</code> runs the stroke of every path in the status sprite, staggered, then pops the dots and callouts. The knob below is <code>createDraggable</code> seeking the same timeline.</p>
-        <div class="bp-inset" data-bp set:html={sprite} />
-        <div class="scrub" data-scrub="bp">
-          <div class="scrub-track" data-track><button type="button" class="scrub-knob" data-knob aria-label="Scrub the drawing"></button></div>
-          <div class="scrub-meta">
-            <button type="button" class="scrub-btn" data-toggle>pause</button>
-            <span class="scrub-time" data-time>0.00s</span>
-          </div>
+      <div class="scrub" data-scrub>
+        <div class="scrub-track" data-track><button type="button" class="scrub-knob" data-knob aria-label="Scrub the drawing"></button></div>
+        <div class="scrub-meta">
+          <button type="button" class="scrub-btn" data-toggle>pause</button>
+          <span class="scrub-time" data-time>0.00s</span>
         </div>
-      </section>
+      </div>
 
-      <section class="exp" id="scene">
-        <h2 class="exp-title"><span class="exp-n">02</span> The mascot, in three layers</h2>
-        <p class="exp-note">The footer PNG cut into Scott, the mini-Scott and the bin. One <code>createTimeline</code> with labels: walk on, hoist, toss, done. Click a chapter or drag the knob.</p>
-        <div class="stage" data-stage>
-          <img class="layer" data-bin src="/images/lab/bin.png" alt="" width="1440" height="1520" />
-          <div class="layer pair" data-pair>
-            <img class="layer" data-scott src="/images/lab/scott.png" alt="" width="1440" height="1520" />
-            <img class="layer" data-mini src="/images/lab/mini.png" alt="" width="1440" height="1520" />
-          </div>
-          <p class="stage-caption" data-caption aria-live="polite"></p>
-        </div>
-        <div class="scrub" data-scrub="scene">
-          <div class="chapters" data-chapters>
-            <button type="button" class="chapter" data-label="walk">walk</button>
-            <button type="button" class="chapter" data-label="hoist">hoist</button>
-            <button type="button" class="chapter" data-label="toss">toss</button>
-            <button type="button" class="chapter" data-label="done">done</button>
-          </div>
-          <div class="scrub-track" data-track><button type="button" class="scrub-knob" data-knob aria-label="Scrub the scene"></button></div>
-          <div class="scrub-meta">
-            <button type="button" class="scrub-btn" data-toggle>pause</button>
-            <span class="scrub-time" data-time>0.00s</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="exp" id="scroll">
-        <h2 class="exp-title"><span class="exp-n">03</span> A diagram that draws as you scroll</h2>
-        <p class="exp-note"><code>onScroll(&#123; sync: true &#125;)</code> pins a timeline to this section's scroll position. Wires draw, packets ride them with <code>createMotionPath</code>, and the caption follows. Scroll up and it rewinds.</p>
-        <div class="scroll-wrap" data-scroll-wrap>
-          <div class="scroll-pin">
-            <svg class="flow" viewBox="0 0 760 320" role="img" aria-label="Update flow from Microsoft Update through WSUS and ConfigMgr to a client">
-              <g class="wires" fill="none">
-                <path class="wire" data-wire="0" d="M196 70 H 284" />
-                <path class="wire" data-wire="1" d="M436 70 H 524" />
-                <path class="wire" data-wire="2" d="M600 100 V 160 Q 600 190 570 190 H 460" />
-                <path class="wire" data-wire="3" d="M308 190 H 196 Q 160 190 160 220 V 250" />
-              </g>
-              <g class="nodes">
-                {stages.map(([name], i) => {
-                  const pos = [[40, 40], [284, 40], [524, 40], [308, 160], [40, 250]][i];
-                  return (
-                    <g class="node" data-node={i} transform={`translate(${pos[0]} ${pos[1]})`}>
-                      <rect class="box" x="0" y="0" width="152" height="60" rx="6" />
-                      <text class="lbl" x="76" y="36" text-anchor="middle">{name}</text>
-                    </g>
-                  );
-                })}
-              </g>
-              <g class="packets">
-                {[0, 1, 2, 3].map((i) => <circle class="pkt" data-pkt={i} r="4" />)}
-              </g>
-            </svg>
-            <p class="flow-caption"><span class="flow-step" data-step>00</span> <span data-flow-caption>Scroll to start the sync.</span></p>
-          </div>
-        </div>
-      </section>
+      <ul class="bps">
+        {states.map((s) => (
+          <li class="bp-card" style={`--tone: ${s.tone}; --period: ${s.period}`}>
+            <div class="bp" data-bp set:html={s.svg} />
+            <p class="bp-label"><span class="bp-key">{s.key}</span>{s.word}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   </main>
   <Footer />
 </BaseLayout>
 
-<script define:vars={{ stages }}>
-  window.__labStages = stages;
-</script>
-
 <script>
-  import { animate, createTimeline, createDraggable, onScroll, stagger, steps, svg, utils } from 'animejs';
+  import { createTimeline, createDraggable, stagger, svg } from 'animejs';
 
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const $ = (sel: string, root: ParentNode = document) => root.querySelector(sel) as HTMLElement;
-  const $$ = (sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll(sel)) as HTMLElement[];
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const $ = (sel: string, root: ParentNode = document) => root.querySelector(sel) as HTMLElement;
+    const sprites = Array.from(document.querySelectorAll('[data-bp]'));
+    const sync: { fn?: (t: any) => void } = {};
+    const tl = createTimeline({ loop: true, loopDelay: 2000, defaults: { ease: 'inOutQuad' }, onUpdate: (t) => sync.fn?.(t) });
 
-  // A draggable knob that seeks a timeline, and follows it while it plays.
-  function scrubber(root: HTMLElement, tl: any) {
+    // Each sprite starts 450ms after the one before; within a sprite the strokes
+    // draw first, then the fills, dots and callouts in that order.
+    sprites.forEach((el, i) => {
+      const at = i * 450;
+      tl.add(svg.createDrawable(el.querySelectorAll('path, rect, line')), { draw: ['0 0', '0 1'], duration: 900, delay: stagger(70) }, at)
+        .add(el.querySelectorAll('.s'), { fillOpacity: [0, 0.06], duration: 600 }, at + 1500)
+        .add(el.querySelectorAll('circle, ellipse'), { scale: [0, 1], opacity: [0, 1], duration: 280, delay: stagger(60) }, at + 1800)
+        .add(el.querySelectorAll('text'), { opacity: [0, 1], y: [4, 0], duration: 320, delay: stagger(50) }, at + 2000);
+    });
+
+    // The knob seeks the timeline while dragged and follows it while it plays.
+    const root = $('[data-scrub]');
     const knob = $('[data-knob]', root);
     const time = $('[data-time]', root);
     const toggle = $('[data-toggle]', root);
     let dragging = false;
     const drag = createDraggable(knob, {
       container: $('[data-track]', root),
-      y: false,
       containerPadding: 3,
+      y: false,
       maxVelocity: 0,
       onGrab: () => {
         dragging = true;
@@ -147,120 +103,10 @@ const stages = [
       tl.paused ? tl.play() : tl.pause();
       toggle.textContent = tl.paused ? 'play' : 'pause';
     });
-    return (t: any) => {
+    sync.fn = (t) => {
       if (!dragging) drag.progressX = t.iterationProgress;
       time.textContent = (t.iterationCurrentTime / 1000).toFixed(2) + 's';
     };
-  }
-
-  if (!still) {
-    // 01 · Blueprint ---------------------------------------------------------
-    {
-      const bp = $('[data-bp]');
-      const sync: { fn?: (t: any) => void } = {};
-      const strokes = svg.createDrawable(bp.querySelectorAll('path, rect, line'));
-      const tl = createTimeline({
-        loop: true,
-        loopDelay: 1600,
-        defaults: { ease: 'inOutQuad' },
-        onUpdate: (t) => sync.fn?.(t),
-      })
-        .add(strokes, { draw: ['0 0', '0 1'], duration: 900, delay: stagger(90) })
-        .add(bp.querySelectorAll('.s'), { fillOpacity: [0, 0.06], duration: 600 }, '-=600')
-        .add(bp.querySelectorAll('circle, ellipse'), { scale: [0, 1], opacity: [0, 1], duration: 280, delay: stagger(70) }, '-=300')
-        .add(bp.querySelectorAll('text'), { opacity: [0, 1], y: [4, 0], duration: 320, delay: stagger(50) }, '-=200');
-      sync.fn = scrubber($('[data-scrub="bp"]'), tl);
-    }
-
-    // 02 · Mascot scene ------------------------------------------------------
-    {
-      const stage = $('[data-stage]');
-      const pair = $('[data-pair]', stage);
-      const mini = $('[data-mini]', stage);
-      const scott = $('[data-scott]', stage);
-      const bin = $('[data-bin]', stage);
-      const caption = $('[data-caption]', stage);
-      const sync: { fn?: (t: any) => void } = {};
-      const say = (text: string) => () => (caption.textContent = text);
-
-      const tl = createTimeline({ loop: true, loopDelay: 900, onUpdate: (t) => sync.fn?.(t) })
-        .label('walk')
-        .call(say('walk'))
-        .add(pair, { x: ['-55%', '0%'], duration: 1500, ease: steps(10) }, 'walk')
-        .add(pair, { y: [{ to: '-1.5%', duration: 150 }, { to: '0%', duration: 150 }], loop: 4, ease: steps(1) }, 'walk')
-        .label('hoist', '+=100')
-        .call(say('hoist'))
-        .add(pair, {
-          y: [{ to: '3%', duration: 260 }, { to: '-5%', duration: 220 }, { to: '-3%', duration: 300 }, { to: '0%', duration: 220 }],
-          scaleY: [{ to: 0.94, duration: 260 }, { to: 1.04, duration: 220 }, { to: 1, duration: 300 }],
-          loop: 1,
-          ease: steps(1),
-        }, 'hoist')
-        .label('toss', '+=150')
-        .call(say('toss'))
-        .add(mini, {
-          x: [{ to: '12%', duration: 350 }, { to: '30%', duration: 450 }],
-          y: [{ to: '-30%', duration: 350, ease: 'outQuad' }, { to: '32%', duration: 450, ease: 'inQuad' }],
-          rotate: [{ to: 60, duration: 350 }, { to: 180, duration: 450 }],
-          scale: [{ to: 0.9, duration: 350 }, { to: 0.55, duration: 450 }],
-          opacity: [{ to: 1, duration: 650 }, { to: 0, duration: 150 }],
-        }, 'toss')
-        .add(scott, { y: [{ to: '2%', duration: 120 }, { to: '0%', duration: 160 }], ease: steps(1) }, 'toss')
-        .add(scott, { rotate: [{ to: -3, duration: 160 }, { to: 3, duration: 160 }, { to: 0, duration: 160 }], ease: steps(1) }, 'toss+=400')
-        .add(bin, { scaleY: [{ to: 0.93, duration: 120 }, { to: 1.03, duration: 140 }, { to: 1, duration: 160 }], ease: steps(1) }, 'toss+=620')
-        .label('done', '+=80')
-        .call(say('done · recycled'))
-        .add(scott, { y: [{ to: '-2%', duration: 180 }, { to: '0%', duration: 180 }], loop: 2, ease: steps(1) }, 'done')
-        .add(mini, { opacity: 0, duration: 400 }, 'done+=700');
-
-      sync.fn = scrubber($('[data-scrub="scene"]'), tl);
-      const chapters = $$('[data-label]');
-      chapters.forEach((b) => b.addEventListener('click', () => {
-          tl.seek(tl.labels[b.dataset.label!]).play();
-          $('[data-scrub="scene"] [data-toggle]').textContent = 'pause';
-        }));
-      const base = sync.fn;
-      sync.fn = (t) => {
-        base(t);
-        chapters.forEach((b) => b.setAttribute('aria-current', String(t.iterationCurrentTime >= tl.labels[b.dataset.label!] && (tl.labels[nextOf(b.dataset.label!)] ?? Infinity) > t.iterationCurrentTime)));
-      };
-      function nextOf(label: string) {
-        const names = chapters.map((b) => b.dataset.label!);
-        return names[names.indexOf(label) + 1];
-      }
-    }
-
-    // 03 · Scroll-synced diagram ---------------------------------------------
-    {
-      const wrap = $('[data-scroll-wrap]');
-      const step = $('[data-step]');
-      const text = $('[data-flow-caption]');
-      const stages = (window as any).__labStages as [string, string][];
-      const wires = $$('[data-wire]', wrap) as unknown as SVGPathElement[];
-      const tl = createTimeline({
-        defaults: { ease: 'linear', duration: 600 },
-        autoplay: onScroll({ target: wrap, enter: 'top top', leave: 'bottom bottom', sync: true }),
-        onUpdate: (t) => {
-          const i = Math.min(stages.length - 1, Math.floor((t.progress * stages.length * 0.999)));
-          step.textContent = String(i + 1).padStart(2, '0');
-          text.textContent = stages[i][1];
-        },
-      });
-      stages.forEach((_, i) => {
-        const node = $(`[data-node="${i}"]`, wrap);
-        tl.add(svg.createDrawable(node.querySelector('.box')!), { draw: ['0 0', '0 1'] })
-          .add(node.querySelector('.lbl')!, { opacity: [0, 1], duration: 300 }, '-=300');
-        if (i < wires.length) {
-          const path = svg.createMotionPath(wires[i]);
-          tl.add(svg.createDrawable(wires[i]), { draw: ['0 0', '0 1'] })
-            .add($(`[data-pkt="${i}"]`, wrap), { translateX: path.translateX, translateY: path.translateY, opacity: [0, 1, 1, 0] }, '<');
-        }
-      });
-    }
-  } else {
-    // Still frame: the diagram fully drawn, the scene in its first pose.
-    $$('.pkt').forEach((p) => (p.style.display = 'none'));
-    utils.set('[data-mini]', { opacity: 1 });
   }
 </script>
 
@@ -269,7 +115,7 @@ const stages = [
     max-width: 760px;
   }
   .lab-head {
-    margin-bottom: 64px;
+    margin-bottom: 32px;
   }
   .lab-kicker {
     margin: 0 0 8px;
@@ -277,35 +123,15 @@ const stages = [
     font-size: 13px;
     color: var(--cyan);
   }
-  .exp {
-    margin-bottom: 112px;
-  }
-  .exp-title {
-    margin: 0 0 8px;
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .exp-n {
-    font-family: var(--font-mono);
-    font-weight: 400;
-    color: var(--violet-text);
-    margin-right: 10px;
-  }
-  .exp-note {
-    margin: 0 0 24px;
-    color: var(--muted);
-    max-width: 60ch;
-  }
-  .exp-note code {
+  .lede code {
     font-family: var(--font-mono);
     font-size: 0.9em;
     color: var(--text);
   }
 
-  /* Shared scrubber: a track, a knob, play/pause and the clock. */
+  /* The scrubber: a track, a knob, play/pause and the clock. */
   .scrub {
-    margin-top: 16px;
+    margin-bottom: 32px;
     font-family: var(--font-mono);
     font-size: 13px;
   }
@@ -345,8 +171,7 @@ const stages = [
     margin-top: 8px;
     color: var(--muted);
   }
-  .scrub-btn,
-  .chapter {
+  .scrub-btn {
     padding: 0;
     border: 0;
     background: none;
@@ -354,27 +179,22 @@ const stages = [
     font: inherit;
     cursor: pointer;
   }
-  .chapters {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 8px;
-  }
-  .chapter {
-    color: var(--faint);
-  }
-  .chapter[aria-current='true'] {
-    color: var(--cyan);
-  }
-  .chapter[aria-current='true']::before {
-    content: '▸ ';
-  }
 
-  /* 01 */
-  .bp-inset {
-    --tone: var(--cyan);
+  /* The five blueprints on gridded insets, as on /status. */
+  .bps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .bp-card {
+    margin: 0;
+  }
+  .bp {
     aspect-ratio: 1;
-    max-width: 420px;
-    padding: 24px;
+    padding: 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background:
@@ -382,119 +202,150 @@ const stages = [
       linear-gradient(90deg, color-mix(in srgb, var(--tone) 10%, transparent) 1px, transparent 1px) 0 0 / 10% 100%,
       var(--ink);
   }
-  .bp-inset :global(svg) {
+  .bp :global(svg) {
     display: block;
     width: 100%;
     height: 100%;
   }
-  /* Hidden until their tween starts; anime only writes a value once a tween is reached. */
-  .bp-inset :global(.s) {
-    fill-opacity: 0;
+  .bp-label {
+    margin: 8px 0 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
   }
-  .bp-inset :global(circle),
-  .bp-inset :global(ellipse) {
+  .bp-key {
+    color: var(--tone);
+    margin-right: 10px;
+  }
+
+  /* The sprites' own stylesheet, scoped and parameterised. Fills, dots and
+     callouts start hidden: anime only writes a tween's value once the
+     playhead reaches it, so until then the CSS value shows. */
+  .bp :global(.s) {
+    fill: var(--tone);
+    fill-opacity: 0;
+    stroke: var(--tone);
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+  }
+  .bp :global(.line),
+  .bp :global(.p) {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 0.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .bp :global(.dot) {
+    fill: var(--tone);
+  }
+  .bp :global(.dim) {
+    opacity: 0.7;
+  }
+  .bp :global(text) {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    opacity: 0;
+  }
+  .bp :global(.note line),
+  .bp :global(.guide) {
+    stroke: var(--faint);
+    stroke-width: 0.4;
+    fill: none;
+  }
+  .bp :global(.guide) {
+    stroke-dasharray: 1.5 1.5;
+  }
+  .bp :global(.note text) {
+    font-size: 5.2px;
+    font-weight: 400;
+    fill: var(--muted);
+  }
+  .bp :global(circle),
+  .bp :global(ellipse) {
     transform-box: fill-box;
     transform-origin: center;
     opacity: 0;
   }
-  .bp-inset :global(text) {
-    opacity: 0;
+  .bp :global(.fig) {
+    animation: bob var(--period) ease-in-out infinite;
   }
-
-  /* 02 */
-  .stage {
-    position: relative;
-    aspect-ratio: 1440 / 1520;
-    max-width: 420px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background:
-      linear-gradient(color-mix(in srgb, var(--violet-text) 8%, transparent) 1px, transparent 1px) 0 0 / 100% 10%,
-      linear-gradient(90deg, color-mix(in srgb, var(--violet-text) 8%, transparent) 1px, transparent 1px) 0 0 / 10% 100%,
-      var(--ink);
+  .bp :global(.z) {
+    animation: rise var(--period) ease-out infinite;
   }
-  .layer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    image-rendering: pixelated;
-    transform-origin: bottom center;
+  .bp :global(.z2) {
+    animation-delay: calc(var(--period) / 2);
   }
-  .stage-caption {
-    position: absolute;
-    left: 12px;
-    bottom: 8px;
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--violet-text);
+  .bp :global(.steam) {
+    animation: steam var(--period) ease-in-out infinite;
   }
-
-  /* 03 */
-  .scroll-wrap {
-    height: 220vh;
+  .bp :global(.reps) {
+    animation: reps var(--period) ease-in-out infinite;
   }
-  .scroll-pin {
-    position: sticky;
-    top: 18vh;
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
+  .bp :global(.trot) {
+    animation: reps calc(var(--period) * 2) ease-in-out infinite;
   }
-  .flow {
-    display: block;
-    width: 100%;
-    height: auto;
+  .bp :global(.beat) {
+    animation: beat var(--period) ease-in-out infinite;
   }
-  .flow .box {
-    fill: color-mix(in srgb, var(--cyan) 5%, transparent);
-    stroke: var(--cyan);
-    stroke-width: 1.5;
-  }
-  .flow .lbl {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    fill: var(--text);
-    opacity: 0;
-  }
-  .flow .wire {
-    stroke: var(--violet-text);
-    stroke-width: 1.5;
-    stroke-dasharray: 4 3;
-  }
-  .flow .pkt {
-    fill: var(--cyan);
-    opacity: 0;
-  }
-  .flow-caption {
-    margin: 16px 0 0;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--muted);
-    min-height: 2.6em;
-  }
-  .flow-step {
-    color: var(--cyan);
-    margin-right: 8px;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .scroll-wrap {
-      height: auto;
+  @keyframes bob {
+    50% {
+      transform: translateY(-1.5px);
     }
-    .scroll-pin {
-      position: static;
+  }
+  @keyframes rise {
+    0% {
+      opacity: 0;
+      transform: translate(0, 4px);
     }
-    .flow .lbl,
-    .bp-inset :global(circle),
-    .bp-inset :global(ellipse),
-    .bp-inset :global(text) {
+    30% {
       opacity: 1;
     }
-    .bp-inset :global(.s) {
+    100% {
+      opacity: 0;
+      transform: translate(3px, -6px);
+    }
+  }
+  @keyframes steam {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: translateY(1px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+  }
+  @keyframes reps {
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+  @keyframes beat {
+    0%,
+    60%,
+    100% {
+      transform: scale(1);
+    }
+    20% {
+      transform: scale(1.18);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bp :global(*) {
+      animation: none !important;
+    }
+    .bp :global(.s) {
       fill-opacity: 0.06;
+    }
+    .bp :global(text),
+    .bp :global(circle),
+    .bp :global(ellipse) {
+      opacity: 1;
+    }
+    .scrub {
+      display: none;
     }
   }
 </style>
