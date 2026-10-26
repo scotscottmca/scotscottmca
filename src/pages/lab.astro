@@ -142,7 +142,7 @@ const mocks = [
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (a[(y * W + x) * 4 + 3] > 120) cells.push([x, y]);
     canvas.width = W;
     canvas.height = H;
-    canvas.style.width = `-epx`;
+    canvas.style.width = `${W * 4}px`;
     const ctx = canvas.getContext('2d')!;
     const paint = (upto: number) => {
       ctx.clearRect(0, 0, W, H);
